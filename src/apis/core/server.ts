@@ -1,0 +1,5 @@
+export const serverApi = {
+    fetchData: () => {
+        ...
+    }
+}
