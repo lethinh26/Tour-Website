@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Outlet, useNavigate } from 'react-router'
+import React from 'react'
+import { Outlet } from 'react-router'
 
 export const LayoutMain = () => {
   const navigate = useNavigate()
@@ -7,8 +7,6 @@ export const LayoutMain = () => {
     navigate('/tour')
   }, [])
   return (
-    <div>
-      <Outlet/>
-    </div>
+    <Outlet/>
   )
 }
