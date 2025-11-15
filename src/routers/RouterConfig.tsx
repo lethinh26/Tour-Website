@@ -1,9 +1,8 @@
-import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router";
-import { LayoutMain } from "../pages/Layout/LayoutMain";
-import { TourMain } from "../pages/Tour/TourMain";
-import { PromotionMain } from "../pages/Promotion/PromotionMain";
-import { PaymentMain } from "../pages/Payment/PaymentMain";
+import { createBrowserRouter, RouterProvider } from 'react-router'
+import { LayoutMain } from '../pages/Layout/LayoutMain';
+import { TourMain } from '../pages/Tour/TourMain';
+import { PromotionMain } from '../pages/Promotion/PromotionMain';
+import { PaymentMain } from '../pages/Payment/PaymentMain';
 
 const router = createBrowserRouter([
     {
