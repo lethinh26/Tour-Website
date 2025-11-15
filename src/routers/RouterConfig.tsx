@@ -15,20 +15,24 @@ const router = createBrowserRouter([
             },
             {
                 path: "tour",
-                element: <TourMain/>,
+                element: <TourMain />,
             },
             {
                 path: "promotion",
-                element: <PromotionMain/>,
+                element: <PromotionMain />,
             },
             {
                 path: "payment/:id",
-                element: <PaymentMain/>,
+                element: <PaymentMain />,
             },
         ],
+    },
+    {
+        path: "/test",
+        element: <PaymentMain />,
     },
 ]);
 
 export const RouterConfig = () => {
-  return (<RouterProvider router={router}/>)
-}
+    return <RouterProvider router={router} />;
+};
