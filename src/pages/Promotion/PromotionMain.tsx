@@ -85,15 +85,13 @@ export default function PromotionMain() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 rounded-b-3xl">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-400 text-white px-[150px] pb-8 pt-2 rounded-b-3xl">
         <h1 className="text-2xl font-bold mb-2">
-          Mã giảm giá Traveloka ở gần đây chỉ dành xaỉ
+          Mã giảm giá Traveloka ở gần đây chỉ dành xa!
         </h1>
         <p className="text-blue-100 text-sm">Nhận hết mọi ưu đãi hôm nay</p>
       </div>
 
-      {/* Filter Section */}
       <div className="bg-white shadow-sm top-0 px-[150px]">
         <div className="flex items-center justify-between py-3">
           <h2 className="font-semibold flex items-center gap-2">
@@ -112,14 +110,12 @@ export default function PromotionMain() {
         </div>
       </div>
 
-      {/* Promotions Grid */}
       <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-[150px]">
         {promotions.map((promo) => (
           <div
             key={promo.id}
             className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
           >
-            {/* Card Header */}
             <div
               className={`${
                 promo.color === "blue"
@@ -136,7 +132,6 @@ export default function PromotionMain() {
               </button>
             </div>
 
-            {/* Card Body */}
             <div className="p-4">
               <div className="text-sm text-gray-600 mb-2 flex items-center gap-2">
                 <span>📅</span>
@@ -151,7 +146,6 @@ export default function PromotionMain() {
 
               <div className="text-xs text-gray-500 mb-3">{promo.minSpend}</div>
 
-              {/* Code Section */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -173,7 +167,6 @@ export default function PromotionMain() {
         ))}
       </div>
 
-      {/* Pagination */}
       <div className="flex justify-center items-center gap-2 py-6">
         <button className="w-8 h-8 rounded bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600">
           1
