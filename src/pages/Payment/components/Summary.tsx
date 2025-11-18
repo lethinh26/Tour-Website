@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Collapse, Space } from "antd";
+import { Collapse, Space } from "antd";
 
 const { Panel } = Collapse;
 
@@ -29,7 +29,7 @@ const Summary = () => {
                     </Space>
                 </Panel>
             </Collapse>
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-4">
                 <button className="bg-orange-500! text-white rounded-md px-4 py-2 w-1/3 font-bold cursor-pointer">Tiếp tục</button>
             </div>
         </Space>
