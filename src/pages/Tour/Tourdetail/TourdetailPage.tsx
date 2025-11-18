@@ -1,0 +1,150 @@
+import { NavLink } from "react-router";
+import HeadT from "./components/HeadT";
+import { useState } from "react";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/style.css"
+
+export default function TourdetailPage() {
+    const [selected, setSelected] = useState<Date>();
+    
+    return (
+        <div className="bg-gray-200">
+            <HeadT />
+            <div className="flex flex-col bg-gray-200 justify-center items-center">
+                <div className="pt-10 flex px-5 w-3/4" >
+                    <div className="w-4/5">
+                        <div className="flex text-center gap-3 mb-3">
+                            <h2 className="font-bold text-2xl">
+                                Tour xe buýt mui trần FunVee Tour đêm | Singapore
+                            </h2>
+                            <span className="p-2 rounded-[50%] bg-blue-300">➕</span>
+                            <span className="p-2 rounded-[50%] bg-blue-300">➕</span>
+                        </div>
+                        <div className="flex flex-wrap gap-4">
+                            <div className="bg-gray-400 w-auto flex gap-2 justify-center items-center px-2 rounded-2xl">
+                                <span className="p-1">📍</span>
+                                <p className="font-bold">Singapore</p>
+                                <NavLink to={''} className='text-blue-500 font-bold'>Xem ban do</NavLink>
+                            </div>
+                            <div className="bg-gray-400 w-auto flex gap-2 justify-center items-center px-2 rounded-2xl">
+                                <span className="p-1">📍</span>
+                                <p className="font-bold">Singapore | Thứ, 18 Nov 2025</p>
+                            </div>
+                            <div className="bg-gray-400 w-auto flex gap-2 justify-center items-center px-2 rounded-2xl">
+                                <span className="p-1">📍</span>
+                                <p className="font-bold">Singapore</p>
+                            </div>
+                            <div className="bg-gray-400 w-auto flex gap-2 justify-center items-center px-2 rounded-2xl">
+                                <span className="p-1">📍</span>
+                                <p className="font-bold">Singapore</p>
+                                <NavLink to={''} className='text-blue-500 font-bold'>Xem ban do</NavLink>
+                            </div>
+                            <div className="max-h-100px overflow-hidden">
+                                <p>
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos quam, quia sed iusto possimus odit, impedit reprehenderit facere voluptates aliquam pariatur rerum, expedita sequi dolore illo temporibus sapiente voluptatem fuga.
+                                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus dignissimos exercitationem veritatis autem omnis debitis nulla tempora perferendis amet nostrum voluptatem minus impedit, quidem, hic consectetur sequi deleniti, rem repellat!
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus, dolorum rem ab fugit, praesentium consequuntur doloribus ullam ratione soluta voluptate a laudantium recusandae sapiente, commodi eius facilis nulla amet ex?
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus, dolorum rem ab fugit, praesentium consequuntur doloribus ullam ratione soluta voluptate a laudantium recusandae sapiente, commodi eius facilis nulla amet ex?
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus, dolorum rem ab fugit, praesentium consequuntur doloribus ullam ratione soluta voluptate a laudantium recusandae sapiente, commodi eius facilis nulla amet ex?
+                                </p>
+                                <button className="font-bold text-xl text-blue-500 hover:text-blue-700">
+                                    Đọc thêm
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div className="sticky p-2 rounded-xl flex flex-col gap-2 w-1/5 top-10">
+                        <h6 className="font-bold">
+                            Bắt đầu từ
+                        </h6>
+                        <h4 className="flex text-xl font-bold items-center gap-2 text-amber-400">
+                            486.163 VND <p className="line-through font-medium text-[14px] text-gray-600">648.217 VND</p>
+                        </h4>
+                        <button className="py-2 w-full bg-blue-500 rounded-4xl hover:bg-blue-700">
+                            Tìm tour
+                        </button>
+                    </div>
+                </div>
+                <div className="bg-white w-3/4 py-5 px-5 my-10 flex flex-col gap-3 items-start">
+                    <div className="font-bold text-[20px]">Có vé trống cho bạn</div>
+                    <DayPicker
+                        mode="single"
+                        selected={selected}
+                        onSelect={setSelected}
+                    />
+                    <div className="p-5 mt-2 w-full flex flex-col gap-5">
+                        <div className="w-full p-4 border rounded-lg shadow-sm bg-white"> {/* Container chính có viền và đổ bóng */}
+                            <div className="flex justify-between items-start">
+                                {/* Phần thông tin vé bên trái */}
+                                <div className="flex flex-col gap-1">
+                                    <h1 className="font-semibold text-2xl text-gray-800">
+                                        Vé (ngày 1 tháng 9 năm 2025 - ngày 31 tháng 3 năm 2026)
+                                    </h1>
+                                    <a href={'#'} className='text-md font-bold   text-blue-500 hover:text-blue-700 cursor-pointer'>
+                                        Xem chi tiết
+                                    </a>
+                                    <span className="inline-flex w-1/2 items-center text-xs px-2 py-0.5 border border-gray-300 rounded-full mt-2 text-gray-700 bg-gray-50">
+                                        💵 Được hoàn tiền
+                                    </span>
+                                </div>
+
+                                {/* Phần giá và nút bấm bên phải */}
+                                <div className="flex flex-col items-end gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-2xl font-bold text-red-500">
+                                            485.267 VND
+                                        </h3>
+                                        <p className="line-through text-xs text-gray-400">
+                                            647.023 VND
+                                        </p>
+                                        <span className="text-xs font-semibold px-1 py-0.5 bg-red-100 text-red-600 rounded">
+                                            -25%
+                                        </span>
+                                    </div>
+                                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold w-full py-2 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        Chọn vé
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-full p-4 border rounded-lg shadow-sm bg-white"> {/* Container chính có viền và đổ bóng */}
+                            <div className="flex justify-between items-start">
+                                {/* Phần thông tin vé bên trái */}
+                                <div className="flex flex-col gap-1">
+                                    <h1 className="font-semibold text-2xl text-gray-800">
+                                        Vé (ngày 1 tháng 9 năm 2025 - ngày 31 tháng 3 năm 2026)
+                                    </h1>
+                                    <a href={'#'} className='text-md font-bold   text-blue-500 hover:text-blue-700 cursor-pointer'>
+                                        Xem chi tiết
+                                    </a>
+                                    <span className="inline-flex w-1/2 items-center text-xs px-2 py-0.5 border border-gray-300 rounded-full mt-2 text-gray-700 bg-gray-50">
+                                        💵 Được hoàn tiền
+                                    </span>
+                                </div>
+
+                                {/* Phần giá và nút bấm bên phải */}
+                                <div className="flex flex-col items-end gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-2xl font-bold text-red-500">
+                                            485.267 VND
+                                        </h3>
+                                        <p className="line-through text-xs text-gray-400">
+                                            647.023 VND
+                                        </p>
+                                        <span className="text-xs font-semibold px-1 py-0.5 bg-red-100 text-red-600 rounded">
+                                            -25%
+                                        </span>
+                                    </div>
+                                    <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold w-full py-2 px-6 rounded-lg shadow-md transition duration-150 ease-in-out">
+                                        Chọn vé
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}

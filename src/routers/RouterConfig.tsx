@@ -1,8 +1,10 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { LayoutMain } from '../pages/Layout/LayoutMain';
-import { TourMain } from '../pages/Tour/TourMain';
+import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import { PromotionMain } from '../pages/Promotion/PromotionMain';
 import { PaymentMain } from '../pages/Payment/PaymentMain';
+import TourdetailPage from '../pages/Tour/Tourdetail/TourdetailPage';
+import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
 
 const router = createBrowserRouter([
     {
@@ -25,6 +27,14 @@ const router = createBrowserRouter([
                 path: "payment/:id",
                 element: <PaymentMain />,
             },
+            {
+                path: 'tourdetail',
+                element: <TourdetailPage/>
+            },
+            {
+                path: 'tourtikket',
+                element: <TourTikket/>
+            }
         ],
     },
     {
