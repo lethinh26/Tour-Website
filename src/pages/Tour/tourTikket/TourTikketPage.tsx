@@ -4,12 +4,12 @@ import { DayPicker } from "react-day-picker";
 const formatVND = (n: number) =>
     new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " VND";
 
-const earnPoints = (price: number) => Math.round(price * 0.004); // tỉ lệ giả lập giống ảnh
 
 export default function TourTikket() {
 
     const times = ["15:00"];
     const [selectedTime, setSelectedTime] = useState(times[0]);
+
 
     const [tickets, setTickets] = useState([
         {
@@ -106,17 +106,19 @@ export default function TourTikket() {
                     {/* MAIN */}
                     <main className="lg:col-span-9">
                         <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
-                            
+                            <div className="flex items-center justify-center">
+
                             <DayPicker
                                                     mode="single"
                                                     selected={selected}
                                                     onSelect={setSelected}
-                                                />
+                                                    />
+                                                    </div>
 
                             
 
                             {/* Time picker */}
-                            <div className="mt-6">
+                            <div className="mt-6 text-center">
                                 <h4 className="text-lg font-semibold text-gray-800">
                                     Chọn thời gian ưu tiên
                                 </h4>
@@ -159,11 +161,6 @@ export default function TourTikket() {
                                                     {formatVND(t.price)}
                                                 </div>
 
-                                                <div className="mt-1">
-                                                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                                                        <span>🏅</span> Earn {earnPoints(t.price).toLocaleString("vi-VN")} Points
-                                                    </span>
-                                                </div>
 
                                                 <p className="mt-2 text-sm text-gray-500">
                                                     Age: {t.minAge}.
