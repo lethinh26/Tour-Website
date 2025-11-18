@@ -1,4 +1,3 @@
-import React from 'react';
 import { Layout, Space } from 'antd';
 import ContactInfo from './components/ContactInfo';
 import RequestInfo from './components/RequestInfo';
