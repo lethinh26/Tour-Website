@@ -3,6 +3,7 @@ import { LayoutMain } from '../pages/Layout/LayoutMain';
 import { TourMain } from '../pages/Tour/TourMain';
 import { PromotionMain } from '../pages/Promotion/PromotionMain';
 import { PaymentMain } from '../pages/Payment/PaymentMain';
+import DashboardMain from '../pages/Dashboard/DashboardMain';
 
 const router = createBrowserRouter([
     {
@@ -11,7 +12,7 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <></>,
+                element: <DashboardMain />,
             },
             {
                 path: "tour",
