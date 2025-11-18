@@ -28,10 +28,6 @@ const router = createBrowserRouter([
             },
         ],
     },
-    {
-        path: "/test",
-        element: <PaymentMain />,
-    },
 ]);
 
 export const RouterConfig = () => {
