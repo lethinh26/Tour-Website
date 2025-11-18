@@ -26,7 +26,7 @@ export const PaymentMain = () => {
             <Summary />
           </Space>
         </div>
-        <div className='top-47 w-1/4 right-35 fixed'>
+        <div className='top-63 w-full right-35 sticky h-fit'>
           <TourInfo />
         </div>
       </Content>
