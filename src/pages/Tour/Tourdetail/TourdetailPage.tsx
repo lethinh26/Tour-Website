@@ -1,11 +1,9 @@
 import { NavLink } from "react-router";
 import HeadT from "./components/HeadT";
-import { useState } from "react";
-import { DayPicker } from "react-day-picker";
+
 import "react-day-picker/style.css"
 
 export default function TourdetailPage() {
-    const [selected, setSelected] = useState<Date>();
     
     return (
         <div className="bg-gray-200">
