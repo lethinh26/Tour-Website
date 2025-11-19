@@ -1,6 +1,8 @@
+import { useState } from "react";
+import { Pagination } from "antd";
 import TravelCard from "./TravelCard";
 
-function ListCard(){
+function ListCard() {
     const data = [
         {
             image: "https://example.com/mollyfantasy.jpg",
@@ -24,8 +26,8 @@ function ListCard(){
             location: "Boja, Kendal",
             rating: 4.9,
             reviews: 10,
-            price: 28371,
-            oldPrice: 31200,
+            price: 1000000,
+            oldPrice: 15000000,
         },
         {
             image: "https://example.com/mollyfantasy.jpg",
@@ -103,21 +105,28 @@ function ListCard(){
             oldPrice: 31200,
         },
     ];
+    const pageSize = 6;
+    const [current, setCurrent] = useState(1);
+    const paginatedData = data.slice((current - 1) * pageSize, current * pageSize);
 
     return (
         <>
-        <div className="grid grid-cols-3 gap-5">
-            {data.map((item) => (
-                <TravelCard propTravel={item} key={item.title} />
-            ))}
-        </div>
-            <div className="text-end">
-                <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
-                    Trang tiếp
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {paginatedData.map((item) => (
+                    <TravelCard propTravel={item} key={item.title + item.price} />
+                ))}
             </div>
-            </>
+            <div className="flex justify-center mt-6">
+                <Pagination
+                    current={current}
+                    pageSize={pageSize}
+                    total={data.length}
+                    onChange={setCurrent}
+                    showSizeChanger={false}
+                />
+            </div>
+        </>
     );
-};
+}
 
 export default ListCard;
