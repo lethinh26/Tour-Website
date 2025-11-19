@@ -1,15 +1,11 @@
 import { useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 
-const formatVND = (n: number) =>
-    new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " VND";
-
+const formatVND = (n: number) => new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " VND";
 
 export default function TourTikket() {
-
     const times = ["15:00"];
     const [selectedTime, setSelectedTime] = useState(times[0]);
-
 
     const [tickets, setTickets] = useState([
         {
@@ -31,32 +27,25 @@ export default function TourTikket() {
     ]);
     const [selected, setSelected] = useState<Date>();
 
-    const total = useMemo(
-        () => tickets.reduce((sum, t) => sum + t.qty * t.price, 0),
-        [tickets]
-    );
+    const total = useMemo(() => tickets.reduce((sum, t) => sum + t.qty * t.price, 0), [tickets]);
 
     const setQty = (id: string, nextQty: number) =>
         setTickets((prev) =>
             prev.map((t) =>
                 t.id === id
                     ? {
-                        ...t,
-                        qty: Math.max(0, Math.min(nextQty, t.stockLeft)),
-                    }
+                          ...t,
+                          qty: Math.max(0, Math.min(nextQty, t.stockLeft)),
+                      }
                     : t
             )
         );
-
 
     return (
         <div className="w-full min-h-screen bg-gray-50">
             {/* Header / Breadcrumb */}
             <div className="mx-auto max-w-6xl px-4 sm:px-6 py-3">
-                <button
-                    type="button"
-                    className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900"
-                >
+                <button type="button" className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900">
                     <span className="text-xl">←</span>
                     <span className="font-medium">Tìm phiếu dịch vụ khác</span>
                 </button>
@@ -80,9 +69,7 @@ export default function TourTikket() {
                                 <h3 className="text-[15px] font-semibold text-gray-800">
                                     Vatican Museums & Sistine Chapel: Fast Track Ticket + Guided Tour
                                 </h3>
-                                <p className="mt-2 text-sm text-gray-600">
-                                    Explore two historic sites with an expert guide
-                                </p>
+                                <p className="mt-2 text-sm text-gray-600">Explore two historic sites with an expert guide</p>
 
                                 <div className="mt-3 space-y-2">
                                     <div className="flex items-center gap-2 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700">
@@ -107,24 +94,13 @@ export default function TourTikket() {
                     <main className="lg:col-span-9">
                         <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
                             <div className="flex items-center justify-center">
-
-                            <DayPicker
-                                                    mode="single"
-                                                    selected={selected}
-                                                    onSelect={setSelected}
-                                                    />
-                                                    </div>
-
-                            
+                                <DayPicker mode="single" selected={selected} onSelect={setSelected} />
+                            </div>
 
                             {/* Time picker */}
                             <div className="mt-6 text-center">
-                                <h4 className="text-lg font-semibold text-gray-800">
-                                    Chọn thời gian ưu tiên
-                                </h4>
-                                <p className="mt-1 text-sm text-gray-500">
-                                    Hãy chắc chắn chọn thời gian chính xác trước khi đặt chỗ.
-                                </p>
+                                <h4 className="text-lg font-semibold text-gray-800">Chọn thời gian ưu tiên</h4>
+                                <p className="mt-1 text-sm text-gray-500">Hãy chắc chắn chọn thời gian chính xác trước khi đặt chỗ.</p>
 
                                 <div className="mt-3 flex flex-wrap gap-2">
                                     {times.map((t) => {
@@ -134,10 +110,11 @@ export default function TourTikket() {
                                                 key={t}
                                                 onClick={() => setSelectedTime(t)}
                                                 className={`rounded-lg border px-4 py-2 text-sm font-medium transition
-                          ${selected
-                                                        ? "border-sky-300 bg-sky-50 text-sky-700 ring-2 ring-sky-400"
-                                                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                                                    }`}
+                          ${
+                              selected
+                                  ? "border-sky-300 bg-sky-50 text-sky-700 ring-2 ring-sky-400"
+                                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                          }`}
                                             >
                                                 {t}
                                             </button>
@@ -153,18 +130,11 @@ export default function TourTikket() {
                                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                             {/* Left info */}
                                             <div className="min-w-0">
-                                                <h5 className="text-[17px] font-semibold text-gray-800">
-                                                    {t.name}
-                                                </h5>
+                                                <h5 className="text-[17px] font-semibold text-gray-800">{t.name}</h5>
 
-                                                <div className="mt-1 text-2xl font-extrabold text-gray-900">
-                                                    {formatVND(t.price)}
-                                                </div>
+                                                <div className="mt-1 text-2xl font-extrabold text-gray-900">{formatVND(t.price)}</div>
 
-
-                                                <p className="mt-2 text-sm text-gray-500">
-                                                    Age: {t.minAge}.
-                                                </p>
+                                                <p className="mt-2 text-sm text-gray-500">Age: {t.minAge}.</p>
                                             </div>
 
                                             {/* Qty stepper */}
@@ -201,9 +171,7 @@ export default function TourTikket() {
                                                     </button>
                                                 </div>
 
-                                                <div className="mt-2 text-sm text-red-600">
-                                                    {Math.max(0, t.stockLeft - t.qty)} vé còn lại
-                                                </div>
+                                                <div className="mt-2 text-sm text-red-600">{Math.max(0, t.stockLeft - t.qty)} vé còn lại</div>
                                             </div>
                                         </div>
                                     </div>
@@ -226,10 +194,7 @@ export default function TourTikket() {
                                     type="button"
                                     disabled={total === 0}
                                     className={`rounded-lg px-6 py-3 font-semibold transition
-                    ${total === 0
-                                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                            : "bg-sky-500 text-white hover:bg-sky-600"
-                                        }`}
+                    ${total === 0 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-sky-500 text-white hover:bg-sky-600"}`}
                                 >
                                     Đặt ngay
                                 </button>

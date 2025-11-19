@@ -4,7 +4,7 @@ import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import { PromotionMain } from '../pages/Promotion/PromotionMain';
 import { PaymentMain } from '../pages/Payment/PaymentMain';
 import TourdetailPage from '../pages/Tour/Tourdetail/TourdetailPage';
-import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
+import TourTikket from '../pages/Tour/TourTikket/TourTikketPage';
 
 const router = createBrowserRouter([
     {
