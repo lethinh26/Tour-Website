@@ -1,4 +1,3 @@
-import React from 'react';
 import { Layout, Space } from 'antd';
 import ContactInfo from './components/ContactInfo';
 import RequestInfo from './components/RequestInfo';
@@ -11,7 +10,7 @@ const { Content } = Layout;
 
 export const PaymentMain = () => {
   return (
-    <Layout className="min-h-screen bg-gray-100 relative">
+    <Layout className="min-h-screen bg-gray-100 relative mb-4">
       <Content className="mx-auto w-3/4 py-8 grid grid-cols-3 gap-4">
         <div className="col-span-2">
           <Space direction="vertical" size={[40, 40]} style={{ display: 'flex' }}>
@@ -26,7 +25,7 @@ export const PaymentMain = () => {
             <Summary />
           </Space>
         </div>
-        <div className='top-47 w-1/4 right-35 fixed'>
+        <div className='top-63 w-full right-35 sticky h-fit'>
           <TourInfo />
         </div>
       </Content>
