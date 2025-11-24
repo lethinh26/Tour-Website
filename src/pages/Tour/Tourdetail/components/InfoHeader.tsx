@@ -39,7 +39,6 @@ export default function InfoHeader() {
                         <span className="font-semibold">Thông tin liên hệ, Tiện ích, Dịch vụ ng...</span>
                         <a href="#" className="text-blue-500 font-semibold ml-2">
                             Xem chi tiết
-                            
                         </a>
                     </div>
                 </div>
