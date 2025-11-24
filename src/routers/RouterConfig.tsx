@@ -3,8 +3,8 @@ import { LayoutMain } from '../pages/Layout/LayoutMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import { PromotionMain } from '../pages/Promotion/PromotionMain';
 import { PaymentMain } from '../pages/Payment/PaymentMain';
-import TourdetailPage from '../pages/Tour/Tourdetail/TourdetailPage';
 import TourTikket from '../pages/Tour/TourTikket/TourTikketPage';
+import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 
 const router = createBrowserRouter([
     {
@@ -28,11 +28,11 @@ const router = createBrowserRouter([
                 element: <PaymentMain />,
             },
             {
-                path: 'tourdetail',
-                element: <TourdetailPage/>
+                path: 'tour/:id',
+                element: <TourDetailMain/>
             },
             {
-                path: 'tourtikket',
+                path: 'tour/ticket/:id',
                 element: <TourTikket/>
             }
         ],
