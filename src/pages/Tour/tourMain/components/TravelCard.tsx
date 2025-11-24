@@ -4,6 +4,7 @@ import image_test from "../assets/image.png";
 import logo_triploka from "../../../../assets/logos/logo_tripoka.png";
 import icon_location from "../../../../assets/icons/icon_location.png";
 import icon_promotion from "../../../../assets/icons/icon_promotion.png";
+import { useNavigate } from "react-router";
 
 export interface TravelCardProps {
     image: string;
@@ -18,6 +19,7 @@ export interface TravelCardProps {
 function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
     const { image, title, location, rating, reviews, price, oldPrice } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
+    const navigate = useNavigate();
     return (
         <Card
             hoverable
@@ -32,6 +34,7 @@ function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
                     </Tooltip>
                 </div>
             }
+            onClick={() => navigate(`/tour/123`)}
         >
             <h3 className="font-bold text-base text-gray-900 mb-1 leading-5 line-clamp-2">{title}</h3>
             <div className="flex items-center text-sm text-gray-600 mb-2">
