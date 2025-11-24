@@ -6,6 +6,8 @@ import DashboardMain from '../pages/Dashboard/DashboardMain';
 import PromotionMain from '../pages/Promotion/PromotionMain';
 import PaymentCardMain from '../pages/Payment/PaymentCard/PaymentCardMain';
 import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
+import TourTikket from '../pages/Tour/TourTikket/TourTikketPage';
+import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 
 const router = createBrowserRouter([
     {
@@ -28,6 +30,14 @@ const router = createBrowserRouter([
                 path: "payment/:id",
                 element: <QRPaymentPage/>,
             },
+            {
+                path: 'tour/:id',
+                element: <TourDetailMain/>
+            },
+            {
+                path: 'tour/ticket/:id',
+                element: <TourTikket/>
+            }
         ],
     },
 ]);
