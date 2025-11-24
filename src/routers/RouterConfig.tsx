@@ -1,8 +1,11 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { LayoutMain } from '../pages/Layout/LayoutMain';
-import { TourMain } from '../pages/Tour/tourMain/TourMain';
-import { PromotionMain } from '../pages/Promotion/PromotionMain';
-import { PaymentMain } from '../pages/Payment/PaymentMain';
+import { TourMain } from '../pages/Tour/TourMain';
+import { PaymentMain } from '../pages/Payment/PaymentInfo/PaymentMain';
+import DashboardMain from '../pages/Dashboard/DashboardMain';
+import PromotionMain from '../pages/Promotion/PromotionMain';
+import PaymentCardMain from '../pages/Payment/PaymentCard/PaymentCardMain';
+import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
 import TourTikket from '../pages/Tour/TourTikket/TourTikketPage';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 
@@ -13,7 +16,7 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <></>,
+                element: <DashboardMain />,
             },
             {
                 path: "tour",
@@ -25,7 +28,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "payment/:id",
-                element: <PaymentMain />,
+                element: <QRPaymentPage/>,
             },
             {
                 path: 'tour/:id',
@@ -37,12 +40,8 @@ const router = createBrowserRouter([
             }
         ],
     },
-    {
-        path: "/test",
-        element: <PaymentMain />,
-    },
 ]);
 
 export const RouterConfig = () => {
-    return <RouterProvider router={router} />;
+  return <RouterProvider router={router} />;
 };
