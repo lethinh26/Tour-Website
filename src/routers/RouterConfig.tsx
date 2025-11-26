@@ -1,13 +1,13 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { LayoutMain } from '../pages/Layout/LayoutMain';
-import { TourMain } from '../pages/Tour/TourMain';
-import { PaymentMain } from '../pages/Payment/PaymentInfo/PaymentMain';
+// import { PaymentMain } from '../pages/Payment/PaymentInfo/PaymentMain';
 import DashboardMain from '../pages/Dashboard/DashboardMain';
 import PromotionMain from '../pages/Promotion/PromotionMain';
-import PaymentCardMain from '../pages/Payment/PaymentCard/PaymentCardMain';
+// import PaymentCardMain from '../pages/Payment/PaymentCard/PaymentCardMain';
 import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
-import TourTikket from '../pages/Tour/TourTikket/TourTikketPage';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
+import { TourMain } from '../pages/Tour/tourMain/TourMain';
+import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
 
 const router = createBrowserRouter([
     {
