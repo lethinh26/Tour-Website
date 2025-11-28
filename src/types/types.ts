@@ -1,85 +1,90 @@
-export type TourCategory = {
-    id: string;
-    name: string;
-    description?: string;
-};
+export type Role = 'USER' | 'ADMIN';
+export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED';
+export type PaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED';
+export type PaymentMethod = 'CASH' | 'BANK_TRANSFER';
+export type Money = number;
 
-export type Tour = {
-  id: string;
-  name: string;
-  description: string;
-  basePrice: number;
-  category: TourCategory;
-  imageUrls: string[];
-};
-
-
-
-export type UserRole = 'USER' | 'ADMIN';
-
-export type User = {
-  id: string;
+export interface User {
+  id: number;
   name: string;
   email: string;
-  role: UserRole;
-  createdAt: string;
-};
-
-export type UserWithPassword = User & {
   passwordHash: string;
-};
+  role: Role;
+  createdAt: string;
+}
 
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+}
 
-export type TourDeparture = {
-  id: string;
-  tourId: string;
-  departureDate: string;
-  price: number;
+export interface Tour {
+  id: number;
+  name: string;
+  description: string;
+  basePrice: Money;
+  discount?: Money | null;
+  createdAt: string;
+
+  categoryId: number;
+}
+
+export interface TourImage {
+  id: number;
+  url: string;
+  position: number;
+  tourId: number;
+}
+
+export interface TourDeparture {
+  id: number;
+  departure: string;
+  price: Money;
   capacity: number;
   availableSeats: number;
-};
+  tourId: number;
+}
 
-export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED';
-
-export type OrderItem = {
-  id: string;
-  orderId: string;
-  tourDepartureId: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-};
-
-export type Order = {
-  id: string;
-  userId: string;
+export interface Order {
+  id: number;
   status: OrderStatus;
-  totalAmount: number;
+  totalAmount: Money;
   createdAt: string;
-  updatedAt?: string;
-  items: OrderItem[];
-};
+  updatedAt?: string | null;
 
-export type PaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
-export type PaymentMethod = 'CASH' | 'CREDIT_CARD' | 'BANK_TRANSFER' | 'E_WALLET';
+  userId: number;
+}
 
-export type Transaction = {
-  id: string;
-  orderId: string;
-  userId: string;
-  amount: number;
+export interface OrderItem {
+  id: number;
+  quantity: number;
+  unitPrice: Money;
+  totalPrice: Money;
+
+  orderId: number;
+  tourDepartureId: number;
+}
+
+export interface Payment {
+  id: number;
+  amount: Money;
   status: PaymentStatus;
   method: PaymentMethod;
   createdAt: string;
-};
 
-export type Rating = 1 | 2 | 3 | 4 | 5;
+  orderId: number;
+  userId: number;
+}
 
-export type Review = {
-  id: string;
-  tourId: string;
-  userId: string;
-  comment?: string;
-  rating: Rating;
+export interface Review {
+  id: number;
+  rating: number;
+  comment?: string | null;
   createdAt: string;
-};
+
+  tourId: number;
+  userId: number;
+}
+
