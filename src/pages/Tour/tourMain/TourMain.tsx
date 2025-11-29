@@ -3,8 +3,20 @@ import FilterPrice from "./components/FilterPrice";
 import SortComponent from "./components/SortComponent";
 import ListCard from "./components/ListCard";
 import SearchLocation from "./components/SearchLocation";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchData } from "../../../stores/slides/tour.slide";
+import { useEffect } from "react";
+import type { AppDispatch, StoreType } from "../../../stores";
 
 export const TourMain = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const tourStore = useSelector((state: StoreType) => state.dataReducer);
+    useEffect(() => {
+        dispatch(fetchData());
+    }, [dispatch]);
+
+    console.log(tourStore);
+    
     return (
         <div className="mx-auto w-full max-w-[1200px] px-2 md:px-6">
             <div className="mt-10 flex flex-col items-center justify-center w-full">
