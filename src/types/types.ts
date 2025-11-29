@@ -27,7 +27,6 @@ export interface Tour {
   basePrice: Money;
   discount?: Money | null;
   createdAt: string;
-
   categoryId: number;
 }
 
