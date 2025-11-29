@@ -1,71 +1,147 @@
-import React from "react";
+import React, { useState } from "react";
+import { Modal, Drawer } from "antd";
 import triploka from "../../../assets/logos/logo_tripoka.png";
 import promotion_icon from "../../../assets/icons/icon_promotion.png";
 
 const Header = () => {
+    const [currency, setCurrency] = useState("VND");
+    const [language, setLanguage] = useState("VI");
+    const [showModal, setShowModal] = useState(false);
+    const [showRegister, setShowRegister] = useState(false);
+    const [showLogin, setShowLogin] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+    const navItems = (
+        <>
+            <div
+                className="flex items-center space-x-1 text-gray-700 cursor-pointer text-sm hover:text-blue-500"
+                onClick={() => setShowModal((p) => !p)}
+            >
+                <span>
+                    {currency} | {language}
+                </span>
+            </div>
+            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600">
+                <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
+                Khuyến mãi
+            </a>
+            <div className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Hỗ trợ</div>
+            <a className="text-sm font-medium text-gray-700 hover:text-blue-500">Đặt chỗ của tôi</a>
+            <button
+                className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50"
+                onClick={() => setShowLogin(true)}
+            >
+                Đăng Nhập
+            </button>
+            <button
+                className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600"
+                onClick={() => setShowRegister(true)}
+            >
+                Đăng Ký
+            </button>
+        </>
+    );
+
     return (
         <div>
             <nav className="bg-gray-100 border-b border-gray-200">
-
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        
-                        <div className="shrink-0 flex items-center space-x-6">
-                            
-                            <div className="flex items-center">
-                                <img src={triploka} alt="Triploka" width={30}/>
-                                <a href="#" className="text-2xl font-bold text-gray-800 tracking-wider pl-2">Triploka</a>
-                            </div>
-
-                        
+                        <div className="flex items-center">
+                            <img src={triploka} alt="Triploka" width={30} />
+                            <a href="#" className="text-xl md:text-2xl font-bold text-gray-800 tracking-wider pl-2">
+                                Triploka
+                            </a>
                         </div>
-
-                        <div className="flex items-center space-x-6">
-                            
-                            <div className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 cursor-pointer text-sm">
-                                
-                                <div className="relative w-6 h-4 flex items-center justify-center bg-[#C8102E] rounded-sm shadow-sm overflow-hidden shrink-0">
-                                    <div className="star w-2 h-2" style={{
-                                        clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 67% 57%, 79% 91%, 50% 70%, 21% 91%, 33% 57%, 2% 35%, 39% 35%)',
-                                        backgroundColor: '#FFCD00',
-                                    }}></div>
-                                </div>
-                                
-                                <span>VND | VI</span>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <div className="hidden md:flex relative w-full md:w-auto">
+                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end space-x-2 md:space-x-6">
+                                {navItems}
                             </div>
-
-                            <a href="#" className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600">
-                                <img src={promotion_icon} alt="promotion" className="w-6 mr-1"/>
-                                Khuyến mãi
-                            </a>
-                            
-                            <div className="relative group cursor-pointer text-sm font-medium text-gray-700 hover:text-blue-500">
-                                <span className="flex items-center">
-                                    Hỗ trợ
-                                </span>
-                            </div>
-                            
-                            <a href="#" className="text-sm font-medium text-gray-700 hover:text-blue-500">Đặt chỗ của tôi</a>
-
-                            <a href="#" className="px-4 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50 transition duration-150 ease-in-out flex items-center">
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </div>
+                        <div className="md:hidden">
+                            <button
+                                className="p-2 rounded-lg text-gray-700 hover:bg-gray-200"
+                                onClick={() => setShowMobileMenu(true)}
+                                aria-label="Mở menu"
+                            >
+                                <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
-                                Đăng Nhập
-                            </a>
-                            
-                            <a href="#" className="px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition duration-150 ease-in-out">
-                                Đăng Ký
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
             </nav>
-
-          
+            <Drawer
+                placement="right"
+                open={showMobileMenu}
+                onClose={() => setShowMobileMenu(false)}
+                width={280}
+            >
+                <div className="flex flex-col gap-6">{navItems}</div>
+            </Drawer>
+            <Modal
+                open={showRegister}
+                onCancel={() => setShowRegister(false)}
+                footer={null}
+                centered
+                width={400}
+            >
+                <div className="w-full bg-white rounded-3xl overflow-hidden">
+                    <h2 className="text-center w-full text-3xl font-bold text-gray-800">Đăng ký</h2>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Email</label>
+                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Password</label>
+                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                        </div>
+                        <p className="text-xs text-center text-gray-500 px-4">
+                            Bằng cách tiếp tục, bạn đồng ý với
+                            <span className="text-blue-500"> Điều khoản và Điều kiện </span>
+                            và bạn đã đọc thông báo về
+                            <span className="text-blue-500"> Chính sách bảo vệ dữ liệu</span>.
+                        </p>
+                        <button className="w-full py-3 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500">Đăng Ký</button>
+                    </div>
+                </div>
+            </Modal>
+            <Modal
+                open={showLogin}
+                onCancel={() => setShowLogin(false)}
+                footer={null}
+                centered
+                width={400}
+            >
+                <div className="w-full bg-white rounded-3xl overflow-hidden">
+                    <h2 className="text-center text-3xl font-bold text-gray-800">Đăng nhập</h2>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Email</label>
+                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Password</label>
+                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                        </div>
+                        <p className="text-xs text-center text-gray-500 px-4">
+                            Bằng cách tiếp tục, bạn đồng ý với
+                            <span className="text-blue-500"> Điều khoản và Điều kiện </span>
+                            và bạn đã đọc thông báo về
+                            <span className="text-blue-500"> Chính sách bảo vệ dữ liệu</span>.
+                        </p>
+                        <button className="w-full py-3 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500">Đăng Nhập</button>
+                    </div>
+                </div>
+            </Modal>
         </div>
-    )
+    );
 };
 
 export default Header;
