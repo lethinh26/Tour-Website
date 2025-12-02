@@ -9,6 +9,7 @@ import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
 import AccountSettings from '../pages/Settings/SettingMain';
+import SettingPromotion from '../settings/SettingPromotion';
 
 const router = createBrowserRouter([
     {
@@ -36,13 +37,18 @@ const router = createBrowserRouter([
                 element: <TourDetailMain/>
             },
             {
-                path: 'tour/ticket/:id',
+                path: 'ticket/:id',
                 element: <TourTikket/>
             },    {
                 path: 'setting',
                 element: <AccountSettings/>
             },
 
+            },
+            {
+                path: '/setting/promotion',
+                element: <SettingPromotion/>
+            }
         ],
     },
 ]);
