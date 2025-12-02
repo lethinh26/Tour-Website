@@ -1,78 +1,75 @@
 import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../stores";
+import type { AppDispatch, StoreType } from "../stores";
 import { useEffect, useState } from "react";
-import { fetchDataPromotion } from "../../stores/slides/promotion.slice";
+import { fetchDataPromotion } from "../stores/slides/promotion.slice";
 import { Button, Pagination } from "antd";
 import { useNavigate } from "react-router";
 
-export default function PromotionMain() {
-    const navigate = useNavigate()
-
-    const formatDateToString = (stringData: string) => {
-        const date = new Date(stringData)
-        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
-    }
-
-    const checkExpiry = (startDate : string, endDate: string) => {
-        if(!endDate){
-            return true
-        }
-        const date1 = new Date(startDate)
-        const date2 = new Date(endDate)
-        const now = new Date()
-        return date1.getTime() < now.getTime() && date2.getTime() > now.getTime()
-    }
-
-
-    const dispatch = useDispatch<AppDispatch>()
-    useEffect(() => {
-        dispatch(fetchDataPromotion())
-    }, [dispatch])
-    const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
-    console.log(promotions);
-
-    const pro = promotions.map(item => {
-        return {
-            type: item.type,
-            name: item.name,
-            startAt: item.startAt,
-            endAt: item.endAt,
-            color: "blue",
-            description: item.description,
-            code: item.code,
-        }
-    })
-
-    const pageSize = 6
-    const [currentPage, setCurrentPage] = useState(1)
-    console.log(currentPage);
+export default function SettingPromotion() {
     
+        const formatDateToString = (stringData: string) => {
+            const date = new Date(stringData)
+            return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+        }
+    
+        const checkExpiry = (startDate : string, endDate: string) => {
+            if(!endDate){
+                return true
+            }
+            const date1 = new Date(startDate)
+            const date2 = new Date(endDate)
+            const now = new Date()
+            return date1.getTime() < now.getTime() && date2.getTime() > now.getTime()
+        }
+    
+    
+        const dispatch = useDispatch<AppDispatch>()
+        useEffect(() => {
+            dispatch(fetchDataPromotion())
+        }, [dispatch])
+        const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
+        console.log(promotions);
+    
+        const pro = promotions.map(item => {
+            return {
+                type: item.type,
+                name: item.name,
+                startAt: item.startAt,
+                endAt: item.endAt,
+                color: "blue",
+                description: item.description,
+                code: item.code,
+            }
+        })
+    
+        const pageSize = 6
+        const [currentPage, setCurrentPage] = useState(1)
+        console.log(currentPage);
+        const navigate = useNavigate()
+        
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="bg-linear-to-r from-blue-500 to-blue-400 text-white px-[150px] pb-8 pt-2 rounded-b-3xl">
-                <h1 className="text-2xl font-bold mb-2">
-                    Mã giảm giá Triploka ở đây chứ đâu xa!
-                </h1>
-                <p className="text-blue-100 text-sm">Nhận hết mọi ưu đãi hôm nay</p>
-            </div>
-
-            <div className="bg-white shadow-sm top-0 px-[150px] flex justify-between">
+        <div className='h-screen'>
+            <div className="bg-white shadow-sm py-3 px-[150px] flex justify-between text-2xl">
                 <div className="flex items-center justify-between py-3">
                     <h2 className="font-semibold flex items-center gap-2">
                         <button className="text-xl">🏷️</button>
-                        Phiếu giảm giá
+                        Kho Khuyến Mãi
                     </h2>
                 </div>
                 <div className="flex items-center justify-between py-3">
-                    <Button color="primary" variant="solid" onClick={() => {
-                        navigate('/setting/promotion')
-                    }}>Kho Khuyến Mãi</Button>
+                    <Button color="danger" variant="solid" onClick={() => {
+                        navigate('/promotion')
+                    }}
+                    >
+                        Danh Sách Khuyến Mãi
+                    </Button>
                 </div>
+                
             </div>
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-[150px]">
                 {pro.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                .filter(item => checkExpiry(item.startAt, item.endAt))
+                    .filter(item => checkExpiry(item.startAt, item.endAt))
                     .map((promo, index) => (
                         <div
                             key={index}
@@ -120,14 +117,14 @@ export default function PromotionMain() {
             </div>
             {/* pagination */}
             <div className="flex justify-center items-center gap-2 py-6">
-                <Pagination 
-                align="center" 
-                defaultCurrent={currentPage} 
-                total={pro.length} 
-                onChange={setCurrentPage}
-                pageSize={pageSize}
+                <Pagination
+                    align="center"
+                    defaultCurrent={currentPage}
+                    total={pro.length}
+                    onChange={setCurrentPage}
+                    pageSize={pageSize}
                 />
             </div>
         </div>
-    );
+    )
 }
