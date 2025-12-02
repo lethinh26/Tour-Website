@@ -8,6 +8,7 @@ import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
+import AccountSettings from '../pages/Settings/SettingMain';
 
 const router = createBrowserRouter([
     {
@@ -37,7 +38,11 @@ const router = createBrowserRouter([
             {
                 path: 'tour/ticket/:id',
                 element: <TourTikket/>
-            }
+            },    {
+                path: 'setting',
+                element: <AccountSettings/>
+            },
+
         ],
     },
 ]);
