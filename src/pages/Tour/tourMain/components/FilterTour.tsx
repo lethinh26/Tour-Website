@@ -1,61 +1,32 @@
 import { useState } from "react";
-import { Collapse, Checkbox, Button } from "antd";
+import { Collapse, Button, Radio } from "antd";
 import { FilterOutlined, ReloadOutlined } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import type { StoreType } from "../../../../stores";
 
 const { Panel } = Collapse;
 
-export default function FilterTour() {
+export default function FilterTour({setIdCategory} : {setIdCategory: (id : number) => void}) {
+    
     const [collapsed, setCollapsed] = useState(false);
+    const { categories } = useSelector((state: StoreType) => state.tourReducer);
+    const options = categories.map(cat => cat.name);
 
     const panels = [
         {
             key: "tour",
             label: <span className="font-medium">Tour</span>,
             color: "green",
-            options: [
-                "Tour ngắm cảnh",
-                "Tour theo chủ đề",
-                "Tham quan các đảo",
-            ],
-        },
-        {
-            key: "kids",
-            label: <span className="font-medium">Khu vui chơi cho trẻ em</span>,
-            color: "blue",
-            options: [
-                "Trò chơi Arcade",
-                "Sân chơi trẻ em",
-                "Trò chơi trốn thoát",
-                "Các khu vui chơi khác",
-            ],
-        },
-        {
-            key: "spa",
-            label: <span className="font-medium">Spa & thư giãn</span>,
-            color: "purple",
-            options: [
-                "Massage",
-                "Xông hơi",
-            ],
-        },
-        {
-            key: "food",
-            label: <span className="font-medium">Ẩm thực</span>,
-            color: "orange",
-            options: [
-                "Nhà hàng",
-                "Quán ăn",
-                "Ẩm thực đường phố",
-            ],
+            options: options,
         },
     ];
 
     return (
         <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-                <h2 className="font-semibold text-base flex items-center gap-2">
+                <h3 className="font-semibold text-base flex items-center gap-2">
                     <FilterOutlined /> Tour & Hoạt động
-                </h2>
+                </h3>
                 <div className="flex items-center gap-2">
                     <Button
                         type="link"
@@ -86,11 +57,12 @@ export default function FilterTour() {
                 <Collapse defaultActiveKey={["tour"]} ghost>
                     {panels.map(panel => (
                         <Panel header={panel.label} key={panel.key} className="bg-white">
-                            <Checkbox.Group className="flex flex-col gap-2 pl-2">
+                            <Radio.Group className="flex flex-col gap-2 pl-2"
+                            onChange={(e) => {setIdCategory(categories.find(cat => cat.name === e.target.value)!.id || 0)}}>
                                 {panel.options.map(opt => (
-                                    <Checkbox key={opt} value={opt} className={`accent-${panel.color}-500`}>{opt}</Checkbox>
+                                    <Radio key={opt} value={opt} className={`accent-${panel.color}-500`}>{opt} </Radio>
                                 ))}
-                            </Checkbox.Group>
+                            </Radio.Group>
                         </Panel>
                     ))}
                 </Collapse>
