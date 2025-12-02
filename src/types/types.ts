@@ -24,10 +24,18 @@ export interface Tour {
   id: number;
   name: string;
   description: string;
+  information: string;
+  address: string,
   basePrice: Money;
   discount?: Money | null;
   createdAt: string;
   categoryId: number;
+  locationId: number
+}
+
+export interface Location {
+  id: number,
+  name: string
 }
 
 export interface TourImage {
@@ -87,3 +95,20 @@ export interface Review {
   userId: number;
 }
 
+export interface PromotionUsage {
+  id : number;
+  userId: number;
+  promotionId: number;
+}
+
+export interface Promotion {
+  id: number;
+  discount: number;
+  amount: number;
+  code: string;
+  type: 'new' | 'all';
+  name: string;
+  description: string;
+  startAt: string;
+  endAt: string;
+}

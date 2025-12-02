@@ -8,6 +8,7 @@ import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
+import SettingPromotion from '../settings/SettingPromotion';
 
 const router = createBrowserRouter([
     {
@@ -35,8 +36,12 @@ const router = createBrowserRouter([
                 element: <TourDetailMain/>
             },
             {
-                path: 'tour/ticket/:id',
+                path: 'ticket/:id',
                 element: <TourTikket/>
+            },
+            {
+                path: '/setting/promotion',
+                element: <SettingPromotion/>
             }
         ],
     },
