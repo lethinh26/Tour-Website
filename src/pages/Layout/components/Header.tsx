@@ -10,7 +10,77 @@ const Header = () => {
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
+    const [formRegister, setFormRegister]=useState({
+        email:"",
+        password:"",
+        confirm:"",
+    })
+    const [error, setError]= useState({
+        email:"",
+        password:"",
+confirm:"",
+    })
+      const [formLogin, setFormLogin] = useState({
+    email: "",
+    password: "",
+  });
 
+  const [errorLogin, setErrorLogin] = useState({
+    email: "",
+    password: "",
+  });
+const validateCheckRegister = ()=>{
+     const newError = {
+             email:"",
+
+      password: "",
+      confirm: "",
+    };
+    let isValid = true;
+    if(!formRegister.email.trim()){
+        newError.email= "Không được để trống email"
+        isValid= false;
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formRegister.email)) {
+      newError.email = "Email phải đúng định dạng";
+      isValid = false;
+    }
+     if(!formRegister.password.trim()){
+        newError.password= "Không được để trống mật khẩu"
+        isValid= false;
+    }
+     if(formRegister.confirm!== formRegister.password){
+        newError.password= "Mật khẩu không trùng nhau"
+        isValid= false;
+    }else if (formRegister.password.length < 6) {
+      newError.password = "Mật khẩu tối thiểu 6 ký tự";
+      isValid = false;
+    }
+    setError(newError);
+    return isValid;
+}
+const validateCheckLogin = ()=>{
+     const newError = {
+             email:"",
+
+      password: "",
+      confirm: "",
+    };
+    let isValid = true;
+    if(!formLogin.email.trim()){
+        newError.email= "Không được để trống email"
+        isValid= false;
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formLogin.email)) {
+      newError.email = "Email phải đúng định dạng";
+      isValid = false;
+    }
+     if(!formLogin.password.trim()){
+        newError.password= "Không được để trống mật khẩu"
+        isValid= false;
+    }
+     
+    setError(newError);
+    return isValid;
+}
     const navItems = (
         <>
             <div
@@ -88,19 +158,26 @@ const Header = () => {
                 width={400}
             >
                 <div className="w-full bg-white rounded-3xl overflow-hidden">
+                    <form >
                     <h2 className="text-center w-full text-3xl font-bold text-gray-800">Đăng ký</h2>
                     <div className="p-6 space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Email</label>
-                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formRegister.email} onChange={(e) => {
+                setFormRegister((prev) => { return { ...prev, email: e.target.value } })
+              }} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Password</label>
-                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formRegister.password} onChange={(e) => {
+                setFormRegister((prev) => { return { ...prev, password: e.target.value } })
+              }}/>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formRegister.confirm} onChange={(e) => {
+                setFormRegister((prev) => { return { ...prev, confirm: e.target.value } })
+              }} />
                         </div>
                         <p className="text-xs text-center text-gray-500 px-4">
                             Bằng cách tiếp tục, bạn đồng ý với
@@ -110,6 +187,7 @@ const Header = () => {
                         </p>
                         <button className="w-full py-3 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500">Đăng Ký</button>
                     </div>
+                    </form>
                 </div>
             </Modal>
             <Modal
@@ -124,11 +202,15 @@ const Header = () => {
                     <div className="p-6 space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Email</label>
-                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formLogin.email} onChange={(e) => {
+                setFormLogin((prev) => { return { ...prev, email: e.target.value } })
+              }} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Password</label>
-                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" />
+                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formLogin.password} onChange={(e) => {
+                setFormLogin((prev) => { return { ...prev, password: e.target.value } })
+              }}/>
                         </div>
                         <p className="text-xs text-center text-gray-500 px-4">
                             Bằng cách tiếp tục, bạn đồng ý với
