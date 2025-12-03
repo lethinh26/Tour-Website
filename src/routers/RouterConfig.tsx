@@ -8,6 +8,15 @@ import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
+import NotFoundPage from '../pages/404';
+import AdminLayout from '../pages/Admin/AdminLayout';
+import Dashboard from '../pages/Admin/components/Dashboard';
+import LocationManager from '../pages/Admin/components/LocationManager';
+import CategoryManager from '../pages/Admin/components/CategoryManager';
+import PromotionManager  from '../pages/Admin/components/PromotionManager';
+import TourList from '../pages/Admin/components/TourList';
+import TourImageManager from '../pages/Admin/components/TourImageManager';
+import TourDepartureManager from '../pages/Admin/components/TourDepartureManager';
 
 const router = createBrowserRouter([
     {
@@ -37,7 +46,49 @@ const router = createBrowserRouter([
             {
                 path: 'tour/ticket/:id',
                 element: <TourTikket/>
+            },
+            {
+                path: "*",
+                element: <NotFoundPage />,
             }
+        ],
+    },
+    {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+            {
+                index: true,
+                element: <Dashboard />,
+            },
+            {
+                path: "tour-manager/tours",
+                element: <TourList/>
+            },
+            {
+                path: "tour-manager/image",
+                element: <TourImageManager/>
+            },
+            {
+                path: "tour-manager/departure",
+                element: <TourDepartureManager/>
+            },
+            {
+                path: "category-manager",
+                element: <CategoryManager />,
+            },
+            {
+                path: "location-manager",
+                element: <LocationManager />,
+            },
+            {
+                path: "promotion-manager",
+                element: <PromotionManager />,
+            },
+            {
+                path: "booking-manager",
+                element: <div className="p-8"><h1 className="text-2xl font-bold">Booking Manager</h1></div>,
+            },
         ],
     },
 ]);
