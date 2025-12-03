@@ -1,7 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { Input, Button } from "antd";
+import axios from "axios";
 
 export default function AccountSettings() {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [status, setStatus] = useState("");
+  console.log(status);
+
+  const handleSubmitApi = async () => {
+    console.log(123);
+
+    const token = localStorage.getItem("Token");
+
+    if (token == null) {
+      return;
+    }
+    setStatus("Loading");
+    const res = await axios.patch("http://localhost:3000/api/auth/changepass", {
+      token: token,
+      oldPassword,
+      newPassword,
+    });
+    const { tokens } = res.data;
+    if (!tokens) {
+      setStatus("error");
+    } else {
+      localStorage.setItem("Token", token);
+      setStatus("Success");
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-100 p-6 flex justify-center items-start">
       <div className="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-6 flex gap-6">
@@ -45,10 +74,22 @@ export default function AccountSettings() {
           <div className="bg-gray-50 p-6 rounded-xl shadow-sm mb-6">
             <h3 className="text-lg font-semibold mb-4">Đổi mật khẩu</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <Input.Password placeholder="Mật khẩu cũ" />
-              <Input.Password placeholder="Mật khẩu mới" />
+              <Input.Password
+                placeholder="Mật khẩu cũ"
+                value={oldPassword}
+                onChange={(s) => setOldPassword(s.target.value)}
+              />
+              <Input.Password
+                placeholder="Mật khẩu mới"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
             </div>
-            <Button type="primary" className="rounded-lg px-8">
+            <Button
+              type="primary"
+              className="rounded-lg px-8"
+              onClick={() => handleSubmitApi()}
+            >
               Lưu
             </Button>
           </div>
@@ -58,7 +99,8 @@ export default function AccountSettings() {
             <div>
               <h3 className="text-lg font-semibold">Xóa tài khoản</h3>
               <p className="text-gray-500 text-sm mt-1 max-w-lg">
-                Sau khi tài khoản của bạn bị xóa, bạn sẽ không thể phục hồi tài khoản hoặc dữ liệu của mình.
+                Sau khi tài khoản của bạn bị xóa, bạn sẽ không thể phục hồi tài
+                khoản hoặc dữ liệu của mình.
               </p>
             </div>
             <Button danger type="primary" className="rounded-lg">
