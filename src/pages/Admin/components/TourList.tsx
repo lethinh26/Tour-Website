@@ -268,7 +268,6 @@ const TourList = () => {
           <Steps current={currentStep} items={steps} className="mb-6" />
           
           <Form form={form} layout="vertical">
-            {/* Step 1: Thông tin cơ bản */}
             <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
               <Form.Item
                 name="name"
@@ -353,7 +352,6 @@ const TourList = () => {
               </div>
             </div>
 
-            {/* Step 2: Giới thiệu & Thông tin */}
             <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
               <Form.Item
                 name="description"

@@ -17,6 +17,7 @@ import PromotionManager  from '../pages/Admin/components/PromotionManager';
 import TourList from '../pages/Admin/components/TourList';
 import TourImageManager from '../pages/Admin/components/TourImageManager';
 import TourDepartureManager from '../pages/Admin/components/TourDepartureManager';
+import FavoritesPage from '../pages/Layout/components/FavoritesPage';
 
 const router = createBrowserRouter([
     {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
             {
                 path: 'tour/ticket/:id',
                 element: <TourTikket/>
+            },
+            {
+                path: 'favorite-tour',
+                element: <FavoritesPage/>
             },
             {
                 path: "*",
