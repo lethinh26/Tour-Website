@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Modal, Drawer } from "antd";
 import triploka from "../../../assets/logos/logo_tripoka.png";
 import promotion_icon from "../../../assets/icons/icon_promotion.png";
+import { useNavigate } from "react-router";
 
 const Header = () => {
     const [currency, setCurrency] = useState("VND");
@@ -10,6 +11,8 @@ const Header = () => {
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+    const navigate = useNavigate();
 
     const navItems = (
         <>
@@ -21,12 +24,13 @@ const Header = () => {
                     {currency} | {language}
                 </span>
             </div>
-            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600">
+            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600 cursor-pointer">
                 <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
                 Khuyến mãi
             </a>
             <div className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Hỗ trợ</div>
-            <a className="text-sm font-medium text-gray-700 hover:text-blue-500">Đặt chỗ của tôi</a>
+            <a className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Đặt chỗ của tôi</a>
+            <a className="text-sm font-medium text-amber-500 hover:text-amber-700 cursor-pointer" onClick={() => navigate("/favorite-tour")}>Tour yêu thích</a>
             <button
                 className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50"
                 onClick={() => setShowLogin(true)}
@@ -43,18 +47,18 @@ const Header = () => {
     );
 
     return (
-        <div>
+        <div className="mb-26">
             <nav className="bg-gray-100 border-b border-gray-200 fixed top-0 left-0 right-0 w-full z-50 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">
                             <img src={triploka} alt="Triploka" width={30} />
-                            <a href="#" className="text-xl md:text-2xl font-bold text-gray-800 tracking-wider pl-2">
+                            <span onClick={() => navigate("/")} className="text-xl md:text-2xl font-bold text-gray-800 tracking-wider pl-2 cursor-pointer">
                                 Triploka
-                            </a>
+                            </span>
                         </div>
                         <div className="hidden md:flex relative w-full md:w-auto">
-                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end space-x-2 md:space-x-6">
+                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end space-x-2 md:space-x-6 cursor-pointer">
                                 {navItems}
                             </div>
                         </div>
