@@ -8,7 +8,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  passwordHash: string;
+  password: string;
   role: Role;
   createdAt: string;
 }

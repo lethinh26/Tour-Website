@@ -9,7 +9,7 @@ import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
 import AccountSettings from '../pages/Settings/SettingMain';
-import SettingPromotion from '../settings/SettingPromotion';
+import SettingPromotion from '../pages/Settings/SettingPromotion';
 
 const router = createBrowserRouter([
     {
@@ -30,29 +30,27 @@ const router = createBrowserRouter([
             },
             {
                 path: "payment/:id",
-                element: <QRPaymentPage/>,
+                element: <QRPaymentPage />,
             },
             {
                 path: 'tour/:id',
-                element: <TourDetailMain/>
+                element: <TourDetailMain />
             },
             {
                 path: 'ticket/:id',
-                element: <TourTikket/>
-            },    {
+                element: <TourTikket />
+            }, {
                 path: 'setting',
-                element: <AccountSettings/>
-            },
-
+                element: <AccountSettings />
             },
             {
                 path: '/setting/promotion',
-                element: <SettingPromotion/>
+                element: <SettingPromotion />
             }
         ],
     },
 ]);
 
 export const RouterConfig = () => {
-  return <RouterProvider router={router} />;
+    return <RouterProvider router={router} />;
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import triploka from "../../../assets/logos/logo_tripoka.png";
 import vietqr from "../../../assets/logos/logo_vietqr.png";
 import casso from "../../../assets/logos/logo_casso.png";
