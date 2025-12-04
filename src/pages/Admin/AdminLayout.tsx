@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
-import { Layout, Menu } from "antd";
+import { App, Layout, Menu } from "antd";
 import {
     DashboardOutlined,
     EnvironmentOutlined,
@@ -38,58 +38,60 @@ const AdminLayout = () => {
     ];
 
     return (
-        <Layout className="min-h-screen relative">
-            <Sider
-                collapsible
-                collapsed={collapsed}
-                onCollapse={(value) => setCollapsed(value)}
-                theme="light"
-                width={256}
-                style={{
-                    overflow: "auto",
-                    height: "100vh",
-                    position: "fixed",
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                }}
-            >
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-center gap-2">
-                        <img src={logo_triploka} alt="Triploka" width={30} />
-                        {!collapsed && <span className="text-2xl font-bold text-gray-800">Triploka</span>}
-                    </div>
-                </div>
-
-                <Menu
-                    mode="inline"
-                    selectedKeys={[location.pathname]}
-                    items={menuItems}
-                    onClick={({ key }) => navigate(key)}
-                    className="border-0 mt-4"
-                />
-
-                {!collapsed && (
-                    <div className="absolute bottom-10 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-                        <div className="flex items-center gap-3 px-2 justify-between">
-                            <div className="flex justify-center items-center gap-3">
-                                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                                    <UserOutlined className="text-gray-600" />
-                                </div>
-                                <span className="text-sm font-medium text-gray-700">Name</span>
-                            </div>
-                            <LogoutOutlined className="text-red-400! text-xl! font-bold! cursor-pointer!" />
+        <App>
+            <Layout className="min-h-screen relative">
+                <Sider
+                    collapsible
+                    collapsed={collapsed}
+                    onCollapse={(value) => setCollapsed(value)}
+                    theme="light"
+                    width={256}
+                    style={{
+                        overflow: "auto",
+                        height: "100vh",
+                        position: "fixed",
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                    }}
+                >
+                    <div className="p-6 border-b border-gray-200">
+                        <div className="flex items-center gap-2">
+                            <img src={logo_triploka} alt="Triploka" width={30} />
+                            {!collapsed && <span className="text-2xl font-bold text-gray-800">Triploka</span>}
                         </div>
                     </div>
-                )}
-            </Sider>
 
-            <Layout style={{ marginLeft: collapsed ? 80 : 256, transition: "margin-left 0.2s", height: "100%" }}>
-                <Content className="bg-gray-50">
-                    <Outlet />
-                </Content>
+                    <Menu
+                        mode="inline"
+                        selectedKeys={[location.pathname]}
+                        items={menuItems}
+                        onClick={({ key }) => navigate(key)}
+                        className="border-0 mt-4"
+                    />
+
+                    {!collapsed && (
+                        <div className="absolute bottom-10 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+                            <div className="flex items-center gap-3 px-2 justify-between">
+                                <div className="flex justify-center items-center gap-3">
+                                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                        <UserOutlined className="text-gray-600" />
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700">Name</span>
+                                </div>
+                                <LogoutOutlined className="text-red-400! text-xl! font-bold! cursor-pointer!" />
+                            </div>
+                        </div>
+                    )}
+                </Sider>
+
+                <Layout style={{ marginLeft: collapsed ? 80 : 256, transition: "margin-left 0.2s", height: "100%" }}>
+                    <Content className="bg-gray-50">
+                        <Outlet />
+                    </Content>
+                </Layout>
             </Layout>
-        </Layout>
+        </App>
     );
 };
 
