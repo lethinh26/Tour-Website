@@ -16,8 +16,8 @@ import CategoryManager from '../pages/Admin/components/CategoryManager';
 import PromotionManager  from '../pages/Admin/components/PromotionManager';
 import TourList from '../pages/Admin/components/TourList';
 import TourImageManager from '../pages/Admin/components/TourImageManager';
-import TourDepartureManager from '../pages/Admin/components/TourDepartureManager';
 import FavoritesPage from '../pages/Layout/components/FavoritesPage';
+import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
 
 const router = createBrowserRouter([
     {
@@ -76,7 +76,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "tour-manager/departure",
-                element: <TourDepartureManager/>
+                element: <TourScheduleManager/>
             },
             {
                 path: "category-manager",

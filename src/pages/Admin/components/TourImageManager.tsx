@@ -512,13 +512,5 @@ const TourImageManager = () => {
   );
 };
 
-const TourImageManagerWrapper = () => {
-  return (
-    <App>
-      <TourImageManager />
-    </App>
-  );
-};
 
-export default TourImageManagerWrapper;
-
+export default TourImageManager
