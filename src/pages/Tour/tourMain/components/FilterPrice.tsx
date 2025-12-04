@@ -9,9 +9,8 @@ const marks = {
     4000000: "4tr+",
 };
 
-export default function FilterPrice() {
+export default function FilterPrice({range, setRange} : {range: number[], setRange: (value: number[]) => void}) {
     const [isOpen, setIsOpen] = useState(true);
-    const [range, setRange] = useState([0, 4000000]);
 
     return (
         <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -44,7 +43,6 @@ export default function FilterPrice() {
                             marks={marks}
                             value={range}
                             onChange={setRange}
-                            tipFormatter={(value) => `${value.toLocaleString()} VND`}
                         />
                     </div>
 

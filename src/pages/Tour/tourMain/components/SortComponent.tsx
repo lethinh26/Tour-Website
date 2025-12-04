@@ -1,30 +1,28 @@
-import { useState } from "react";
+import { Select } from "antd";
 
-export default function SortComponent() {
-    const [showOptions, setShowOptions] = useState(false);
+export default function SortComponent({setWayToSort}: {setWayToSort: (value: number) => void}) {
 
-    const toggleOptions = () => {
-        setShowOptions(!showOptions);
-    };
+
     return (
-        <div className="flex justify-between font-bold text-gray-600">
+        <div className="flex justify-between items-center font-bold text-gray-600">
             <p>Về 48 kết quả</p>
+
             <div className="flex gap-3 items-center justify-center">
-                Xếp theo:
-                <div className="w-50 relative">
-                    <button className="absolute top-2 right-0" onClick={toggleOptions}>
-                        <span>🔽</span>
-                    </button>
-                    <div className="border border-gray-400 rounded-md p-2">Mặc định</div>
-                    {showOptions && <div className="absolute top-10 left-0 w-full border border-gray-400 rounded-md bg-white z-10">
-                        <div className="p-1 hover:bg-gray-200 cursor-pointer">Mặc định</div>
-                        <div className="p-1 hover:bg-gray-200 cursor-pointer">Giá thấp đến cao</div>
-                        <div className="p-1 hover:bg-gray-200 cursor-pointer">Giá cao đến thấp</div>
-                        <div className="p-1 hover:bg-gray-200 cursor-pointer">Đánh giá cao đến thấp</div>
-                        <div className="p-1 hover:bg-gray-200 cursor-pointer">Đánh giá thấp đến cao</div>
-                    </div>}
-                </div>
+                <span>Xếp theo:</span>
+
+                <Select
+                    defaultValue="default"
+                    style={{ width: 200 }}
+                    onChange={(value) => setWayToSort(Number(value))}
+                    options={[
+                        { value: 0, label: 'Mặc định' },
+                        { value: 1, label: 'Giá thấp đến cao' },
+                        { value: 2, label: 'Giá cao đến thấp' },
+                        { value: 3, label: 'Đánh giá cao đến thấp' },
+                        { value: 4, label: 'Đánh giá thấp đến cao' },
+                    ]}
+                />
             </div>
         </div>
-    )
+    );
 }
