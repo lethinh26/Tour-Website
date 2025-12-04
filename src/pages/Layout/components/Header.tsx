@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, StoreType } from "../../../stores";
 import { userLogin, userRegister } from "../../../stores/slides/userLoginRegister.slice";
 import Account from "./Account";
+import { useNavigate } from "react-router";
 
 const Header = () => {
     const [currency] = useState("VND");
@@ -22,6 +23,18 @@ const Header = () => {
         dispatch(userLogin(values))        
         setShowLogin(false);
         formLogin.resetFields();
+    const navigate = useNavigate();
+
+  const [errorLogin, setErrorLogin] = useState({
+    email: "",
+    password: "",
+  });
+const validateCheckRegister = ()=>{
+     const newError = {
+             email:"",
+
+      password: "",
+      confirm: "",
     };
 
     const handleRegister = (values: { name: string, email: string, password: string }) => {
@@ -44,7 +57,7 @@ const Header = () => {
                     {currency} | {language}
                 </span>
             </div>
-            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600">
+            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600 cursor-pointer">
                 <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
                 Khuyến mãi
             </a>
@@ -71,18 +84,18 @@ const Header = () => {
         </>
     );
     return (
-        <div>
-            <nav className="bg-gray-100 border-b border-gray-200">
+        <div className="mb-26">
+            <nav className="bg-gray-100 border-b border-gray-200 fixed top-0 left-0 right-0 w-full z-50 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">
                             <img src={triploka} alt="Triploka" width={30} />
-                            <a href="#" className="text-xl md:text-2xl font-bold text-gray-800 tracking-wider pl-2">
+                            <span onClick={() => navigate("/")} className="text-xl md:text-2xl font-bold text-gray-800 tracking-wider pl-2 cursor-pointer">
                                 Triploka
-                            </a>
+                            </span>
                         </div>
                         <div className="hidden md:flex relative w-full md:w-auto">
-                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end space-x-2 md:space-x-6">
+                            <div className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end space-x-2 md:space-x-6 cursor-pointer">
                                 {navItems}
                             </div>
                         </div>

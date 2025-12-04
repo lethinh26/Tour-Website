@@ -2,6 +2,7 @@ export type Role = 'USER' | 'ADMIN';
 export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED';
 export type PaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED';
 export type PaymentMethod = 'CASH' | 'BANK_TRANSFER';
+export type Promo = 'NEW' | 'ALL';
 export type Money = number;
 
 export interface User {
