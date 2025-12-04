@@ -19,7 +19,7 @@ import TourImageManager from '../pages/Admin/components/TourImageManager';
 import FavoritesPage from '../pages/Layout/components/FavoritesPage';
 import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
 import AccountSettings from '../pages/Settings/SettingMain';
-import SettingPromotion from '../settings/SettingPromotion';
+import SettingPromotion from '../pages/Settings/SettingPromotion';
 
 const router = createBrowserRouter([
     {
@@ -40,14 +40,16 @@ const router = createBrowserRouter([
             },
             {
                 path: "payment/:id",
-                element: <QRPaymentPage/>,
+                element: <QRPaymentPage />,
             },
             {
                 path: 'tour/:id',
-                element: <TourDetailMain/>
+                element: <TourDetailMain />
             },
             {
                 path: 'ticket/:id',
+                element: <TourTikket />
+            }, {
                 element: <TourTikket/>
             },
             {
@@ -59,13 +61,11 @@ const router = createBrowserRouter([
                 element: <NotFoundPage />,
             },    {
                 path: 'setting',
-                element: <AccountSettings/>
-            },
-
+                element: <AccountSettings />
             },
             {
                 path: '/setting/promotion',
-                element: <SettingPromotion/>
+                element: <SettingPromotion />
             }
         ],
     },
@@ -110,5 +110,5 @@ const router = createBrowserRouter([
 ]);
 
 export const RouterConfig = () => {
-  return <RouterProvider router={router} />;
+    return <RouterProvider router={router} />;
 };

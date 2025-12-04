@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../stores";
+import type { AppDispatch, StoreType } from "../../stores";
 import { useEffect, useState } from "react";
-import { fetchDataPromotion } from "../stores/slides/promotion.slice";
+import { fetchDataPromotion } from "../../stores/slides/promotion.slice";
 import { Button, Pagination } from "antd";
 import { useNavigate } from "react-router";
 

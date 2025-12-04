@@ -1,31 +1,28 @@
-import React, { useState } from "react";
-import { Modal, Drawer } from "antd";
+import { useEffect, useState } from "react";
+import { Modal, Drawer, Form, Input, Button } from "antd";
 import triploka from "../../../assets/logos/logo_tripoka.png";
 import promotion_icon from "../../../assets/icons/icon_promotion.png";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, StoreType } from "../../../stores";
+import { userLogin, userRegister } from "../../../stores/slides/userLoginRegister.slice";
+import Account from "./Account";
 import { useNavigate } from "react-router";
 
 const Header = () => {
-    const [currency, setCurrency] = useState("VND");
-    const [language, setLanguage] = useState("VI");
-    const [showModal, setShowModal] = useState(false);
+    const [currency] = useState("VND");
+    const [language] = useState("VI");
+    const { status, token } = useSelector((state: StoreType) => state.userReducer)
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
-    const [formRegister, setFormRegister]=useState({
-        email:"",
-        password:"",
-        confirm:"",
-    })
-    const [error, setError]= useState({
-        email:"",
-        password:"",
-confirm:"",
-    })
-      const [formLogin, setFormLogin] = useState({
-    email: "",
-    password: "",
-  });
+    const [formLogin] = Form.useForm();
+    const [formRegister] = Form.useForm();
+    const dispatch = useDispatch<AppDispatch>()
 
+    const handleLogin = (values: { email: string, password: string }) => {
+        dispatch(userLogin(values))        
+        setShowLogin(false);
+        formLogin.resetFields();
     const navigate = useNavigate();
 
   const [errorLogin, setErrorLogin] = useState({
@@ -39,56 +36,22 @@ const validateCheckRegister = ()=>{
       password: "",
       confirm: "",
     };
-    let isValid = true;
-    if(!formRegister.email.trim()){
-        newError.email= "Không được để trống email"
-        isValid= false;
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formRegister.email)) {
-      newError.email = "Email phải đúng định dạng";
-      isValid = false;
-    }
-     if(!formRegister.password.trim()){
-        newError.password= "Không được để trống mật khẩu"
-        isValid= false;
-    }
-     if(formRegister.confirm!== formRegister.password){
-        newError.password= "Mật khẩu không trùng nhau"
-        isValid= false;
-    }else if (formRegister.password.length < 6) {
-      newError.password = "Mật khẩu tối thiểu 6 ký tự";
-      isValid = false;
-    }
-    setError(newError);
-    return isValid;
-}
-const validateCheckLogin = ()=>{
-     const newError = {
-             email:"",
 
-      password: "",
-      confirm: "",
+    const handleRegister = (values: { name: string, email: string, password: string }) => {
+        console.log('Register values:', values);
+        dispatch(userRegister(values))
+        setShowRegister(false);
+        formRegister.resetFields();
     };
-    let isValid = true;
-    if(!formLogin.email.trim()){
-        newError.email= "Không được để trống email"
-        isValid= false;
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formLogin.email)) {
-      newError.email = "Email phải đúng định dạng";
-      isValid = false;
-    }
-     if(!formLogin.password.trim()){
-        newError.password= "Không được để trống mật khẩu"
-        isValid= false;
-    }
-     
-    setError(newError);
-    return isValid;
-}
+
+    useEffect(() => {
+        localStorage.setItem('token', token)
+    }, [status, token])
+
     const navItems = (
         <>
             <div
                 className="flex items-center space-x-1 text-gray-700 cursor-pointer text-sm hover:text-blue-500"
-                onClick={() => setShowModal((p) => !p)}
             >
                 <span>
                     {currency} | {language}
@@ -99,23 +62,27 @@ const validateCheckLogin = ()=>{
                 Khuyến mãi
             </a>
             <div className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Hỗ trợ</div>
-            <a className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Đặt chỗ của tôi</a>
-            <a className="text-sm font-medium text-amber-500 hover:text-amber-700 cursor-pointer" onClick={() => navigate("/favorite-tour")}>Tour yêu thích</a>
-            <button
-                className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50"
-                onClick={() => setShowLogin(true)}
-            >
-                Đăng Nhập
-            </button>
-            <button
-                className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600"
-                onClick={() => setShowRegister(true)}
-            >
-                Đăng Ký
-            </button>
+            <a className="text-sm font-medium text-gray-700 hover:text-blue-500">Đặt chỗ của tôi</a>
+            {status !== 'success' ? <>
+                <button
+                    className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50"
+                    onClick={() => setShowLogin(true)}
+                >
+                    Đăng Nhập
+                </button>
+                <button
+                    className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600"
+                    onClick={() => setShowRegister(true)}
+                >
+                    Đăng Ký
+                </button>
+            </> :
+                <>
+                    <Account />
+                </>
+            }
         </>
     );
-
     return (
         <div className="mb-26">
             <nav className="bg-gray-100 border-b border-gray-200 fixed top-0 left-0 right-0 w-full z-50 shadow-sm">
@@ -154,78 +121,175 @@ const validateCheckLogin = ()=>{
             >
                 <div className="flex flex-col gap-6">{navItems}</div>
             </Drawer>
-            <Modal
-                open={showRegister}
-                onCancel={() => setShowRegister(false)}
-                footer={null}
-                centered
-                width={400}
-            >
-                <div className="w-full bg-white rounded-3xl overflow-hidden">
-                    <form >
-                    <h2 className="text-center w-full text-3xl font-bold text-gray-800">Đăng ký</h2>
-                    <div className="p-6 space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Email</label>
-                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formRegister.email} onChange={(e) => {
-                setFormRegister((prev) => { return { ...prev, email: e.target.value } })
-              }} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Password</label>
-                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formRegister.password} onChange={(e) => {
-                setFormRegister((prev) => { return { ...prev, password: e.target.value } })
-              }}/>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formRegister.confirm} onChange={(e) => {
-                setFormRegister((prev) => { return { ...prev, confirm: e.target.value } })
-              }} />
-                        </div>
-                        <p className="text-xs text-center text-gray-500 px-4">
-                            Bằng cách tiếp tục, bạn đồng ý với
-                            <span className="text-blue-500"> Điều khoản và Điều kiện </span>
-                            và bạn đã đọc thông báo về
-                            <span className="text-blue-500"> Chính sách bảo vệ dữ liệu</span>.
-                        </p>
-                        <button className="w-full py-3 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500">Đăng Ký</button>
+
+
+            {/* modalLoginRegister */}
+            <>
+                <Modal
+                    open={showRegister}
+                    onCancel={() => {
+                        setShowRegister(false);
+                        formRegister.resetFields();
+                    }}
+                    footer={null}
+                    centered
+                    width={400}
+                >
+                    <div className="w-full bg-white rounded-3xl overflow-hidden">
+                        <h2 className="text-center w-full text-3xl font-bold text-gray-800 mb-6">Đăng ký</h2>
+                        {/* form register */}
+                        <Form
+                            form={formRegister}
+                            onFinish={handleRegister}
+                            layout="vertical"
+                            className="px-6 pb-6"
+                        >
+                            <Form.Item
+                                label="Name"
+                                name="name"
+                                rules={[
+                                    { required: true, message: 'Không được để trống email' },
+                                    { type: 'string', message: 'Email phải đúng định dạng' }
+                                ]}
+                            >
+                                <Input
+                                    type="name"
+                                    placeholder="Nhập name"
+                                    className="p-3 rounded-xl"
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label="Email"
+                                name="email"
+                                rules={[
+                                    { required: true, message: 'Không được để trống email' },
+                                    { type: 'email', message: 'Email phải đúng định dạng' }
+                                ]}
+                            >
+                                <Input
+                                    type="email"
+                                    placeholder="Nhập email"
+                                    className="p-3 rounded-xl"
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label="Password"
+                                name="password"
+                                rules={[
+                                    { required: true, message: 'Không được để trống mật khẩu' },
+                                    { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+                                ]}
+                            >
+                                <Input.Password
+                                    placeholder="Nhập mật khẩu"
+                                    className="p-3 rounded-xl"
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label="Confirm Password"
+                                name="confirm"
+                                dependencies={['password']}
+                                rules={[
+                                    { required: true, message: 'Vui lòng xác nhận mật khẩu' },
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (!value || getFieldValue('password') === value) {
+                                                return Promise.resolve();
+                                            }
+                                            return Promise.reject(new Error('Mật khẩu không trùng nhau'));
+                                        },
+                                    }),
+                                ]}
+                            >
+                                <Input.Password
+                                    placeholder="Xác nhận mật khẩu"
+                                    className="p-3 rounded-xl"
+                                />
+                            </Form.Item>
+                            <p className="text-xs text-center text-gray-500 px-4 mb-4">
+                                Bằng cách tiếp tục, bạn đồng ý với
+                                <span className="text-blue-500"> Điều khoản và Điều kiện </span>
+                                và bạn đã đọc thông báo về
+                                <span className="text-blue-500"> Chính sách bảo vệ dữ liệu</span>.
+                            </p>
+                            <Form.Item>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    className="w-full h-12 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500"
+                                >
+                                    Đăng Ký
+                                </Button>
+                            </Form.Item>
+                        </Form>
                     </div>
-                    </form>
-                </div>
-            </Modal>
-            <Modal
-                open={showLogin}
-                onCancel={() => setShowLogin(false)}
-                footer={null}
-                centered
-                width={400}
-            >
-                <div className="w-full bg-white rounded-3xl overflow-hidden">
-                    <h2 className="text-center text-3xl font-bold text-gray-800">Đăng nhập</h2>
-                    <div className="p-6 space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Email</label>
-                            <input type="email" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formLogin.email} onChange={(e) => {
-                setFormLogin((prev) => { return { ...prev, email: e.target.value } })
-              }} />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Password</label>
-                            <input type="password" className="w-full p-3 rounded-xl bg-gray-100 border border-gray-300" value={formLogin.password} onChange={(e) => {
-                setFormLogin((prev) => { return { ...prev, password: e.target.value } })
-              }}/>
-                        </div>
-                        <p className="text-xs text-center text-gray-500 px-4">
-                            Bằng cách tiếp tục, bạn đồng ý với
-                            <span className="text-blue-500"> Điều khoản và Điều kiện </span>
-                            và bạn đã đọc thông báo về
-                            <span className="text-blue-500"> Chính sách bảo vệ dữ liệu</span>.
-                        </p>
-                        <button className="w-full py-3 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500">Đăng Nhập</button>
+                </Modal>
+                <Modal
+                    open={showLogin}
+                    onCancel={() => {
+                        setShowLogin(false);
+                        formLogin.resetFields();
+                    }}
+                    footer={null}
+                    centered
+                    width={400}
+                >
+                    <div className="w-full bg-white rounded-3xl overflow-hidden">
+                        <h2 className="text-center text-3xl font-bold text-gray-800 mb-6">Đăng nhập</h2>
+                        <Form
+                            form={formLogin}
+                            onFinish={handleLogin}
+                            layout="vertical"
+                            className="px-6 pb-6"
+                        >
+                            <Form.Item
+                                label="Email"
+                                name="email"
+                                rules={[
+                                    { required: true, message: 'Không được để trống email' },
+                                    { type: 'email', message: 'Email phải đúng định dạng' }
+                                ]}
+                            >
+                                <Input
+                                    type="email"
+                                    placeholder="Nhập email"
+                                    className="p-3 rounded-xl"
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label="Password"
+                                name="password"
+                                rules={[
+                                    { required: true, message: 'Không được để trống mật khẩu' },
+                                    { min: 6, message: 'Mật khẩu tối thiểu 6 ký tự' }
+                                ]}
+                            >
+                                <Input.Password
+                                    placeholder="Nhập mật khẩu"
+                                    className="p-3 rounded-xl"
+                                />
+                            </Form.Item>
+                            <p className="text-xs text-center text-gray-500 px-4 mb-4 mt-8">
+                                Bằng cách tiếp tục, bạn đồng ý với
+                                <span className="text-blue-500"> Điều khoản và Điều kiện </span>
+                                và bạn đã đọc thông báo về
+                                <span className="text-blue-500"> Chính sách bảo vệ dữ liệu</span>.
+                            </p>
+                            <Form.Item>
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    className="w-full h-12 bg-blue-400 rounded-xl font-semibold text-white hover:bg-blue-500"
+                                >
+                                    Đăng Nhập
+                                </Button>
+                            </Form.Item>
+                        </Form>
                     </div>
-                </div>
-            </Modal>
+                </Modal>
+            </>
+
+
         </div>
     );
 };
