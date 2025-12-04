@@ -5,7 +5,6 @@ export default function AccountSettings() {
   return (
     <div className="w-full min-h-screen bg-gray-100 p-6 flex justify-center items-start">
       <div className="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-6 flex gap-6">
-        {/* Sidebar */}
         <div className="w-1/4 border-r pr-4">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-xl font-semibold">
