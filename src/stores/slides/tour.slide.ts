@@ -47,6 +47,8 @@ const tourSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder.addCase(fetchData.fulfilled, (state, action) => {
+            console.log(action.payload);
+            
             const { tours, tourImage, categories, departures, locations } = action.payload
             state.images = tourImage
             state.tours = tours
@@ -56,6 +58,8 @@ const tourSlice = createSlice({
             state.status = 'success'
         })
         builder.addCase(fetchData.rejected, (state, action) => {
+            console.log(action.error.message);
+            
             state.status = "failed"
             state.error = action.error.message || 'fetch api failed'
         })

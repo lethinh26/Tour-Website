@@ -1,53 +1,93 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, InputNumber, Select, Steps, App } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Table, Button, Modal, Form, Input, InputNumber, Select, Steps, App, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { Editor } from "@tinymce/tinymce-react";
+import { tourAPI, categoryAPI, locationAPI, getUser } from "../../../services/api";
 
 interface Tour {
   id: number;
   name: string;
   basePrice: number;
   discount: number;
-  location: string;
-  category: string;
+  locationId: number;
+  locationName?: string;
+  categoryId: number;
+  categoryName?: string;
   description: string;
   information: string;
+  createdBy?: number;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
 }
 
 const TourList = () => {
   const { modal, notification } = App.useApp();
-  const [tours, setTours] = useState<Tour[]>([
-    { 
-      id: 1, 
-      name: "Du lịch Hà Nội", 
-      basePrice: 5000000, 
-      discount: 10, 
-      location: "Hà Nội", 
-      category: "Tour trong nước",
-      description: "<p>Khám phá thủ đô Hà Nội</p>",
-      information: "<p>Thông tin chi tiết tour</p>"
-    },
-    { 
-      id: 2, 
-      name: "Du lịch Đà Nẵng", 
-      basePrice: 7000000, 
-      discount: 15, 
-      location: "Đà Nẵng", 
-      category: "Tour trong nước",
-      description: "<p>Khám phá thành phố biển</p>",
-      information: "<p>Thông tin chi tiết tour</p>"
-    },
-  ]);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
+  const descriptionEditorRef = useRef<any>(null);
+  const informationEditorRef = useRef<any>(null);
 
   const steps = [
     { title: "Thông tin cơ bản" },
     { title: "Giới thiệu & Thông tin" },
   ];
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const currentUser = await getUser();
+      setUser(currentUser);
+
+      // Fetch categories and locations
+      const [categoriesRes, locationsRes] = await Promise.all([
+        categoryAPI.getAll(),
+        locationAPI.getAll(),
+      ]);
+      setCategories(categoriesRes.data);
+      setLocations(locationsRes.data);
+
+      // Fetch tours with role-based filtering
+      const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
+      const toursRes = await tourAPI.getAll(userId);
+      
+      // Map data with names
+      const toursWithNames = toursRes.data.map((tour: any) => ({
+        ...tour,
+        locationName: locationsRes.data.find((l: Location) => l.id === tour.locationId)?.name,
+        categoryName: categoriesRes.data.find((c: Category) => c.id === tour.categoryId)?.name,
+      }));
+      
+      setTours(toursWithNames);
+    } catch (error: any) {
+      notification.error({
+        message: 'Lỗi tải dữ liệu',
+        description: error.response?.data?.message || 'Không thể tải danh sách tour',
+        placement: 'topRight',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setEditingTour(null);
@@ -57,21 +97,41 @@ const TourList = () => {
   };
 
   const handleEdit = (record: Tour) => {
+    // Check permission for TOUR_MANAGER
+    if (user?.role === 'TOUR_MANAGER' && record.createdBy !== user.id) {
+      notification.error({
+        message: 'Không có quyền',
+        description: 'Bạn chỉ có thể chỉnh sửa tour do mình tạo ra!',
+        placement: 'topRight',
+      });
+      return;
+    }
+
     setEditingTour(record);
     setCurrentStep(0);
     form.setFieldsValue({
       name: record.name,
       basePrice: record.basePrice,
       discount: record.discount,
-      location: record.location,
-      category: record.category,
+      locationId: record.locationId,
+      categoryId: record.categoryId,
       description: record.description,
       information: record.information,
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (record: Tour) => {
+  const handleDelete = async (record: Tour) => {
+    // Check permission for TOUR_MANAGER
+    if (user?.role === 'TOUR_MANAGER' && record.createdBy !== user.id) {
+      notification.error({
+        message: 'Không có quyền',
+        description: 'Bạn chỉ có thể xóa tour do mình tạo ra!',
+        placement: 'topRight',
+      });
+      return;
+    }
+
     modal.confirm({
       title: 'Xác nhận xóa',
       icon: <ExclamationCircleOutlined />,
@@ -79,13 +139,22 @@ const TourList = () => {
       okText: 'Xóa',
       okType: 'danger',
       cancelText: 'Hủy',
-      onOk() {
-        setTours((prevTours) => prevTours.filter((tour) => tour.id !== record.id));
-        notification.success({
-          message: 'Xóa thành công',
-          description: `Tour "${record.name}" đã được xóa khỏi hệ thống.`,
-          placement: 'topRight',
-        });
+      async onOk() {
+        try {
+          await tourAPI.delete(record.id);
+          notification.success({
+            message: 'Xóa thành công',
+            description: `Tour "${record.name}" đã được xóa khỏi hệ thống.`,
+            placement: 'topRight',
+          });
+          fetchData();
+        } catch (error: any) {
+          notification.error({
+            message: 'Xóa thất bại',
+            description: error.response?.data?.message || 'Không thể xóa tour',
+            placement: 'topRight',
+          });
+        }
       },
     });
   };
@@ -93,7 +162,7 @@ const TourList = () => {
   const handleNext = async () => {
     try {
       if (currentStep === 0) {
-        await form.validateFields(['name', 'basePrice', 'discount', 'location', 'category']);
+        await form.validateFields(['name', 'basePrice', 'discount', 'locationId', 'categoryId']);
         setCurrentStep(1);
       }
     } catch (error) {
@@ -107,54 +176,53 @@ const TourList = () => {
 
   const handleFinish = async () => {
     try {
+      // Get content from editors before validation
+      if (descriptionEditorRef.current) {
+        form.setFieldsValue({ description: descriptionEditorRef.current.getContent() });
+      }
+      if (informationEditorRef.current) {
+        form.setFieldsValue({ information: informationEditorRef.current.getContent() });
+      }
+
       await form.validateFields();
       const values = form.getFieldsValue();
 
+      const tourData = {
+        name: values.name,
+        basePrice: Number(values.basePrice),
+        discount: Number(values.discount),
+        locationId: Number(values.locationId),
+        categoryId: Number(values.categoryId),
+        description: values.description,
+        information: values.information,
+      };
+
       if (editingTour) {
-        setTours((prevTours) =>
-          prevTours.map((tour) =>
-            tour.id === editingTour.id 
-              ? { 
-                  ...tour, 
-                  name: values.name,
-                  basePrice: Number(values.basePrice),
-                  discount: Number(values.discount),
-                  location: values.location,
-                  category: values.category,
-                  description: values.description,
-                  information: values.information,
-                } 
-              : tour
-          )
-        );
+        await tourAPI.update(editingTour.id, tourData);
         notification.success({
           message: 'Cập nhật thành công',
           description: `Tour "${values.name}" đã được cập nhật.`,
           placement: 'topRight',
         });
       } else {
-        const newTour: Tour = {
-          id: Math.max(...tours.map((t) => t.id), 0) + 1,
-          name: values.name,
-          basePrice: Number(values.basePrice),
-          discount: Number(values.discount),
-          location: values.location,
-          category: values.category,
-          description: values.description,
-          information: values.information,
-        };
-        setTours((prevTours) => [...prevTours, newTour]);
+        await tourAPI.create(tourData);
         notification.success({
           message: 'Thêm thành công',
           description: `Tour "${values.name}" đã được thêm vào hệ thống.`,
           placement: 'topRight',
         });
       }
+      
       setIsModalOpen(false);
       setCurrentStep(0);
       form.resetFields();
-    } catch (error) {
-      console.error("Validation failed:", error);
+      fetchData();
+    } catch (error: any) {
+      notification.error({
+        message: editingTour ? 'Cập nhật thất bại' : 'Thêm thất bại',
+        description: error.response?.data?.message || 'Có lỗi xảy ra',
+        placement: 'topRight',
+      });
     }
   };
 
@@ -193,14 +261,14 @@ const TourList = () => {
     },
     {
       title: "Location",
-      dataIndex: "location",
-      key: "location",
+      dataIndex: "locationName",
+      key: "locationName",
       width: 150,
     },
     {
       title: "Category",
-      dataIndex: "category",
-      key: "category",
+      dataIndex: "categoryName",
+      key: "categoryName",
       width: 150,
     },
     {
@@ -248,6 +316,7 @@ const TourList = () => {
         columns={columns}
         dataSource={tours}
         rowKey="id"
+        loading={loading}
         scroll={{ x: 1200 }}
         pagination={{
           defaultPageSize: 10,
@@ -318,35 +387,36 @@ const TourList = () => {
 
               <div className="flex gap-4">
                 <Form.Item
-                  name="location"
+                  name="locationId"
                   label="Địa điểm"
                   className="flex-1"
                   rules={[
                     { required: true, message: "Vui lòng chọn địa điểm!" },
                   ]}
                 >
-                  <Select placeholder="Chọn địa điểm">
-                    <Select.Option value="Hà Nội">Hà Nội</Select.Option>
-                    <Select.Option value="Hồ Chí Minh">Hồ Chí Minh</Select.Option>
-                    <Select.Option value="Đà Nẵng">Đà Nẵng</Select.Option>
-                    <Select.Option value="Nha Trang">Nha Trang</Select.Option>
-                    <Select.Option value="Phú Quốc">Phú Quốc</Select.Option>
+                  <Select placeholder="Chọn địa điểm" loading={loading}>
+                    {locations && locations.map((location) => (
+                      <Select.Option key={location.id} value={location.id}>
+                        {location.name}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
 
                 <Form.Item
-                  name="category"
+                  name="categoryId"
                   label="Danh mục"
                   className="flex-1"
                   rules={[
                     { required: true, message: "Vui lòng chọn danh mục!" },
                   ]}
                 >
-                  <Select placeholder="Chọn danh mục">
-                    <Select.Option value="Tour trong nước">Tour trong nước</Select.Option>
-                    <Select.Option value="Tour nước ngoài">Tour nước ngoài</Select.Option>
-                    <Select.Option value="Tour biển">Tour biển</Select.Option>
-                    <Select.Option value="Tour núi">Tour núi</Select.Option>
+                  <Select placeholder="Chọn danh mục" loading={loading}>
+                    {categories && categories.map((category) => (
+                      <Select.Option key={category.id} value={category.id}>
+                        {category.name}
+                      </Select.Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </div>
@@ -362,10 +432,10 @@ const TourList = () => {
               >
                 <Editor
                   apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                  value={form.getFieldValue('description')}
-                  onEditorChange={(content) => {
-                    form.setFieldValue('description', content);
+                  onInit={(_evt, editor) => {
+                    descriptionEditorRef.current = editor;
                   }}
+                  initialValue={form.getFieldValue('description') || ''}
                   init={{
                     height: 300,
                     menubar: false,
@@ -386,10 +456,10 @@ const TourList = () => {
               >
                 <Editor
                   apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                  value={form.getFieldValue('information')}
-                  onEditorChange={(content) => {
-                    form.setFieldValue('information', content);
+                  onInit={(_evt, editor) => {
+                    informationEditorRef.current = editor;
                   }}
+                  initialValue={form.getFieldValue('information') || ''}
                   init={{
                     height: 300,
                     menubar: false,
