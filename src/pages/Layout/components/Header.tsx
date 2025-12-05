@@ -20,6 +20,12 @@ const Header = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [showModalSet, setShowModalSet] = useState(false);
 
+    const handleLogin = (values: { email: string, password: string }) => {
+        console.log('Login values:', values);
+        dispatch(userLogin(values))
+        setShowLogin(false);
+        formLogin.resetFields();
+    };
 
 
     const getUser = useCallback(async () => {
