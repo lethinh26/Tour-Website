@@ -16,7 +16,7 @@ import CategoryManager from '../pages/Admin/components/CategoryManager';
 import PromotionManager  from '../pages/Admin/components/PromotionManager';
 import TourList from '../pages/Admin/components/TourList';
 import TourImageManager from '../pages/Admin/components/TourImageManager';
-import FavoritesPage from '../pages/Layout/components/FavoritesPage';
+import FavoritesPage from '../pages/Tour/tourFavorite/FavoritesPage';
 import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
 import AccountSettings from '../pages/Settings/SettingMain';
 import SettingPromotion from '../pages/Settings/SettingPromotion';
