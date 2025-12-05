@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Modal, Drawer, Form, Input, Button } from "antd";
+import { Modal, Drawer, Form, Input, Button, notification } from "antd";
 import triploka from "../../../assets/logos/logo_tripoka.png";
 import promotion_icon from "../../../assets/icons/icon_promotion.png";
 import { useDispatch } from "react-redux";
@@ -7,8 +7,10 @@ import type { AppDispatch } from "../../../stores";
 import { userLogin, userRegister } from "../../../stores/slides/userLoginRegister.slice";
 import Account from "./Account";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 const Header = () => {
+    const [api, contextHolder] = notification.useNotification();
     const [currency, setCurrency] = useState("VND");
     const [language, setLanguage] = useState("VI");
     const [showRegister, setShowRegister] = useState(false);
@@ -20,13 +22,7 @@ const Header = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [showModalSet, setShowModalSet] = useState(false);
 
-    const handleLogin = (values: { email: string, password: string }) => {
-        console.log('Login values:', values);
-        dispatch(userLogin(values))
-        setShowLogin(false);
-        formLogin.resetFields();
-    };
-
+    const navigate = useNavigate();
 
     const getUser = useCallback(async () => {
         try {
@@ -37,7 +33,6 @@ const Header = () => {
             }
             const res = await axios.post("http://localhost:3000/api/auth/getUser", { token: tokenUser });
             setUser(res.data);
-            console.log(res.data);
         } catch (error) {
             console.error("Failed to get user:", error);
             setUser(null);
@@ -46,10 +41,32 @@ const Header = () => {
 
     const handleLogin = useCallback(
         async (values: { email: string; password: string }) => {
-            await dispatch(userLogin(values));
-            setShowLogin(false);
-            formLogin.resetFields();
-            getUser();
+            try {
+                const result = await dispatch(userLogin(values));
+                if (result?.payload?.token) {
+                    api.success({
+                        message: 'Đăng nhập thành công',
+                        description: 'Chào mừng bạn quay trở lại!',
+                        placement: 'topRight',
+                    });
+                    setShowLogin(false);
+                    formLogin.resetFields();
+                    getUser();
+                } else {
+                    api.error({
+                        message: 'Đăng nhập thất bại',
+                        description: result?.payload?.message || 'Sai tài khoản hoặc mật khẩu!',
+                        placement: 'topRight',
+                    });
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                api.error({
+                    message: 'Đăng nhập thất bại',
+                    description: 'Có lỗi xảy ra, vui lòng thử lại!',
+                    placement: 'topRight',
+                });
+            }
         },
         [dispatch, formLogin, getUser]
     );
@@ -80,17 +97,17 @@ const Header = () => {
                 Khuyến mãi
             </a>
             <div className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Hỗ trợ</div>
-            <a className="text-sm font-medium text-gray-700 hover:text-blue-500">Đặt chỗ của tôi</a>
+            <a className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Đặt chỗ của tôi</a>
             {!user ? (
                 <>
                     <button
-                        className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50"
+                        className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50 cursor-pointer"
                         onClick={() => setShowLogin(true)}
                     >
                         Đăng Nhập
                     </button>
                     <button
-                        className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600"
+                        className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
                         onClick={() => setShowRegister(true)}
                     >
                         Đăng Ký
@@ -102,11 +119,12 @@ const Header = () => {
         </>
     );
     return (
-        <div>
-            <nav className="bg-gray-100 border-b border-gray-200">
+        <div className="mb-16">
+            {contextHolder}
+            <nav className="bg-gray-100 border-b border-gray-200 fixed top-0 left-0 w-full z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16 relative">
-                        <div className="flex items-center">
+                        <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
                             <img src={triploka} alt="Triploka" width={30} />
                             <a href="#" className="text-xl md:text-2xl font-bold text-gray-800 tracking-wider pl-2">
                                 Triploka
@@ -119,7 +137,7 @@ const Header = () => {
                         </div>
 
                         {showModalSet && (
-                            <div className="absolute right-0 top-10 mt-2 w-[720px] bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                            <div className="absolute right-0 top-14 mt-2 w-[720px] bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                                 <div className="flex">
                                     <div className="flex-1 border-r border-gray-200 px-6 py-4">
                                         <p className="text-sm font-semibold mb-4">Chọn đơn vị tiền tệ</p>
