@@ -19,9 +19,10 @@ export const userLogin = createAsyncThunk('user/login', async (userInfo: {email:
     return res.data
 })
 
-export const userRegister = createAsyncThunk('user/getUser', async (userInfo: {name: string, email: string, password: string}) => {
+export const userRegister = createAsyncThunk('user/reg', async (userInfo: {name: string, email: string, password: string}) => {
     const {name, email, password} = userInfo
-    const res = await axios.post('http://localhost:3000/api/auth', {name, email, password})
+    const res = await axios.post('http://localhost:3000/api/auth/reg', {name, email, password})
+    
     return res.data
 })
 
@@ -41,6 +42,7 @@ const userSlice = createSlice({
         builder.addCase(userLogin.fulfilled, (state, action) => {
             state.token = action.payload.token
             state.status = 'success'
+            localStorage.setItem('token', state.token)
             state.error = null
         })
         builder.addCase(userLogin.rejected, (state, action) => {
@@ -51,6 +53,7 @@ const userSlice = createSlice({
         builder.addCase(userRegister.fulfilled, (state, action) => {
             state.token = action.payload.token
             state.status = 'success'
+            localStorage.setItem('token', state.token)
             state.error = null
         })
         builder.addCase(userRegister.rejected, (state, action) => {

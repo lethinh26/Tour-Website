@@ -1,11 +1,12 @@
 import { DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import { Button, DatePicker, Divider, Form, Input, Select, Steps, Table, App, Modal } from "antd";
+import { Button, DatePicker, Divider, Form, Input, Select, Steps, Table, App, Modal, Spin } from "antd";
 import { useForm } from "antd/es/form/Form";
 import type { ColumnType } from "antd/es/table";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Promo } from "../../../types/types";
 import { Editor } from "@tinymce/tinymce-react";
 import dayjs from "dayjs";
+import { promotionAPI } from "../../../services/api";
 
 interface PromotionColumn {
     id: number;
@@ -13,7 +14,8 @@ interface PromotionColumn {
     amount: number;
     startDate: string;
     endDate: string;
-    quantity?: number;
+    discount?: number;
+    name?: string;
     type?: Promo;
     title?: string;
     description?: string;
@@ -21,15 +23,44 @@ interface PromotionColumn {
 
 const PromotionManager = () => {
     const { modal, notification } = App.useApp();
-    const [promotions, setPromotions] = useState<PromotionColumn[]>([
-        { id: 1, code: "SUMMER2024", amount: 15, startDate: "2024-06-01", endDate: "2024-08-31", quantity: 100, type: "ALL", title: "Summer Sale", description: "Hello"},
-        { id: 2, code: "WINTER2024", amount: 20, startDate: "2024-12-01", endDate: "2025-02-28", quantity: 50, type: "NEW", title: "Winter Sale" },
-        { id: 3, code: "SPRING2024", amount: 10, startDate: "2024-03-01", endDate: "2024-05-31", quantity: 200, type: "ALL", title: "Spring Sale" },
-    ]);
+    const [promotions, setPromotions] = useState<PromotionColumn[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [editingPromotion, setEditingPromotion] = useState<PromotionColumn | null>(null);
     const [form] = useForm();
+    const [loading, setLoading] = useState(false);
+    const descriptionEditorRef = useRef<any>(null);
+
+    useEffect(() => {
+        fetchPromotions();
+    }, []);
+
+    const fetchPromotions = async () => {
+        try {
+            setLoading(true);
+            const response = await promotionAPI.getAll();
+            const formattedData = response.data.map((promo: any) => ({
+                id: promo.id,
+                code: promo.code,
+                amount: promo.discount,
+                discount: promo.amount,
+                startDate: promo.startAt,
+                endDate: promo.endAt || "",
+                type: promo.type,
+                title: promo.name,
+                description: promo.description
+            }));
+            setPromotions(formattedData);
+        } catch (error) {
+            notification.error({
+                message: 'Lỗi',
+                description: 'Không thể tải danh sách khuyến mãi',
+                placement: 'topRight',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const steps = [
         { title: "Thông tin cơ bản", content: "abc" },
@@ -48,7 +79,7 @@ const PromotionManager = () => {
         setEditingPromotion(record);
         form.setFieldsValue({
             code: record.code,
-            quantity: record.quantity,
+            amount: record.discount,
             discount: record.amount,
             type: record.type || "ALL",
             title: record.title,
@@ -68,13 +99,22 @@ const PromotionManager = () => {
             okText: "Xóa",
             okType: "danger",
             cancelText: "Hủy",
-            onOk() {
-                setPromotions((prev) => prev.filter((item) => item.id !== record.id));
-                notification.success({
-                    message: "Xóa thành công",
-                    description: `Khuyến mãi "${record.code}" đã được xóa khỏi hệ thống.`,
-                    placement: "topRight",
-                });
+            async onOk() {
+                try {
+                    await promotionAPI.delete(record.id);
+                    notification.success({
+                        message: "Xóa thành công",
+                        description: `Khuyến mãi "${record.code}" đã được xóa khỏi hệ thống.`,
+                        placement: "topRight",
+                    });
+                    fetchPromotions();
+                } catch (error: any) {
+                    notification.error({
+                        message: "Xóa thất bại",
+                        description: error.response?.data?.message || "Có lỗi xảy ra khi xóa khuyến mãi",
+                        placement: "topRight",
+                    });
+                }
             },
         });
     };
@@ -89,7 +129,7 @@ const PromotionManager = () => {
     const handleNext = async () => {
         try {
             if (currentStep === 0) {
-                await form.validateFields(["code", "quantity", "discount", "type"]);
+                await form.validateFields(["code", "amount", "discount", "type"]);
             } else if (currentStep === 1) {
                 await form.validateFields(["title", "description"]);
             } else if (currentStep === 2) {
@@ -108,52 +148,39 @@ const PromotionManager = () => {
 
     const handleFinish = async () => {
         try {
-            const allValues = form.getFieldsValue(true);
-            console.log('All form values before validate:', allValues);
-            
+            // Get content from editor before validation
+            if (descriptionEditorRef.current) {
+                form.setFieldsValue({ description: descriptionEditorRef.current.getContent() });
+            }
+
             await form.validateFields([
-                'code', 'quantity', 'discount', 'type',
+                'code', 'amount', 'discount', 'type',
                 'title', 'description',
                 'startAt'
             ]);
             
             const values = form.getFieldsValue(true);
-            console.log('Form values after validate:', values);
             
-            console.log('Individual fields:', {
-                code: form.getFieldValue('code'),
-                quantity: form.getFieldValue('quantity'),
-                discount: form.getFieldValue('discount'),
-                type: form.getFieldValue('type'),
-                title: form.getFieldValue('title'),
-                description: form.getFieldValue('description'),
-                startAt: form.getFieldValue('startAt'),
-                endAt: form.getFieldValue('endAt'),
-            });
-            
-            const promotionData: PromotionColumn = {
-                id: editingPromotion ? editingPromotion.id : Math.max(...promotions.map((p) => p.id), 0) + 1,
+            const promotionData = {
                 code: values.code,
-                amount: Number(values.discount),
-                quantity: Number(values.quantity),
+                discount: Number(values.discount),
+                amount: Number(values.amount),
                 type: values.type,
-                title: values.title,
+                name: values.title,
                 description: values.description,
-                startDate: values.startAt ? values.startAt.format("YYYY-MM-DD") : "",
-                endDate: values.endAt ? values.endAt.format("YYYY-MM-DD") : "",
+                startAt: values.startAt ? values.startAt.format("YYYY-MM-DD") : "",
+                endAt: values.endAt ? values.endAt.format("YYYY-MM-DD") : undefined,
             };
 
-            console.log('Promotion data:', promotionData);
-
             if (editingPromotion) {
-                setPromotions((prev) => prev.map((item) => (item.id === editingPromotion.id ? promotionData : item)));
+                await promotionAPI.update(editingPromotion.id, promotionData);
                 notification.success({
                     message: "Cập nhật thành công",
                     description: `Khuyến mãi "${promotionData.code}" đã được cập nhật.`,
                     placement: "topRight",
                 });
             } else {
-                setPromotions((prev) => [...prev, promotionData]);
+                await promotionAPI.create(promotionData);
                 notification.success({
                     message: "Thêm thành công",
                     description: `Khuyến mãi "${promotionData.code}" đã được thêm vào hệ thống.`,
@@ -162,11 +189,11 @@ const PromotionManager = () => {
             }
 
             handleCancel();
-        } catch (error) {
-            console.error("Validation failed:", error);
+            fetchPromotions();
+        } catch (error: unknown) {
             notification.error({
-                message: "Lỗi validation",
-                description: "Vui lòng kiểm tra lại thông tin đã nhập!",
+                message: editingPromotion ? "Cập nhật thất bại" : "Thêm thất bại",
+                description: error.response?.data?.message || "Vui lòng kiểm tra lại thông tin đã nhập!",
                 placement: "topRight",
             });
         }
@@ -176,7 +203,7 @@ const PromotionManager = () => {
         { title: "ID", dataIndex: "id", key: "id", width: 80 },
         { title: "Code", dataIndex: "code", key: "code" },
         { title: "Discount (%)", dataIndex: "amount", key: "amount", width: 120 },
-        { title: "Quantity", dataIndex: "quantity", key: "quantity", width: 100 },
+        { title: "Amount", dataIndex: "discount", key: "discount", width: 120 },
         { title: "Start Date", dataIndex: "startDate", key: "startDate", width: 120 },
         { title: "End Date", dataIndex: "endDate", key: "endDate", width: 120 },
         {
@@ -203,18 +230,20 @@ const PromotionManager = () => {
                     Add Promotion
                 </Button>
             </div>
-            <Table
-                columns={column}
-                dataSource={promotions}
-                rowKey="id"
-                pagination={{
-                    defaultPageSize: 10,
-                    showSizeChanger: true,
-                    pageSizeOptions: ["5", "10", "20", "50"],
-                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-                }}
-                className="bg-white rounded-lg shadow"
-            />
+            <Spin spinning={loading}>
+                <Table
+                    columns={column}
+                    dataSource={promotions}
+                    rowKey="id"
+                    pagination={{
+                        defaultPageSize: 10,
+                        showSizeChanger: true,
+                        pageSizeOptions: ["5", "10", "20", "50"],
+                        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+                    }}
+                    className="bg-white rounded-lg shadow"
+                />
+            </Spin>
 
             <Modal
                 title={editingPromotion ? "Edit Promotion" : "Add Promotion"}
@@ -263,15 +292,15 @@ const PromotionManager = () => {
                                 <Input placeholder="Enter code promotion..." />
                             </Form.Item>
                             <Form.Item
-                                label={"Quantity"}
-                                name={"quantity"}
+                                label={"Amount"}
+                                name={"amount"}
                                 className="flex-1"
                                 rules={[
-                                    { required: true, message: "Please enter quantity" },
-                                    { pattern: /^[0-9]+$/, message: "Quantity phải là số!" },
+                                    { required: true, message: "Please enter amount" },
+                                    { pattern: /^[0-9]+$/, message: "Amount phải là số!" },
                                 ]}
                             >
-                                <Input placeholder="Enter quantity..." type="number" />
+                                <Input placeholder="Enter amount..." type="number" />
                             </Form.Item>
                         </div>
                         <div className="flex justify-between items-start gap-4">
@@ -328,10 +357,10 @@ const PromotionManager = () => {
                             >
                                 <Editor
                                     apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-                                    value={form.getFieldValue('description')}
-                                    onEditorChange={(content) => {
-                                        form.setFieldValue('description', content);
+                                    onInit={(_evt, editor) => {
+                                        descriptionEditorRef.current = editor;
                                     }}
+                                    initialValue={form.getFieldValue('description') || ''}
                                     init={{
                                         height: 300,
                                         menubar: false,
