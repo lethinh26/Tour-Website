@@ -5,17 +5,31 @@ import ListCard from "./components/ListCard";
 import SearchLocation from "./components/SearchLocation";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchData } from "../../../stores/slides/tour.slide";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { AppDispatch, StoreType } from "../../../stores";
 import type { TravelCardProps } from "./components/TravelCard";
 import FullPageLoader from "../../../common/Loading";
+import { getUser } from "../../../services/api";
 
 export const TourMain = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const [isLogin, setIsLogin] = useState(false);
     useEffect(() => {
         dispatch(fetchData());
     }, [dispatch]);
     
+    const fetchUser = useCallback(async () => {
+        try {
+            const res = await getUser();
+            if (res) setIsLogin(true)
+        } catch (err) {
+            setIsLogin(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser])
     
     const { tours, images, departures, status } = useSelector((state: StoreType) => state.tourReducer);
 
@@ -76,7 +90,7 @@ export const TourMain = () => {
                             }else{
                                 return Number(item.price) >= range[0] && Number(item.price) <= range[1]
                             } 
-                        })} />
+                        })} isLogin={isLogin} />
                     </div>
                 </div>
             </div>

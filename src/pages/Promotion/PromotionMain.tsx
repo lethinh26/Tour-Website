@@ -29,7 +29,6 @@ export default function PromotionMain() {
         dispatch(fetchDataPromotion())
     }, [dispatch])
     const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
-    console.log(promotions);
 
     const pro = promotions.map(item => {
         return {
@@ -45,7 +44,6 @@ export default function PromotionMain() {
 
     const pageSize = 6
     const [currentPage, setCurrentPage] = useState(1)
-    console.log(currentPage);
     
     return (
         <div className="min-h-screen bg-gray-50">

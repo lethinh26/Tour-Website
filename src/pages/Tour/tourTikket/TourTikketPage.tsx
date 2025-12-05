@@ -24,7 +24,6 @@ export default function TourTikket() {
     }, [dispatch, id])
     const { tour, images, departures, status } = useSelector((state: StoreType) => state.tourTicketReducer)
     const [selected, setSelected] = useState<Date>();
-    console.log(departures);
 
 
     const navigate = useNavigate()
@@ -42,7 +41,6 @@ export default function TourTikket() {
     const departureFind = departures.find(item =>
         selected && getDMY(new Date(item.departure)) == getDMY(selected) && getTime(new Date(item.departure)) == selectedTime
     )
-    console.log(departureFind);
     const total = departureFind?.price ? numberTicket * departureFind?.price : 0
     if (status == 'loading'){
         return <FullPageLoader/>
