@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { fetchDataPromotion } from "../../stores/slides/promotion.slice";
 import { Button, Pagination } from "antd";
 import { useNavigate } from "react-router";
+import axios, { AxiosError } from "axios";
 
 export default function PromotionMain() {
+    const token = localStorage.getItem('token')
     const navigate = useNavigate()
-
+    const pageSize = 6
+    const [currentPage, setCurrentPage] = useState(1)
     const formatDateToString = (stringData: string) => {
         const date = new Date(stringData)
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
@@ -23,16 +26,15 @@ export default function PromotionMain() {
         return date1.getTime() < now.getTime() && date2.getTime() > now.getTime()
     }
 
-
     const dispatch = useDispatch<AppDispatch>()
     useEffect(() => {
         dispatch(fetchDataPromotion())
     }, [dispatch])
     const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
-    console.log(promotions);
 
     const pro = promotions.map(item => {
         return {
+            id: item.id,
             type: item.type,
             name: item.name,
             startAt: item.startAt,
@@ -42,10 +44,22 @@ export default function PromotionMain() {
             code: item.code,
         }
     })
-
-    const pageSize = 6
-    const [currentPage, setCurrentPage] = useState(1)
-    console.log(currentPage);
+    
+    const handleSavePromotion = async (promotionId: number) => {
+        const token = localStorage.getItem('token')
+        try {
+            console.log(token, promotionId);
+            
+            const res = await axios.post('http://localhost:3000/api/promotions/token', {
+                token, promotionId
+            })
+            
+            return res.status
+        } catch (error: AxiosError | any) {
+            return error.response.data.message
+        }
+    }
+    
     
     return (
         <div className="min-h-screen bg-gray-50">
@@ -84,9 +98,13 @@ export default function PromotionMain() {
                                     : "bg-linear-to-r from-red-500 to-pink-500"
                                     } p-4 text-white relative`}
                             >
-                                <div className="absolute top-2 right-2">
-                                    <button className="text-xl bg-none hover:text-2xl cursor-pointer">🏷️</button>
-                                </div>
+                                {token && <div className="absolute top-2 right-2">
+                                    <button className="text-xl bg-none hover:text-2xl cursor-pointer"
+                                        onClick={() => {
+                                            handleSavePromotion(promo.id)
+                                        }}
+                                    >🏷️</button>
+                                </div>}
                                 <div className="text-sm font-semibold mb-1">{promo.name}</div>
                             </div>
                             <div className="p-4">

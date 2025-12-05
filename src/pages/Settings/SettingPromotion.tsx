@@ -1,52 +1,43 @@
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../stores";
 import { useEffect, useState } from "react";
-import { fetchDataPromotion } from "../../stores/slides/promotion.slice";
 import { Button, Pagination } from "antd";
-import { useNavigate } from "react-router";
+import {  useNavigate } from "react-router";
+import axios from "axios";
+import type { Promotion } from "../../types/types";
 
 export default function SettingPromotion() {
-    
-        const formatDateToString = (stringData: string) => {
-            const date = new Date(stringData)
-            return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+    const pageSize = 6
+    const [currentPage, setCurrentPage] = useState(1)
+    const navigate = useNavigate()
+    const [promotionByToken, setPromotionByToken] = useState<Promotion[]>([])
+
+    const formatDateToString = (stringData: string) => {
+        const date = new Date(stringData)
+        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+    }
+    const checkExpiry = (startDate: string, endDate: string) => {
+        if (!endDate) {
+            return true
         }
-    
-        const checkExpiry = (startDate : string, endDate: string) => {
-            if(!endDate){
-                return true
-            }
-            const date1 = new Date(startDate)
-            const date2 = new Date(endDate)
-            const now = new Date()
-            return date1.getTime() < now.getTime() && date2.getTime() > now.getTime()
-        }
-    
-    
-        const dispatch = useDispatch<AppDispatch>()
-        useEffect(() => {
-            dispatch(fetchDataPromotion())
-        }, [dispatch])
-        const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
-        console.log(promotions);
-    
-        const pro = promotions.map(item => {
-            return {
-                type: item.type,
-                name: item.name,
-                startAt: item.startAt,
-                endAt: item.endAt,
-                color: "blue",
-                description: item.description,
-                code: item.code,
-            }
+        const date1 = new Date(startDate)
+        const date2 = new Date(endDate)
+        const now = new Date()
+        return date1.getTime() < now.getTime() && date2.getTime() > now.getTime()
+    }
+
+    const getPromotionByToke = async () => {
+        const token = localStorage.getItem('token')
+        return await axios.get(`http://localhost:3000/api/promotions/token/${token}`)
+    }
+
+    useEffect(() => {
+        getPromotionByToke().then((data) => {
+            
+            setPromotionByToken(() => data.data.promotion)
         })
+    }, [])
     
-        const pageSize = 6
-        const [currentPage, setCurrentPage] = useState(1)
-        console.log(currentPage);
-        const navigate = useNavigate()
-        
+    console.log("promotion", promotionByToken);
+    
     return (
         <div className='h-screen'>
             <div className="bg-white shadow-sm py-3 px-[150px] flex justify-between text-2xl">
@@ -64,25 +55,24 @@ export default function SettingPromotion() {
                         Danh Sách Khuyến Mãi
                     </Button>
                 </div>
-                
+
             </div>
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-[150px]">
-                {pro.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                {promotionByToken
+                .slice((currentPage - 1) * pageSize, currentPage * pageSize)
                     .filter(item => checkExpiry(item.startAt, item.endAt))
-                    .map((promo, index) => (
+                    .map((promo, index) => {
+                        return(
                         <div
                             key={index}
                             className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                         >
                             <div
-                                className={`${promo.color === "blue"
-                                    ? "bg-linear-to-r from-blue-600 to-blue-500"
-                                    : "bg-linear-to-r from-red-500 to-pink-500"
-                                    } p-4 text-white relative`}
+                                className={` bg-linear-to-r from-blue-600 to-blue-500 p-4 text-white relative`}
                             >
                                 <div className="absolute top-2 right-2">
-                                    <button className="text-xl bg-none hover:text-2xl cursor-pointer">🏷️</button>
+                                    <button className="text-xl bg-none">🏷️</button>
                                 </div>
                                 <div className="text-sm font-semibold mb-1">{promo.name}</div>
                             </div>
@@ -113,14 +103,14 @@ export default function SettingPromotion() {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    )})}
             </div>
             {/* pagination */}
             <div className="flex justify-center items-center gap-2 py-6">
                 <Pagination
                     align="center"
                     defaultCurrent={currentPage}
-                    total={pro.length}
+                    total={promotionByToken.length}
                     onChange={setCurrentPage}
                     pageSize={pageSize}
                 />
