@@ -1,40 +1,79 @@
 import { Card, Button, Empty, Tooltip } from "antd";
-import { HeartFilled, EnvironmentOutlined, TagOutlined } from "@ant-design/icons";
+import { EnvironmentOutlined, TagOutlined } from "@ant-design/icons";
+import axios, { AxiosError } from "axios";
+import { useEffect, useState } from "react";
+import type { Tour } from "../../../types/types";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, StoreType } from "../../../stores";
+import { fetchData } from "../../../stores/slides/tour.slide";
+import { useNavigate } from "react-router";
 
 interface FavoriteItem {
     id: number;
     title: string;
-    subtitle: string;
-    location: string;
-    price: string;
     image: string;
+    price: number;
+    location: string;
+    subtitle: string | undefined;
     tag?: string;
 }
 
 const FavoritesPage = () => {
-    const favorites: FavoriteItem[] = [
-        {
-            id: 1,
-            title: "Thẻ Thông Hành Đường Sắt Châu Âu Eurail Global Pass",
-            subtitle: "Hoạt động & Vui chơi",
-            location: "Panaczeew",
-            price: "8.723.431 VND",
-            image: "",
-        },
-        {
-            id: 2,
-            title: "Vé tham quan Bảo tàng Vatican và Nhà nguyện Sistine",
-            subtitle: "Hoạt động & Vui chơi",
-            location: "Thành phố Vatican",
-            price: "2.310.986 VND",
-            image: "",
-        },
-    ];
+    const dispatch = useDispatch<AppDispatch>()
 
-    const handleRemoveFavorite = (id: number) => {
-        console.log("Remove favorite:", id);
-    };
+    const [dataFavorite, setDataFavorite] =  useState<Tour[]>([])
+    const [token] =  useState(localStorage.getItem('token'))
+    const {images, categories} = useSelector((state: StoreType) => state.tourReducer)
+    console.log(images, categories);
+    console.log(dataFavorite);
+    const navigate = useNavigate()
 
+    const handleUnFavorite = async (tourId: number) => {
+        if(!token){
+            return
+        }
+        const res = axios.delete('http://localhost:3000/api/favoriteTours', {
+            data: {
+                token,
+                tourId
+            }
+        })
+        return res.then(data => data.data)
+    }
+
+    const getDataFavoriteTours = async () => {
+        try {
+            // const res = await axios.get(`http://localhost:3000/api/favoriteTours/${token}`)
+            const res = await axios.get(`http://localhost:3000/api/favoriteTours/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzY0ODUzODY2LCJleHAiOjE3NjQ5NDAyNjZ9.b8FnWCR3Mk5zmRkKWR5mJ1pv1zWxKy1-Dvwq_e3hNaQ`)            
+            return res.data
+        }catch (error: AxiosError | any){
+            return error.response.message
+        }
+    }
+    useEffect(() => {
+        dispatch(fetchData())
+    }, [dispatch])
+
+    useEffect(() => {
+        getDataFavoriteTours().then((data) => {
+            setDataFavorite(data.tourFavorited)            
+        }).catch((error) => {
+            setDataFavorite([])
+            console.log(error)
+        })
+    }, [images, categories])
+
+    const favorites = dataFavorite ? dataFavorite.map((item) => {
+        return {
+            id: item.id,
+            title: item.name,
+            image: images.filter(img => img.tourId == item.id)[0].url,
+            price: item.basePrice,
+            location: item.address,
+            subtitle: categories.find(cate => cate.id == item.categoryId)?.name
+        }
+    }): []
+    
     return (
         <div className="min-h-screen py-8">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +81,6 @@ const FavoritesPage = () => {
                     <h1 className="text-3xl font-bold text-gray-900">Danh sách đã lưu</h1>
                     <p className="text-gray-600 mt-2">Nội lưu giữ những sản phẩm yêu thích của bạn!</p>
                 </div>
-
                 {favorites.length === 0 ? (
                     <div className="bg-white rounded-lg shadow-sm p-12">
                         <Empty description="Chưa có sản phẩm yêu thích nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -68,8 +106,12 @@ const FavoritesPage = () => {
                                                             <h2 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h2>
                                                         </div>
                                                         <Tooltip title="Yêu thích">
-                                                            <div className="bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer ">
-                                                                <TagOutlined className="text-gray-400 text-lg" />
+                                                            <div className="bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer "
+                                                                onClick={() => {
+                                                                    handleUnFavorite(item.id)
+                                                                }}
+                                                            >
+                                                                <TagOutlined className="text-gray-400 text-lg hover:text-2xl" />
                                                             </div>
                                                         </Tooltip>
                                                     </div>
@@ -85,10 +127,10 @@ const FavoritesPage = () => {
                                                         <p className="text-2xl font-bold text-red-500">{item.price}</p>
                                                     </div>
                                                     <div className="flex gap-2">
-                                                        <Button type="default" onClick={() => handleRemoveFavorite(item.id)}>
-                                                            Xóa
-                                                        </Button>
-                                                        <Button type="primary">Xem chi tiết</Button>
+                                                        <Button type="primary" onClick={() => {
+                                                            navigate(`/tour/${item.id}`
+                                                            )}}
+                                                        >Xem chi tiết</Button>
                                                     </div>
                                                 </div>
                                             </div>

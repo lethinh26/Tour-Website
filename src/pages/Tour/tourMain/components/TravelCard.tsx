@@ -4,6 +4,8 @@ import logo_triploka from "../../../../assets/logos/logo_tripoka.png";
 import icon_location from "../../../../assets/icons/icon_location.png";
 import icon_promotion from "../../../../assets/icons/icon_promotion.png";
 import { useNavigate } from "react-router";
+import { useState } from "react";
+import axios from "axios";
 
 export interface TravelCardProps {
     id: number;
@@ -18,10 +20,25 @@ export interface TravelCardProps {
     location: string;
 }
 
+
 function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
     const { id, image, title, address: location, rating, reviews, price, oldPrice } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
     const navigate = useNavigate();
+    const [token] = useState(() => { 
+        return localStorage.getItem('token')
+    })
+    const handleSaveFavorite = async () => {
+        try {
+            const res = await axios.post('http://localhost:3000/api/favoriteTours', {
+                token,
+                tourId: id
+            })
+            console.log(res.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
     return (
         <Card
             hoverable
@@ -29,13 +46,22 @@ function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
             cover={
                 <div className="relative">
                     <img src={image} alt={title} className="w-full h-56 object-cover" />
-                    <Tooltip title="Yêu thích">
-                        <div className="absolute top-3 right-3 bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer ">
+                    {token && <Tooltip title="Yêu thích"
+                    >
+                        <div
+                            className="absolute top-3 hover:w-10 hover:h-10 hover:z-10 active:z-10 right-3 bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer "
+                            // THAY ĐỔI Ở ĐÂY: Thêm tham số 'e' (sự kiện)
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleSaveFavorite();
+                            }}
+                        >
                             <TagOutlined className="text-gray-400 text-lg" />
                         </div>
-                    </Tooltip>
+                    </Tooltip>}
                 </div>
             }
+            // Sự kiện này chỉ được kích hoạt nếu không bị chặn từ bên trong
             onClick={() => navigate(`/tour/${id}`)}
         >
             <h3 className="font-bold text-base text-gray-900 mb-1 leading-5 line-clamp-2">{title}</h3>
