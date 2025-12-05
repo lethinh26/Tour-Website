@@ -33,7 +33,6 @@ export default function AccountSettings() {
                 oldPassword,
                 newPassword 
             })
-            console.log(res.data);
             openNotification('topRight', 'success', res.data.message)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }catch(err: AxiosError | any){

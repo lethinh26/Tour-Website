@@ -13,7 +13,6 @@ export default function SearchLocation({ setInputData, setLocation }: { setInput
     locations.forEach(item => {
         locationRender.push({label : item.name, value: item.name})
     })
-    console.log(locationRender);
     
     return (
         <div className="flex gap-3 w-full mb-6">

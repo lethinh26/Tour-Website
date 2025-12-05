@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Select, Upload, App, Image } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Select, Upload, App, Image, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, UploadOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { UploadFile, UploadProps } from "antd/es/upload";
+import { tourAPI, tourImageAPI, getUser } from "../../../services/api";
 
 interface TourImage {
   id: number;
@@ -22,49 +23,63 @@ interface TourImageGroup {
 interface Tour {
   id: number;
   name: string;
+  createdBy?: number;
 }
 
 const TourImageManager = () => {
   const { modal, notification } = App.useApp();
   
-  const sampleTours: Tour[] = [
-    { id: 1, name: "Du lịch Hà Nội" },
-    { id: 2, name: "Du lịch Đà Nẵng" },
-    { id: 3, name: "Du lịch Phú Quốc" },
-    { id: 4, name: "Du lịch Nha Trang" },
-    { id: 5, name: "Du lịch Sapa" },
-  ];
-
-  const [tourImages, setTourImages] = useState<TourImage[]>([
-    { 
-      id: 1, 
-      tourId: 1, 
-      tourTitle: "Du lịch Hà Nội", 
-      imageUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
-      position: 1
-    },
-    { 
-      id: 2, 
-      tourId: 1, 
-      tourTitle: "Du lịch Hà Nội", 
-      imageUrl: "https://res.cloudinary.com/demo/image/upload/sample2.jpg",
-      position: 2
-    },
-    { 
-      id: 3, 
-      tourId: 2, 
-      tourTitle: "Du lịch Đà Nẵng", 
-      imageUrl: "https://res.cloudinary.com/demo/image/upload/sample3.jpg",
-      position: 1
-    },
-  ]);
-
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [tourImages, setTourImages] = useState<TourImage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<{ tourId: number; tourTitle: string } | null>(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<Array<{ url: string; position: number; id?: number }>>([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const currentUser = await getUser();
+      setUser(currentUser);
+
+      // Fetch tours with role-based filtering
+      const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
+      const toursRes = await tourAPI.getAll(userId);
+      setTours(toursRes.data);
+
+      // Fetch all images for all tours
+      const allImages: TourImage[] = [];
+      for (const tour of toursRes.data) {
+        const imagesRes = await tourImageAPI.getByTourId(tour.id);
+        imagesRes.data.forEach((img: any) => {
+          allImages.push({
+            id: img.id,
+            tourId: tour.id,
+            tourTitle: tour.name,
+            imageUrl: img.url,
+            position: img.position,
+          });
+        });
+      }
+      setTourImages(allImages);
+    } catch (error: any) {
+      notification.error({
+        message: 'Lỗi tải dữ liệu',
+        description: error.response?.data?.message || 'Không thể tải danh sách ảnh',
+        placement: 'topRight',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getGroupedTours = (): TourImageGroup[] => {
     const grouped = new Map<number, TourImageGroup>();
@@ -95,6 +110,17 @@ const TourImageManager = () => {
   };
 
   const handleEdit = (record: TourImageGroup) => {
+    // Check permission for TOUR_MANAGER
+    const tour = tours.find(t => t.id === record.tourId);
+    if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
+      notification.error({
+        message: 'Không có quyền',
+        description: 'Bạn chỉ có thể chỉnh sửa ảnh của tour do mình tạo ra!',
+        placement: 'topRight',
+      });
+      return;
+    }
+
     setEditingTour({ tourId: record.tourId, tourTitle: record.tourTitle });
     form.setFieldsValue({
       tourId: record.tourId,
@@ -118,7 +144,18 @@ const TourImageManager = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (record: TourImageGroup) => {
+  const handleDelete = async (record: TourImageGroup) => {
+    // Check permission for TOUR_MANAGER
+    const tour = tours.find(t => t.id === record.tourId);
+    if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
+      notification.error({
+        message: 'Không có quyền',
+        description: 'Bạn chỉ có thể xóa ảnh của tour do mình tạo ra!',
+        placement: 'topRight',
+      });
+      return;
+    }
+
     modal.confirm({
       title: 'Xác nhận xóa',
       icon: <ExclamationCircleOutlined />,
@@ -126,13 +163,25 @@ const TourImageManager = () => {
       okText: 'Xóa',
       okType: 'danger',
       cancelText: 'Hủy',
-      onOk() {
-        setTourImages((prev) => prev.filter((img) => img.tourId !== record.tourId));
-        notification.success({
-          message: 'Xóa thành công',
-          description: `Đã xóa tất cả ảnh của tour "${record.tourTitle}".`,
-          placement: 'topRight',
-        });
+      async onOk() {
+        try {
+          // Delete all images for this tour
+          await Promise.all(
+            record.images.map(img => tourImageAPI.delete(img.id))
+          );
+          notification.success({
+            message: 'Xóa thành công',
+            description: `Đã xóa tất cả ảnh của tour "${record.tourTitle}".`,
+            placement: 'topRight',
+          });
+          fetchData();
+        } catch (error: any) {
+          notification.error({
+            message: 'Xóa thất bại',
+            description: error.response?.data?.message || 'Không thể xóa ảnh',
+            placement: 'topRight',
+          });
+        }
       },
     });
   };
@@ -246,24 +295,25 @@ const TourImageManager = () => {
       }
 
       const targetTourId = editingTour ? editingTour.tourId : values.tourId;
-      const selectedTour = sampleTours.find(tour => tour.id === targetTourId);
+      const selectedTour = tours.find(tour => tour.id === targetTourId);
       
       if (editingTour) {
-        setTourImages((prev) => {
-          const filtered = prev.filter(img => img.tourId !== editingTour.tourId);
-          
-          const maxId = Math.max(...prev.map((img) => img.id), 0);
-          
-          const newImages: TourImage[] = uploadedImages.map((img, index) => ({
-            id: img.id || maxId + index + 1,
-            tourId: editingTour.tourId,
-            tourTitle: editingTour.tourTitle,
-            imageUrl: img.url,
-            position: img.position,
-          }));
-          
-          return [...filtered, ...newImages];
-        });
+        // Delete all old images first
+        const oldImages = tourImages.filter(img => img.tourId === editingTour.tourId);
+        await Promise.all(
+          oldImages.map(img => tourImageAPI.delete(img.id))
+        );
+
+        // Create new images
+        await Promise.all(
+          uploadedImages.map(img =>
+            tourImageAPI.create({
+              tourId: editingTour.tourId,
+              url: img.url,
+              position: img.position,
+            })
+          )
+        );
         
         notification.success({
           message: 'Cập nhật thành công',
@@ -271,16 +321,17 @@ const TourImageManager = () => {
           placement: 'topRight',
         });
       } else {
-        const maxId = Math.max(...tourImages.map((img) => img.id), 0);
-        const newImages: TourImage[] = uploadedImages.map((img, index) => ({
-          id: maxId + index + 1,
-          tourId: values.tourId,
-          tourTitle: selectedTour?.name || '',
-          imageUrl: img.url,
-          position: img.position,
-        }));
+        // Create new images
+        await Promise.all(
+          uploadedImages.map(img =>
+            tourImageAPI.create({
+              tourId: values.tourId,
+              url: img.url,
+              position: img.position,
+            })
+          )
+        );
         
-        setTourImages((prev) => [...prev, ...newImages]);
         notification.success({
           message: 'Thêm thành công',
           description: `Đã thêm ${uploadedImages.length} ảnh cho tour "${selectedTour?.name}".`,
@@ -293,8 +344,13 @@ const TourImageManager = () => {
       setFileList([]);
       setUploadedImages([]);
       setEditingTour(null);
-    } catch (error) {
-      console.error("Validation failed:", error);
+      fetchData();
+    } catch (error: any) {
+      notification.error({
+        message: editingTour ? 'Cập nhật thất bại' : 'Thêm thất bại',
+        description: error.response?.data?.message || 'Có lỗi xảy ra',
+        placement: 'topRight',
+      });
     }
   };
 
@@ -408,6 +464,7 @@ const TourImageManager = () => {
         columns={columns}
         dataSource={getGroupedTours()}
         rowKey="tourId"
+        loading={loading}
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
@@ -437,10 +494,11 @@ const TourImageManager = () => {
               placeholder="Tìm kiếm và chọn tour"
               optionFilterProp="children"
               disabled={!!editingTour}
+              loading={loading}
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-              options={sampleTours.map(tour => ({
+              options={tours && tours.map(tour => ({
                 value: tour.id,
                 label: tour.name,
               }))}

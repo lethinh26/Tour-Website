@@ -21,9 +21,12 @@ export interface TravelCardProps {
 }
 
 
-function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
+function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLogin: boolean}) {
     const { id, image, title, address: location, rating, reviews, price, oldPrice } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
+    console.log("islogin", isLogin);
+    
+    
     const navigate = useNavigate();
     const [token] = useState(() => { 
         return localStorage.getItem('token')
@@ -46,11 +49,10 @@ function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
             cover={
                 <div className="relative">
                     <img src={image} alt={title} className="w-full h-56 object-cover" />
-                    {token && <Tooltip title="Yêu thích"
+                    {isLogin && <Tooltip title="Yêu thích"
                     >
                         <div
                             className="absolute top-3 hover:w-10 hover:h-10 hover:z-10 active:z-10 right-3 bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer "
-                            // THAY ĐỔI Ở ĐÂY: Thêm tham số 'e' (sự kiện)
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleSaveFavorite();
@@ -61,7 +63,6 @@ function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
                     </Tooltip>}
                 </div>
             }
-            // Sự kiện này chỉ được kích hoạt nếu không bị chặn từ bên trong
             onClick={() => navigate(`/tour/${id}`)}
         >
             <h3 className="font-bold text-base text-gray-900 mb-1 leading-5 line-clamp-2">{title}</h3>
