@@ -20,6 +20,7 @@ import FavoritesPage from '../pages/Layout/components/FavoritesPage';
 import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
 import AccountSettings from '../pages/Settings/SettingMain';
 import SettingPromotion from '../pages/Settings/SettingPromotion';
+import Auth from '../pages/Admin/components/Auth';
 
 const router = createBrowserRouter([
     {
@@ -75,35 +76,67 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Dashboard />,
+                element: (
+                    <Auth allowedRoles={["ADMIN", "TOUR_MANAGER"]}>
+                        <Dashboard />
+                    </Auth>
+                ),
             },
             {
                 path: "tour-manager/tours",
-                element: <TourList/>
+                element: (
+                    <Auth allowedRoles={["ADMIN", "TOUR_MANAGER"]}>
+                        <TourList/>
+                    </Auth>
+                ),
             },
             {
                 path: "tour-manager/image",
-                element: <TourImageManager/>
+                element: (
+                    <Auth allowedRoles={["ADMIN", "TOUR_MANAGER"]}>
+                        <TourImageManager/>
+                    </Auth>
+                ),
             },
             {
                 path: "tour-manager/departure",
-                element: <TourScheduleManager/>
+                element: (
+                    <Auth allowedRoles={["ADMIN", "TOUR_MANAGER"]}>
+                        <TourScheduleManager/>
+                    </Auth>
+                ),
             },
             {
                 path: "category-manager",
-                element: <CategoryManager />,
+                element: (
+                    <Auth allowedRoles={["ADMIN"]}>
+                        <CategoryManager />
+                    </Auth>
+                ),
             },
             {
                 path: "location-manager",
-                element: <LocationManager />,
+                element: (
+                    <Auth allowedRoles={["ADMIN"]}>
+                        <LocationManager />
+                    </Auth>
+                ),
             },
             {
                 path: "promotion-manager",
-                element: <PromotionManager />,
+                element: (
+                    <Auth allowedRoles={["ADMIN"]}>
+                        <PromotionManager />
+                    </Auth>
+                ),
             },
             {
                 path: "booking-manager",
-                element: <div className="p-8"><h1 className="text-2xl font-bold">Booking Manager</h1></div>,
+                element: (
+                    <Auth allowedRoles={["ADMIN"]}>
+                        <div className="p-8"><h1 className="text-2xl font-bold">Booking Manager</h1></div>
+                    </Auth>
+                ),
             },
         ],
     },

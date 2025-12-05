@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, notification } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, notification, App, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { locationAPI } from "../../../services/api";
 
 interface Location {
   id: number;
@@ -9,14 +10,32 @@ interface Location {
 }
 
 const LocationManager = () => {
-  const [locations, setLocations] = useState<Location[]>([
-    { id: 1, name: "Hà Nội" },
-    { id: 2, name: "Hồ Chí Minh" },
-    { id: 3, name: "Đà Nẵng" },
-  ]);
+  const { modal } = App.useApp();
+  const [locations, setLocations] = useState<Location[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+
+  const fetchLocations = async () => {
+    try {
+      setLoading(true);
+      const response = await locationAPI.getAll();
+      setLocations(response.data);
+    } catch (error) {
+      notification.error({
+        message: 'Lỗi',
+        description: 'Không thể tải danh sách địa điểm',
+        placement: 'topRight',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setEditingLocation(null);
@@ -31,20 +50,29 @@ const LocationManager = () => {
   };
 
   const handleDelete = (record: Location) => {
-    Modal.confirm({
+    modal.confirm({
       title: 'Xác nhận xóa',
       icon: <ExclamationCircleOutlined />,
       content: `Bạn có chắc chắn muốn xóa địa điểm "${record.name}"?`,
       okText: 'Xóa',
       okType: 'danger',
       cancelText: 'Hủy',
-      onOk() {
-        setLocations((prevLocations) => prevLocations.filter((loc) => loc.id !== record.id));
-        notification.success({
-          message: 'Xóa thành công',
-          description: `Địa điểm "${record.name}" đã được xóa khỏi hệ thống.`,
-          placement: 'topRight',
-        });
+      async onOk() {
+        try {
+          await locationAPI.delete(record.id);
+          notification.success({
+            message: 'Xóa thành công',
+            description: `Địa điểm "${record.name}" đã được xóa khỏi hệ thống.`,
+            placement: 'topRight',
+          });
+          fetchLocations();
+        } catch (error: any) {
+          notification.error({
+            message: 'Xóa thất bại',
+            description: error.response?.data?.message || 'Có lỗi xảy ra khi xóa địa điểm',
+            placement: 'topRight',
+          });
+        }
       },
     });
   };
@@ -52,33 +80,32 @@ const LocationManager = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      
       if (editingLocation) {
-        setLocations(
-          locations.map((loc) =>
-            loc.id === editingLocation.id ? { ...loc, name: values.name } : loc
-          )
-        );
+        await locationAPI.update(editingLocation.id, values);
         notification.success({
           message: 'Cập nhật thành công',
           description: `Địa điểm "${values.name}" đã được cập nhật.`,
           placement: 'topRight',
         });
       } else {
-        const newLocation: Location = {
-          id: Math.max(...locations.map((l) => l.id), 0) + 1,
-          name: values.name,
-        };
-        setLocations([...locations, newLocation]);
+        await locationAPI.create(values);
         notification.success({
           message: 'Thêm thành công',
           description: `Địa điểm "${values.name}" đã được thêm vào hệ thống.`,
           placement: 'topRight',
         });
       }
+      
       setIsModalOpen(false);
       form.resetFields();
-    } catch (error) {
-      console.error("Validation failed:", error);
+      fetchLocations();
+    } catch (error: any) {
+      notification.error({
+        message: editingLocation ? 'Cập nhật thất bại' : 'Thêm thất bại',
+        description: error.response?.data?.message || 'Có lỗi xảy ra',
+        placement: 'topRight',
+      });
     }
   };
 
@@ -139,7 +166,8 @@ const LocationManager = () => {
         </Button>
       </div>
 
-      <Table
+      <Spin spinning={loading}>
+        <Table
         columns={columns}
         dataSource={locations}
         rowKey="id"
@@ -150,6 +178,7 @@ const LocationManager = () => {
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
         }}
       />
+      </Spin>
 
       <Modal
         title={editingLocation ? "Edit Location" : "Add Location"}
@@ -180,4 +209,12 @@ const LocationManager = () => {
   );
 };
 
-export default LocationManager;
+const LocationManagerWrapper = () => {
+  return (
+    <App>
+      <LocationManager />
+    </App>
+  );
+};
+
+export default LocationManagerWrapper;

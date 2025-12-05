@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Select, InputNumber, App, Empty } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Select, InputNumber, App, Empty, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
+import { tourAPI, tourDepartureAPI, getUser } from "../../../services/api";
 import icon_person from "../../../assets/icons/icon_person.png"
 import icon_currency from "../../../assets/icons/icon_currency.png"
 import icon_schedule from "../../../assets/icons/icon_schedule.png"
@@ -32,40 +33,66 @@ interface TourScheduleGroup {
 interface Tour {
     id: number;
     name: string;
+    createdBy?: number;
 }
 
 const TourScheduleManager = () => {
     const { modal, notification } = App.useApp();
 
-    const sampleTours: Tour[] = [
-        { id: 1, name: "Du lịch Hà Nội" },
-        { id: 2, name: "Du lịch Đà Nẵng" },
-        { id: 3, name: "Du lịch Phú Quốc" },
-        { id: 4, name: "Du lịch Nha Trang" },
-        { id: 5, name: "Du lịch Sapa" },
-    ];
-
-    const [schedules, setSchedules] = useState<TourSchedule[]>([
-        {
-            tourId: 1,
-            tourTitle: "Du lịch Hà Nội",
-            departures: [
-                { id: 1, date: new Date("2025-12-15"), price: 5000000, capacity: 30 },
-                { id: 2, date: new Date("2025-12-20"), price: 5500000, capacity: 25 },
-            ],
-        },
-        {
-            tourId: 2,
-            tourTitle: "Du lịch Đà Nẵng",
-            departures: [{ id: 3, date: new Date("2025-12-18"), price: 7000000, capacity: 20 }],
-        },
-    ]);
+    const [tours, setTours] = useState<Tour[]>([]);
+    const [schedules, setSchedules] = useState<TourSchedule[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<{ tourId: number; tourTitle: string } | null>(null);
     const [form] = Form.useForm();
     const [departures, setDepartures] = useState<Departure[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
     const [showDatePicker, setShowDatePicker] = useState(false);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const currentUser = await getUser();
+            setUser(currentUser);
+
+            // Fetch tours with role-based filtering
+            const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
+            const toursRes = await tourAPI.getAll(userId);
+            setTours(toursRes.data);
+
+            // Fetch all departures for all tours
+            const allSchedules: TourSchedule[] = [];
+            for (const tour of toursRes.data) {
+                const departuresRes = await tourDepartureAPI.getByTourId(tour.id);
+                if (departuresRes.data.length > 0) {
+                    allSchedules.push({
+                        tourId: tour.id,
+                        tourTitle: tour.name,
+                        departures: departuresRes.data.map((dep: any) => ({
+                            id: dep.id,
+                            date: new Date(dep.departure),
+                            price: dep.price,
+                            capacity: dep.capacity,
+                        })),
+                    });
+                }
+            }
+            setSchedules(allSchedules);
+        } catch (error: any) {
+            notification.error({
+                message: 'Lỗi tải dữ liệu',
+                description: error.response?.data?.message || 'Không thể tải danh sách lịch khởi hành',
+                placement: 'topRight',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getGroupedSchedules = (): TourScheduleGroup[] => {
         return schedules.map((schedule, index) => ({
@@ -87,6 +114,17 @@ const TourScheduleManager = () => {
     };
 
     const handleEdit = (record: TourScheduleGroup) => {
+        // Check permission for TOUR_MANAGER
+        const tour = tours.find(t => t.id === record.tourId);
+        if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
+            notification.error({
+                message: 'Không có quyền',
+                description: 'Bạn chỉ có thể chỉnh sửa lịch khởi hành của tour do mình tạo ra!',
+                placement: 'topRight',
+            });
+            return;
+        }
+
         setEditingSchedule({ tourId: record.tourId, tourTitle: record.tourTitle });
         form.setFieldsValue({
             tourId: record.tourId,
@@ -97,7 +135,18 @@ const TourScheduleManager = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (record: TourScheduleGroup) => {
+    const handleDelete = async (record: TourScheduleGroup) => {
+        // Check permission for TOUR_MANAGER
+        const tour = tours.find(t => t.id === record.tourId);
+        if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
+            notification.error({
+                message: 'Không có quyền',
+                description: 'Bạn chỉ có thể xóa lịch khởi hành của tour do mình tạo ra!',
+                placement: 'topRight',
+            });
+            return;
+        }
+
         modal.confirm({
             title: "Xác nhận xóa",
             icon: <ExclamationCircleOutlined />,
@@ -105,13 +154,25 @@ const TourScheduleManager = () => {
             okText: "Xóa",
             okType: "danger",
             cancelText: "Hủy",
-            onOk() {
-                setSchedules((prev) => prev.filter((s) => s.tourId !== record.tourId));
-                notification.success({
-                    message: "Xóa thành công",
-                    description: `Đã xóa tất cả lịch khởi hành của tour "${record.tourTitle}".`,
-                    placement: "topRight",
-                });
+            async onOk() {
+                try {
+                    // Delete all departures for this tour
+                    await Promise.all(
+                        record.departures.map(dep => tourDepartureAPI.delete(dep.id))
+                    );
+                    notification.success({
+                        message: "Xóa thành công",
+                        description: `Đã xóa tất cả lịch khởi hành của tour "${record.tourTitle}".`,
+                        placement: "topRight",
+                    });
+                    fetchData();
+                } catch (error: any) {
+                    notification.error({
+                        message: 'Xóa thất bại',
+                        description: error.response?.data?.message || 'Không thể xóa lịch khởi hành',
+                        placement: 'topRight',
+                    });
+                }
             },
         });
     };
@@ -180,25 +241,32 @@ const TourScheduleManager = () => {
             }
 
             if (editingSchedule) {
-                // Edit mode
-                setSchedules((prev) =>
-                    prev.map((s) =>
-                        s.tourId === editingSchedule.tourId
-                            ? {
-                                  ...s,
-                                  departures: departures,
-                              }
-                            : s
+                // Edit mode - delete old departures and create new ones
+                const oldDepartures = schedules.find(s => s.tourId === editingSchedule.tourId)?.departures || [];
+                await Promise.all(
+                    oldDepartures.map(dep => tourDepartureAPI.delete(dep.id))
+                );
+
+                await Promise.all(
+                    departures.map(dep =>
+                        tourDepartureAPI.create({
+                            tourId: editingSchedule.tourId,
+                            departure: dep.date.toISOString(),
+                            price: dep.price,
+                            capacity: dep.capacity,
+                            availableSeats: dep.capacity,
+                        })
                     )
                 );
+
                 notification.success({
                     message: "Cập nhật thành công",
                     description: `Đã cập nhật ${departures.length} lịch khởi hành cho tour "${editingSchedule.tourTitle}".`,
                     placement: "topRight",
                 });
             } else {
-                // Add mode - check if tour already exists
-                const selectedTour = sampleTours.find((tour) => tour.id === values.tourId);
+                // Add mode
+                const selectedTour = tours.find((tour) => tour.id === values.tourId);
                 const existingSchedule = schedules.find((s) => s.tourId === values.tourId);
 
                 if (existingSchedule) {
@@ -210,12 +278,18 @@ const TourScheduleManager = () => {
                     return;
                 }
 
-                const newSchedule: TourSchedule = {
-                    tourId: values.tourId,
-                    tourTitle: selectedTour?.name || "",
-                    departures: departures,
-                };
-                setSchedules((prev) => [...prev, newSchedule]);
+                await Promise.all(
+                    departures.map(dep =>
+                        tourDepartureAPI.create({
+                            tourId: values.tourId,
+                            departure: dep.date.toISOString(),
+                            price: dep.price,
+                            capacity: dep.capacity,
+                            availableSeats: dep.capacity,
+                        })
+                    )
+                );
+
                 notification.success({
                     message: "Thêm thành công",
                     description: `Đã thêm ${departures.length} lịch khởi hành cho tour "${selectedTour?.name}".`,
@@ -229,8 +303,13 @@ const TourScheduleManager = () => {
             setEditingSchedule(null);
             setSelectedDate(undefined);
             setShowDatePicker(false);
-        } catch (error) {
-            console.error("Validation failed:", error);
+            fetchData();
+        } catch (error: any) {
+            notification.error({
+                message: editingSchedule ? 'Cập nhật thất bại' : 'Thêm thất bại',
+                description: error.response?.data?.message || 'Có lỗi xảy ra',
+                placement: 'topRight',
+            });
         }
     };
 
@@ -293,6 +372,7 @@ const TourScheduleManager = () => {
                 columns={columns}
                 dataSource={getGroupedSchedules()}
                 rowKey="id"
+                loading={loading}
                 pagination={{
                     defaultPageSize: 10,
                     showSizeChanger: true,
@@ -317,8 +397,9 @@ const TourScheduleManager = () => {
                             placeholder="Tìm kiếm và chọn tour"
                             optionFilterProp="children"
                             disabled={!!editingSchedule}
+                            loading={loading}
                             filterOption={(input, option) => (option?.label ?? "").toLowerCase().includes(input.toLowerCase())}
-                            options={sampleTours.map((tour) => ({
+                            options={tours && tours.map((tour) => ({
                                 value: tour.id,
                                 label: tour.name,
                             }))}

@@ -1,24 +1,43 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, App } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, App, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { categoryAPI } from "../../../services/api";
 
 interface Category {
   id: number;
   name: string;
   description: string;
+  createdAt?: string;
 }
 
 const CategoryManager = () => {
   const { modal, notification } = App.useApp();
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: "Du lịch biển", description: "Các tour du lịch biển đảo" },
-    { id: 2, name: "Du lịch núi", description: "Các tour leo núi, trekking" },
-    { id: 3, name: "Du lịch văn hóa", description: "Khám phá văn hóa địa phương" },
-  ]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await categoryAPI.getAll();
+      setCategories(response.data);
+    } catch (error) {
+      notification.error({
+        message: 'Lỗi',
+        description: 'Không thể tải danh sách danh mục',
+        placement: 'topRight',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setEditingCategory(null);
@@ -40,13 +59,22 @@ const CategoryManager = () => {
       okText: 'Xóa',
       okType: 'danger',
       cancelText: 'Hủy',
-      onOk() {
-        setCategories((prevCategories) => prevCategories.filter((cat) => cat.id !== record.id));
-        notification.success({
-          message: 'Xóa thành công',
-          description: `Danh mục "${record.name}" đã được xóa khỏi hệ thống.`,
-          placement: 'topRight',
-        });
+      async onOk() {
+        try {
+          await categoryAPI.delete(record.id);
+          notification.success({
+            message: 'Xóa thành công',
+            description: `Danh mục "${record.name}" đã được xóa khỏi hệ thống.`,
+            placement: 'topRight',
+          });
+          fetchCategories();
+        } catch (error: any) {
+          notification.error({
+            message: 'Xóa thất bại',
+            description: error.response?.data?.message || 'Có lỗi xảy ra khi xóa danh mục',
+            placement: 'topRight',
+          });
+        }
       },
     });
   };
@@ -54,36 +82,32 @@ const CategoryManager = () => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      
       if (editingCategory) {
-        setCategories(
-          categories.map((cat) =>
-            cat.id === editingCategory.id
-              ? { ...cat, name: values.name, description: values.description }
-              : cat
-          )
-        );
+        await categoryAPI.update(editingCategory.id, values);
         notification.success({
           message: 'Cập nhật thành công',
           description: `Danh mục "${values.name}" đã được cập nhật.`,
           placement: 'topRight',
         });
       } else {
-        const newCategory: Category = {
-          id: Math.max(...categories.map((c) => c.id), 0) + 1,
-          name: values.name,
-          description: values.description,
-        };
-        setCategories([...categories, newCategory]);
+        await categoryAPI.create(values);
         notification.success({
           message: 'Thêm thành công',
           description: `Danh mục "${values.name}" đã được thêm vào hệ thống.`,
           placement: 'topRight',
         });
       }
+      
       setIsModalOpen(false);
       form.resetFields();
-    } catch (error) {
-      console.error("Validation failed:", error);
+      fetchCategories();
+    } catch (error: any) {
+      notification.error({
+        message: editingCategory ? 'Cập nhật thất bại' : 'Thêm thất bại',
+        description: error.response?.data?.message || 'Có lỗi xảy ra',
+        placement: 'topRight',
+      });
     }
   };
 
@@ -150,10 +174,11 @@ const CategoryManager = () => {
         </Button>
       </div>
 
-      <Table
-        columns={columns}
-        dataSource={categories}
-        rowKey="id"
+      <Spin spinning={loading}>
+        <Table
+          columns={columns}
+          dataSource={categories}
+          rowKey="id"
         pagination={{
           defaultPageSize: 10,
           showSizeChanger: true,
@@ -162,6 +187,7 @@ const CategoryManager = () => {
         }}
         className="bg-white rounded-lg shadow"
       />
+      </Spin>
 
       <Modal
         title={editingCategory ? "Edit Category" : "Add Category"}
