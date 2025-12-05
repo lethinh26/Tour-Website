@@ -1,16 +1,13 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { LayoutMain } from '../pages/Layout/LayoutMain';
-// import { PaymentMain } from '../pages/Payment/PaymentInfo/PaymentMain';
 import DashboardMain from '../pages/Dashboard/DashboardMain';
 import PromotionMain from '../pages/Promotion/PromotionMain';
-// import PaymentCardMain from '../pages/Payment/PaymentCard/PaymentCardMain';
 import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
 import NotFoundPage from '../pages/404';
 import AdminLayout from '../pages/Admin/AdminLayout';
-import Dashboard from '../pages/Admin/components/Dashboard';
 import LocationManager from '../pages/Admin/components/LocationManager';
 import CategoryManager from '../pages/Admin/components/CategoryManager';
 import PromotionManager  from '../pages/Admin/components/PromotionManager';
@@ -21,6 +18,7 @@ import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
 import AccountSettings from '../pages/Settings/SettingMain';
 import SettingPromotion from '../pages/Settings/SettingPromotion';
 import Auth from '../pages/Admin/components/Auth';
+import Dashboard from '../pages/Admin/components/Dashboard';
 
 const router = createBrowserRouter([
     {

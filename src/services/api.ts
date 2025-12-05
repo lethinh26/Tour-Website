@@ -119,6 +119,11 @@ export const tourAPI = {
     delete: async (id: number) => {
         const res = await axios.delete(`${API_BASE_URL}/tours/${id}`);
         return res.data;
+    },
+
+    count: async (token: string) => {
+        const res = await axios.get(`${API_BASE_URL}/tours/count`);
+        return res.data;
     }
 };
 
@@ -316,5 +321,74 @@ export const dashboardAPI = {
             console.error('Get top tours failed:', error);
             throw error;
         }
+    }
+};
+
+export const bookingAPI = {
+    // Tour Manager: Đếm khách hàng của tour do mình tạo
+    countCustomers: async () => {
+        const token = getToken();
+        const res = await axios.get(`${API_BASE_URL}/bookings/countCustomers`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    },
+
+    // Admin only: Đếm tất cả khách hàng hệ thống
+    countAllCustomers: async () => {
+        const res = await axios.get(`${API_BASE_URL}/bookings/countAllCustomers`);
+        return res.data;
+    },
+
+    // Tour Manager: Đếm booking thành công của tour do mình tạo
+    countBookingSuccess: async () => {
+        const token = getToken();
+        const res = await axios.get(`${API_BASE_URL}/bookings/countBookingSuccess`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    },
+
+    // Admin only: Đếm tất cả booking thành công
+    countAllBookingsSuccess: async () => {
+        const res = await axios.get(`${API_BASE_URL}/bookings/countAllBookingsSuccess`);
+        return res.data;
+    },
+
+    // Tour Manager: Doanh thu theo tháng của tour do mình tạo
+    monthlyRevenue: async (month: number, year?: number) => {
+        const token = getToken();
+        const params: any = { month };
+        if (year) params.year = year;
+        
+        const res = await axios.get(`${API_BASE_URL}/bookings/monthlyRevenue`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params
+        });
+        return res.data;
+    },
+
+    // Admin only: Top tour phổ biến nhất toàn hệ thống
+    topTourAll: async (limit: number = 10) => {
+        const res = await axios.get(`${API_BASE_URL}/bookings/topTourAll`, {
+            params: { limit }
+        });
+        return res.data;
+    },
+
+    // Tour Manager: Top tour phổ biến của tour do mình tạo
+    topTour: async (limit: number = 10) => {
+        const token = getToken();
+        const res = await axios.get(`${API_BASE_URL}/bookings/topTour`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { limit }
+        });
+        return res.data;
+    },
+
+    // Đếm tổng số tour
+    countTours: async () => {
+        const res = await axios.get(`${API_BASE_URL}/tours`);
+        return { count: res.data.length };
     }
 };
