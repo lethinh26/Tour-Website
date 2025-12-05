@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { App, Layout, Menu } from "antd";
 import {
@@ -11,31 +11,76 @@ import {
     LogoutOutlined,
 } from "@ant-design/icons";
 import logo_triploka from "../../assets/logos/logo_tripoka.png";
+import axios from "axios";
+const { Sider, Content } = Layout;  
 
-const { Sider, Content } = Layout;
+interface UserResponse {
+    role: string;
+  name: string;
+  email: string;
+}
 
 const AdminLayout = () => {
+    const [user, setUser] = useState<UserResponse | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
 
-    const menuItems = [
-        { key: "/admin", icon: <DashboardOutlined />, label: "Dashboard" },
-        {
-            key: "/admin/tour-manager",
-            icon: <CarOutlined />,
-            label: "Tour Management",
-            children: [
-                { key: "/admin/tour-manager/tours", label: "Tour" },
-                { key: "/admin/tour-manager/departure", label: "Departure" },
-                { key: "/admin/tour-manager/image", label: "Image" },
-            ],
-        },
-        { key: "/admin/category-manager", icon: <AppstoreOutlined />, label: "Category Manager" },
-        { key: "/admin/location-manager", icon: <EnvironmentOutlined />, label: "Location Manager" },
-        { key: "/admin/booking-manager", icon: <CalendarOutlined />, label: "Booking Manager" },
-        { key: "/admin/promotion-manager", icon: <CalendarOutlined />, label: "Promotion Manager" },
-    ];
+    const getUser = useCallback(async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                navigate("/");
+                return;
+            }
+
+            const res = await axios.post<UserResponse>("http://localhost:3000/api/auth/getUser", { token });
+
+            if (res.data.role === "USER") {
+                navigate("/");
+                return;
+            }
+                  
+            setUser(res.data);
+            
+        } catch {
+            navigate("/");
+        }
+    }, [navigate]);    useEffect(() => {
+        getUser();
+    }, [getUser])
+
+    const menuItems = user?.role === "TOUR_MANAGER" 
+        ? [
+            { key: "/admin", icon: <DashboardOutlined />, label: "Dashboard" },
+            {
+                key: "/admin/tour-manager",
+                icon: <CarOutlined />,
+                label: "Tour Management",
+                children: [
+                    { key: "/admin/tour-manager/tours", label: "Tour" },
+                    { key: "/admin/tour-manager/departure", label: "Departure" },
+                    { key: "/admin/tour-manager/image", label: "Image" },
+                ],
+            },
+        ]
+        : [
+            { key: "/admin", icon: <DashboardOutlined />, label: "Dashboard" },
+            {
+                key: "/admin/tour-manager",
+                icon: <CarOutlined />,
+                label: "Tour Management",
+                children: [
+                    { key: "/admin/tour-manager/tours", label: "Tour" },
+                    { key: "/admin/tour-manager/departure", label: "Departure" },
+                    { key: "/admin/tour-manager/image", label: "Image" },
+                ],
+            },
+            { key: "/admin/category-manager", icon: <AppstoreOutlined />, label: "Category Manager" },
+            { key: "/admin/location-manager", icon: <EnvironmentOutlined />, label: "Location Manager" },
+            { key: "/admin/booking-manager", icon: <CalendarOutlined />, label: "Booking Manager" },
+            { key: "/admin/promotion-manager", icon: <CalendarOutlined />, label: "Promotion Manager" },
+        ];
 
     return (
         <App>
@@ -77,7 +122,7 @@ const AdminLayout = () => {
                                     <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                                         <UserOutlined className="text-gray-600" />
                                     </div>
-                                    <span className="text-sm font-medium text-gray-700">Name</span>
+                                    <span className="text-sm font-medium text-gray-700">{user?.name}</span>
                                 </div>
                                 <LogoutOutlined className="text-red-400! text-xl! font-bold! cursor-pointer!" />
                             </div>

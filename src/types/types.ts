@@ -1,4 +1,4 @@
-export type Role = 'USER' | 'ADMIN';
+export type Role = 'USER' | 'ADMIN' | "TOUR_MANAGER";
 export type OrderStatus = 'PENDING' | 'PAID' | 'CANCELLED';
 export type PaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED';
 export type PaymentMethod = 'CASH' | 'BANK_TRANSFER';
