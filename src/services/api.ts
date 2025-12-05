@@ -10,6 +10,7 @@ export const getUser = async () => {
     
     try {
         const res = await axios.post(`${API_BASE_URL}/auth/getUser`, { token });
+        
         return res.data;
     } catch (error) {
         console.error('Get user failed:', error);

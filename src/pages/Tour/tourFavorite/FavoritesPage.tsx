@@ -37,7 +37,6 @@ const FavoritesPage = () => {
     useEffect(() => {
         getDataFavoriteTours().then((data) => {
             // setDataFavorite(data.tourFavorited)
-            console.log(data);
 
             setFavoriteItem(() => {
                 return data.tourFavorited.map(item => {
@@ -54,7 +53,6 @@ const FavoritesPage = () => {
             })
         }).catch((error) => {
             setDataFavorite([])
-            console.log(error)
         })
     }, [images, categories])
     const getDataFavoriteTours = async () => {

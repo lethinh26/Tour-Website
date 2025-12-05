@@ -4,7 +4,7 @@ import TravelCard, { type TravelCardProps } from "./TravelCard";
 
 
 
-function ListCard({ dataTour }: { dataTour: TravelCardProps[] }) {
+function ListCard({ dataTour, isLogin }: { dataTour: TravelCardProps[], isLogin: boolean }) {
     
 
 
@@ -132,7 +132,7 @@ function ListCard({ dataTour }: { dataTour: TravelCardProps[] }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {dataTour.slice((current - 1) * pageSize, current * pageSize)
                     .map((item) => (
-                        <TravelCard propTravel={item} key={item.title + item.price} />
+                        <TravelCard propTravel={item} key={item.title + item.price} isLogin={isLogin}/>
                     ))}
             </div>
             <div className="flex justify-center mt-6">

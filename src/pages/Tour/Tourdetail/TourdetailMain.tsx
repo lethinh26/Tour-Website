@@ -19,7 +19,7 @@ export default function TourDetailMain() {
         dispatch(fetchDataTourDetail(id))
     },[dispatch, id])
     
-    const {tour, images, departure, status} = useSelector((state: StoreType) => state.tourDetailReducer)
+    const {tour, images, status} = useSelector((state: StoreType) => state.tourDetailReducer)
     const htmlObjectDesciption = { __html: tour?.description || ""};
     const htmlObjectInfomation = { __html: tour?.information || ""};
     if(status == 'loading'){
@@ -30,7 +30,7 @@ export default function TourDetailMain() {
             <HeadT images={images}/>
             <div className="flex flex-col items-center w-full">
                 <div className="w-full max-w-[1200px] px-2 md:px-6 py-10">
-                    <InfoHeader tour={tour} departure={departure}/>
+                    <InfoHeader tour={tour}/>
                     <Section title={`Về ${tour?.name}`}>
                         <div dangerouslySetInnerHTML={htmlObjectDesciption}/>
                         
