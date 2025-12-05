@@ -24,6 +24,7 @@ export interface TravelCardProps {
 function TravelCard({ propTravel }: { propTravel: TravelCardProps }) {
     const { id, image, title, address: location, rating, reviews, price, oldPrice } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
+    
     const navigate = useNavigate();
     const [token] = useState(() => { 
         return localStorage.getItem('token')

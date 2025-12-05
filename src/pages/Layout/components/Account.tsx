@@ -12,7 +12,6 @@ import type { AppDispatch } from '../../../stores';
 import { useNavigate } from 'react-router';
 import { useState } from 'react';
 
-// Màu chủ đạo
 const PRIMARY_COLOR = '#007AFF';
 
 export default function Account() {
@@ -30,7 +29,7 @@ export default function Account() {
             label: 'Đặt chỗ của tôi',
             icon: <ScheduleOutlined style={{ fontSize: 20, color: PRIMARY_COLOR }} />,
         },
-        { id: 'divider' }, // Dòng kẻ
+        { id: 'divider' },
         {
             id: 'account',
             label: 'Tài khoản',
@@ -47,7 +46,8 @@ export default function Account() {
         switch(event){
             case ('logout'):{
                 dispatch(userLogout())
-                navigate('/')
+                localStorage.removeItem("token");
+                window.location.reload();
                 break
             }
             case ('account'):{
@@ -66,19 +66,15 @@ export default function Account() {
                 ${isOpen ? 'bg-blue-50 ring-2 ring-blue-100' : 'bg-gray-100 hover:bg-gray-200'}
             `}
                     >
-                        {/* Avatar tự dựng bằng div */}
                         <div className="relative w-8 h-8 rounded-full bg-[#007AFF] flex items-center justify-center text-white">
                             <UserOutlined style={{ fontSize: 18 }} />
-                            {/* Status dot */}
                             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
                         </div>
 
-                        {/* Tên User */}
                         <span className="text-[#007AFF] font-bold text-sm tracking-wide ml-1">
                             Lê Phú Thịnh
                         </span>
 
-                        {/* Icon Mũi tên */}
                         <DownOutlined
                             style={{ fontSize: 12 }}
                             className={`text-[#007AFF] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
@@ -100,7 +96,6 @@ export default function Account() {
                                                     className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors flex items-center gap-3 group"
                                                     onClick={() => handleClick(item.id)}
                                                 >
-                                                    {/* Icon */}
                                                     <span className={newLocal}>
                                                         {item.icon}
                                                     </span>
