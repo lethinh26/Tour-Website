@@ -28,7 +28,7 @@ export default function AccountSettings() {
             return
         }
         try{
-            const res = await axios.patch('http://localhost:3000/api/auth/changepass', {
+            const res = await axios.patch(`${import.meta.env.VITE_API_URL}/auth/changepass`, {
                 token,
                 oldPassword,
                 newPassword 
@@ -69,18 +69,15 @@ export default function AccountSettings() {
                     </ul>
                 </div>
 
-                {/* Main Content */}
                 <div className="w-3/4">
                     <h2 className="text-2xl font-bold mb-6">Cài đặt</h2>
 
-                    {/* Tabs */}
                     <div className="flex gap-6 pb-2 mb-6">
                         <button className="font-semibold text-blue-600 border-b-2 border-blue-600 pb-1">
                             Mật khẩu & Bảo mật
                         </button>
                     </div>
 
-                    {/* Change Password */}
                     <div className="bg-gray-50 p-6 rounded-xl shadow-sm mb-6">
                         <h3 className="text-lg font-semibold mb-4">Đổi mật khẩu</h3>
                         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -92,7 +89,6 @@ export default function AccountSettings() {
                         </Button>
                     </div>
 
-                    {/* Delete Account */}
                     <div className="bg-gray-50 p-6 rounded-xl shadow-sm flex justify-between items-center">
                         <div>
                             <h3 className="text-lg font-semibold">Xóa tài khoản</h3>

@@ -15,7 +15,7 @@ const initialState: initialStateType = {
 }
 
 export const fetchDataPromotion = createAsyncThunk('promotion/fetchData', async () => {
-    const promotion = await axios.get("http://localhost:3000/api/promotions")
+    const promotion = await axios.get(`${import.meta.env.VITE_API_URL}/promotions`)
     return promotion.data
 })
 

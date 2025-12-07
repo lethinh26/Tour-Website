@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, StoreType } from "../../../stores";
 import { fetchDataTicketTour } from "../../../stores/slides/tourTicket.slice";
 import FullPageLoader from "../../../common/Loading";
+import { Empty, Modal, notification } from "antd";
+import { orderAPI, paymentAPI, getUser } from "../../../services/api";
 
 const formatVND = (n: number) => new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " VND";
 const getDMY = (date: Date) => {
@@ -24,7 +26,9 @@ export default function TourTikket() {
     }, [dispatch, id])
     const { tour, images, departures, status } = useSelector((state: StoreType) => state.tourTicketReducer)
     const [selected, setSelected] = useState<Date>();
-
+    const [api, contextHolder] = notification.useNotification();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreatingPayment, setIsCreatingPayment] = useState(false);
 
     const navigate = useNavigate()
 
@@ -42,12 +46,97 @@ export default function TourTikket() {
         selected && getDMY(new Date(item.departure)) == getDMY(selected) && getTime(new Date(item.departure)) == selectedTime
     )
     const total = departureFind?.price ? numberTicket * departureFind?.price : 0
+
+    const handleConfirmBooking = async () => {
+        setIsCreatingPayment(true);
+        try {
+            const user = await getUser();
+            if (!user) {
+                api.error({
+                    message: 'Lỗi',
+                    description: 'Vui lòng đăng nhập để đặt vé',
+                });
+                setIsCreatingPayment(false);
+                setIsModalOpen(false);
+                return;
+            }
+
+            if (!departureFind) {
+                api.error({
+                    message: 'Lỗi',
+                    description: 'Vui lòng chọn lịch khởi hành',
+                });
+                setIsCreatingPayment(false);
+                setIsModalOpen(false);
+                return;
+            }
+
+            // Tạo order
+            const orderData = {
+                userId: user.id,
+                items: [{
+                    quantity: numberTicket,
+                    unitPrice: Number(departureFind.price),
+                    tourDepartureId: departureFind.id
+                }],
+                totalAmount: Number(total),
+                status: 'PENDING' as const
+            };
+            const order = await orderAPI.create(orderData);
+
+            // Tạo payment
+            const paymentData = {
+                orderId: order.id,
+                userId: user.id,
+                amount: Number(total),
+                method: 'BANK_TRANSFER' as const,
+                status: 'PENDING' as const
+            };
+            const payment = await paymentAPI.create(paymentData);
+
+            api.success({
+                message: 'Thành công',
+                description: 'Đã tạo đơn đặt vé. Chuyển đến trang thanh toán...',
+            });
+
+            // Chuyển đến trang payment với UUID
+            setTimeout(() => {
+                navigate(`/payment/${payment.id}`);
+            }, 1000);
+
+        } catch (error: any) {
+            console.error('Create payment error:', error);
+            api.error({
+                message: 'Lỗi',
+                description: error?.response?.data?.message || 'Không thể tạo đơn đặt vé. Vui lòng thử lại.',
+            });
+            setIsCreatingPayment(false);
+            setIsModalOpen(false);
+        }
+    };
+
     if (status == 'loading'){
         return <FullPageLoader/>
     }else
     return (
         <div className="w-full min-h-screen bg-gray-50">
-            {/* Header / Breadcrumb */}
+            {contextHolder}
+            <Modal
+                title="Xác nhận đặt vé"
+                open={isModalOpen}
+                onOk={handleConfirmBooking}
+                onCancel={() => setIsModalOpen(false)}
+                okText="Xác nhận"
+                cancelText="Hủy"
+                confirmLoading={isCreatingPayment}
+            >
+                <div className="space-y-3">
+                    <p><strong>Tour:</strong> {tour?.name}</p>
+                    <p><strong>Ngày khởi hành:</strong> {selected ? getDMY(selected) : ''} {selectedTime}</p>
+                    <p><strong>Số lượng vé:</strong> {numberTicket}</p>
+                    <p><strong>Tổng tiền:</strong> <span className="text-orange-600 font-bold">{formatVND(total)}</span></p>
+                </div>
+            </Modal>
             <div className="mx-auto max-w-6xl px-4 sm:px-6 py-3">
                 <button type="button" className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:font-extrabold hover:text-[18px]"
                     onClick={() => {
@@ -62,11 +151,9 @@ export default function TourTikket() {
 
             <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-16">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* LEFT SIDEBAR */}
                     <aside className="lg:col-span-3">
                         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
                             <div className="aspect-4/3 bg-gray-200">
-                                {/* Ảnh demo */}
                                 <img
                                     className="h-full w-full object-cover"
                                     alt="Tour thumbnail"
@@ -99,7 +186,6 @@ export default function TourTikket() {
                         </div>
                     </aside>
 
-                    {/* MAIN */}
                     <main className="lg:col-span-9">
                         <section className="rounded-xl border border-gray-200 bg-white p-4 sm:p-6">
                             <div className="flex items-center justify-center">
@@ -131,7 +217,6 @@ export default function TourTikket() {
                                 </div>
                             </div>
 
-                            {/* Tickets */}
 
                             {(departureFind && selectedTime && times.length && !times[0].includes('--:--')) ?
                                 <>
@@ -203,13 +288,13 @@ export default function TourTikket() {
                                             disabled={total === 0}
                                             className={`rounded-lg px-6 py-3 font-semibold transition
                     ${total === 0 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-sky-500 text-white hover:bg-sky-600"}`}
-                    onClick={() => navigate(`/payment/${tour?.id}`)}
+                                            onClick={() => setIsModalOpen(true)}
                                         >
                                             Đặt ngay
                                         </button>
                                     </div>
                                 </>
-                                : <h2>Chưa xếp lịch</h2>
+                                : <Empty description="Hãy chọn lịch"></Empty>
                             }
 
 

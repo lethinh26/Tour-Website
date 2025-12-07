@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://160.191.236.178:3000/api';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -203,6 +203,21 @@ export const promotionAPI = {
         const res = await axios.get(`${API_BASE_URL}/promotions/${userId}`);
         return res.data;
     },
+
+    getByToken: async (token: string) => {
+        const res = await axios.get(`${API_BASE_URL}/promotions/token/${token}`);
+        return res.data;
+    },
+
+    checkUsable: async (code: string, userId: number) => {
+        const res = await axios.post(`${API_BASE_URL}/promotions/check-usable`, { code, userId });
+        return res.data;
+    },
+
+    use: async (code: string, userId: number) => {
+        const res = await axios.post(`${API_BASE_URL}/promotions/use`, { code, userId });
+        return res.data;
+    },
     
     create: async (data: {
         discount: number;
@@ -230,12 +245,12 @@ export const promotionAPI = {
     }) => {
         console.log(data.description);
         
-        const res = await axios.patch(`${API_BASE_URL}/promotions/${id}`, data);
+        const res = await axios.patch(`${API_BASE_URL}/promotion/${id}`, data);
         return res.data;
     },
     
     delete: async (id: number) => {
-        const res = await axios.delete(`${API_BASE_URL}/promotions/${id}`);
+        const res = await axios.delete(`${API_BASE_URL}/promotion/${id}`);
         return res.data;
     }
 };
@@ -391,5 +406,66 @@ export const bookingAPI = {
     countTours: async () => {
         const res = await axios.get(`${API_BASE_URL}/tours`);
         return { count: res.data.length };
+    }
+};
+
+export const orderAPI = {
+    create: async (data: {
+        userId: number;
+        items: { quantity: number; unitPrice: number; tourDepartureId: number }[];
+        totalAmount: number;
+        status: 'PENDING' | 'PAID' | 'CANCELLED';
+    }) => {
+        const res = await axios.post(`${API_BASE_URL}/payments/order`, data);
+        return res.data;
+    },
+    
+    getById: async (id: number) => {
+        const res = await axios.get(`${API_BASE_URL}/payments/order/${id}`);
+        return res.data;
+    }
+};
+
+export const orderItemAPI = {
+    create: async (data: {
+        orderId: number;
+        quantity: number;
+        unitPrice: number;
+        tourDepartureId: number;
+    }) => {
+        const res = await axios.post(`${API_BASE_URL}/payments/order-item`, data);
+        return res.data;
+    }
+};
+
+export const paymentAPI = {
+    create: async (data: {
+        orderId: number;
+        userId: number;
+        amount: number;
+        method: 'CASH' | 'BANK_TRANSFER';
+        status: 'PENDING' | 'SUCCESS' | 'FAILED';
+    }) => {
+        const res = await axios.post(`${API_BASE_URL}/payments`, data);
+        return res.data;
+    },
+    
+    getById: async (id: string) => {
+        const res = await axios.get(`${API_BASE_URL}/payments/${id}`);
+        return res.data;
+    },
+    
+    update: async (id: string, data: {
+        amount?: number;
+        method?: 'CASH' | 'BANK_TRANSFER';
+        status?: 'PENDING' | 'SUCCESS' | 'FAILED';
+    }) => {
+        const res = await axios.patch(`${API_BASE_URL}/payments/${id}`, data);
+        return res.data;
+    },
+    
+    getAll: async () => {
+        const res = await axios.get(`${API_BASE_URL}/payments`);
+        return res.data;
     }
 };
