@@ -31,10 +31,11 @@ const Header = () => {
                 setUser(null);
                 return;
             }
-            const res = await axios.post("http://localhost:3000/api/auth/getUser", { token: tokenUser });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token: tokenUser });
             setUser(res.data);
         } catch (error) {
             console.error("Failed to get user:", error);
+            localStorage.removeItem("token");
             setUser(null);
         }
     }, []);

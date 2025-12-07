@@ -58,7 +58,6 @@ const TourList = () => {
       const currentUser = await getUser();
       setUser(currentUser);
 
-      // Fetch categories and locations
       const [categoriesRes, locationsRes] = await Promise.all([
         categoryAPI.getAll(),
         locationAPI.getAll(),
@@ -66,11 +65,9 @@ const TourList = () => {
       setCategories(categoriesRes.data);
       setLocations(locationsRes.data);
 
-      // Fetch tours with role-based filtering
       const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
       const toursRes = await tourAPI.getAll(userId);
       
-      // Map data with names
       const toursWithNames = toursRes.data.map((tour: any) => ({
         ...tour,
         locationName: locationsRes.data.find((l: Location) => l.id === tour.locationId)?.name,
@@ -97,7 +94,6 @@ const TourList = () => {
   };
 
   const handleEdit = (record: Tour) => {
-    // Check permission for TOUR_MANAGER
     if (user?.role === 'TOUR_MANAGER' && record.createdBy !== user.id) {
       notification.error({
         message: 'Không có quyền',
@@ -122,7 +118,6 @@ const TourList = () => {
   };
 
   const handleDelete = async (record: Tour) => {
-    // Check permission for TOUR_MANAGER
     if (user?.role === 'TOUR_MANAGER' && record.createdBy !== user.id) {
       notification.error({
         message: 'Không có quyền',
@@ -176,7 +171,6 @@ const TourList = () => {
 
   const handleFinish = async () => {
     try {
-      // Get content from editors before validation
       if (descriptionEditorRef.current) {
         form.setFieldsValue({ description: descriptionEditorRef.current.getContent() });
       }

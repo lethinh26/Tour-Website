@@ -30,7 +30,7 @@ export const Auth = ({ children, allowedRoles }: AuthProps) => {
                     return;
                 }
 
-                const res = await axios.post<UserResponse>("http://localhost:3000/api/auth/getUser", { token });
+                const res = await axios.post<UserResponse>(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
                 const userData = res.data;
 
                 if (userData.role === "USER") {

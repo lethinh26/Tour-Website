@@ -26,7 +26,7 @@ export default function SettingPromotion() {
 
     const getPromotionByToke = async () => {
         const token = localStorage.getItem('token')
-        return await axios.get(`http://localhost:3000/api/promotions/token/${token}`)
+        return await axios.get(`${import.meta.env.VITE_API_URL}/promotions/token/${token}`)
     }
 
     useEffect(() => {

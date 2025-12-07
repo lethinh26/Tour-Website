@@ -4,7 +4,9 @@ import {
     SettingOutlined,
     PoweroffOutlined,
     DownOutlined,
-    UserOutlined
+    UserOutlined,
+    HeartFilled,
+    HeartOutlined
 } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
 import { userLogout } from '../../../stores/slides/userLoginRegister.slice';
@@ -19,6 +21,11 @@ export default function Account() {
     const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
     const menuItems = [
+        {
+            id: 'favorite-tour',
+            label: 'Tour yêu thích',
+            icon: <HeartOutlined style={{ fontSize: 20, color: PRIMARY_COLOR }} />,
+        },
         {
             id: 'transactions',
             label: 'Danh sách giao dịch',
@@ -52,6 +59,10 @@ export default function Account() {
             }
             case ('account'):{
                 navigate('/setting')
+                break;
+            }
+            case ('favorite-tour'): {
+                navigate("/favorite-tour")
             }
         }
     }

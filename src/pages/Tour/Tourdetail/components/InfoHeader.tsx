@@ -6,6 +6,11 @@ import type { Tour } from "../../../../types/types";
 export default function InfoHeader({tour} : {tour: Tour | null}) {
     const navigate = useNavigate();
     const id = useParams().id
+    
+    const formatVND = (value: number | string  | undefined) => {
+        const num = typeof value === 'string'? parseInt(value) : value;
+        return typeof num === "number" && !isNaN(num) ? num.toLocaleString('vi-VN') : ""
+    }
     return (
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 mb-6">
             <div className="flex-1 min-w-0">
@@ -25,7 +30,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
             </div>
             <div className="rounded-2xl shadow px-8 py-6 flex flex-col items-center min-w-[220px] mt-4 md:mt-0">
                 <span className="text-gray-500 font-semibold mb-1">Bắt đầu từ</span>
-                <span className="text-orange-600 font-bold text-2xl mb-4">{tour?.basePrice} VND</span>
+                <span className="text-orange-600 font-bold text-2xl mb-4">{formatVND(tour?.basePrice)} VND</span>
                 <Button type="primary" size="large" className="rounded-full! py-5! px-10!" onClick={() => navigate(`/ticket/${id}`)}>
                     Tìm vé
                 </Button>

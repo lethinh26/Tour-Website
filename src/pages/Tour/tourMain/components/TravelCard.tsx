@@ -1,5 +1,5 @@
 import { Card, Tooltip } from "antd";
-import { TagOutlined } from "@ant-design/icons";
+import { TagOutlined, TagFilled } from "@ant-design/icons";
 import logo_triploka from "../../../../assets/logos/logo_tripoka.png";
 import icon_location from "../../../../assets/icons/icon_location.png";
 import icon_promotion from "../../../../assets/icons/icon_promotion.png";
@@ -24,24 +24,61 @@ export interface TravelCardProps {
 function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLogin: boolean}) {
     const { id, image, title, address: location, rating, reviews, price, oldPrice } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
-    console.log("islogin", isLogin);
-    
-    
+    const formatVND = (value: number | string | undefined) => {
+        const num = typeof value === 'string' ? parseInt(value) : value;
+        return typeof num === 'number' && !isNaN(num) ? num.toLocaleString('vi-VN') : '';
+    };
     const navigate = useNavigate();
-    const [token] = useState(() => { 
-        return localStorage.getItem('token')
-    })
+    const [token] = useState(() => localStorage.getItem('token'));
+    const [tagActive, setTagActive] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    useState(() => {
+        const fetchFavoriteTours = async () => {
+            if (!token) return;
+            try {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`);
+                const favorited = res.data?.tourFavorited || [];
+                const isFavorited = favorited.some((tour: any) => tour.id === id);
+                setTagActive(isFavorited);
+            } catch (error) {
+                setTagActive(false);
+            }
+        };
+        fetchFavoriteTours();
+    });
+
     const handleSaveFavorite = async () => {
+        setLoading(true);
         try {
-            const res = await axios.post('http://localhost:3000/api/favoriteTours', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
                 token,
                 tourId: id
-            })
-            console.log(res.data);
+            });
+            setTagActive(true);
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
+
+    const handleUnFavorite = async () => {
+        setLoading(true);
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
+                data: {
+                    token,
+                    tourId: id
+                }
+            });
+            setTagActive(false);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <Card
             hoverable
@@ -49,18 +86,24 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
             cover={
                 <div className="relative">
                     <img src={image} alt={title} className="w-full h-56 object-cover" />
-                    {isLogin && <Tooltip title="Yêu thích"
-                    >
-                        <div
-                            className="absolute top-3 hover:w-10 hover:h-10 hover:z-10 active:z-10 right-3 bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer "
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleSaveFavorite();
-                            }}
-                        >
-                            <TagOutlined className="text-gray-400 text-lg" />
-                        </div>
-                    </Tooltip>}
+                    {isLogin && (
+                        <Tooltip title={tagActive ? "Huỷ Yêu Thích" : "Yêu Thích"}>
+                            <div
+                                className={`absolute top-3 right-3 bg-white bg-opacity-80 rounded-full p-1 w-8 h-8 flex justify-center items-center cursor-pointer ${loading ? 'opacity-60 pointer-events-none' : ''}`}
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    if (loading) return;
+                                    if (tagActive) {
+                                        handleUnFavorite();
+                                    } else {
+                                        handleSaveFavorite();
+                                    }
+                                }}
+                            >
+                                {tagActive ? <TagFilled className="text-blue-500 text-lg" /> : <TagOutlined className="text-gray-400 text-lg" />}
+                            </div>
+                        </Tooltip>
+                    )}
                 </div>
             }
             onClick={() => navigate(`/tour/${id}`)}
@@ -84,9 +127,9 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
                 </div>
                 <p className="text-sm text-gray-500 mb-1!">Bắt đầu từ</p>
                 <div className="flex items-center space-x-2 flex-wrap">
-                    <span className="text-orange-600 font-bold text-[16px]">{price.toLocaleString()} VND</span>
-                    {oldPrice && <span className="text-[12px] text-gray-400 line-through">{oldPrice.toLocaleString()} VND</span>}
-                    {discount != 0 && <span className="bg-red-100 text-red-600 text-[12px] font-semibold px-2 py-0.5 rounded">{discount}%</span>}
+                    <span className="text-orange-600 font-bold text-[16px]">{formatVND(price)} VND</span>
+                    {oldPrice && <span className="text-[12px] text-gray-400 line-through">{formatVND(oldPrice)} VND</span>}
+                    {discount && discount > 0 && <span className="bg-red-100 text-red-600 text-[12px] font-semibold px-2 py-0.5 rounded">{discount}%</span>}
                 </div>
             </div>
         </Card>
