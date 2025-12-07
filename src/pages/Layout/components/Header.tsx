@@ -7,7 +7,7 @@ import type { AppDispatch } from "../../../stores";
 import { userLogin, userRegister } from "../../../stores/slides/userLoginRegister.slice";
 import Account from "./Account";
 import axios from "axios";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 const Header = () => {
     const [api, contextHolder] = notification.useNotification();
@@ -23,6 +23,7 @@ const Header = () => {
     const [showModalSet, setShowModalSet] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const getUser = useCallback(async () => {
         try {
@@ -93,12 +94,26 @@ const Header = () => {
                     {currency} | {language}
                 </span>
             </div>
-            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600">
-                <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
-                Khuyến mãi
+            <a 
+                className={`text-sm font-medium cursor-pointer transition-colors ${
+                    location.pathname === "/" 
+                        ? "text-blue-600 font-semibold" 
+                        : "text-gray-700 hover:text-blue-500"
+                }`}
+                onClick={() => navigate("/")}
+            >
+                Trang chủ
             </a>
-            <div className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Hỗ trợ</div>
-            <a className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Đặt chỗ của tôi</a>
+            <a 
+                className={`text-sm font-medium cursor-pointer transition-colors ${
+                    location.pathname === "/tour" 
+                        ? "text-blue-600 font-semibold" 
+                        : "text-gray-700 hover:text-blue-500"
+                }`}
+                onClick={() => navigate("/tour")}
+            >
+                Tour
+            </a>
             {!user ? (
                 <>
                     <button
@@ -115,7 +130,20 @@ const Header = () => {
                     </button>
                 </>
             ) : (
-                <Account />
+                <>
+                    <a 
+                        className={`flex items-center text-sm font-medium cursor-pointer transition-colors ${
+                            location.pathname === "/promotion" 
+                                ? "text-blue-600 font-semibold" 
+                                : "text-blue-500 hover:text-blue-600"
+                        }`}
+                        onClick={() => navigate("/promotion")}
+                    >
+                        <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
+                        Khuyến mãi
+                    </a>
+                    <Account />
+                </>
             )}
         </>
     );
