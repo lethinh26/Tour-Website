@@ -40,10 +40,11 @@ const FavoritesPage = () => {
 
             setFavoriteItem(() => {
                 return data.tourFavorited.map(item => {
+                    const imgObj = images?.filter(img => img.tourId == item.id)[0];
                     return {
                         id: item.id,
                         title: item.name,
-                        image: images.filter(img => img.tourId == item.id)[0].url,
+                        image: imgObj?.url || '',
                         price: item.basePrice,
                         location: item.address,
                         subtitle: categories.find(cate => cate.id == item.categoryId)?.name,
@@ -57,9 +58,10 @@ const FavoritesPage = () => {
     }, [images, categories])
     const getDataFavoriteTours = async () => {
         try {
-            // const res = await axios.get(`http://localhost:3000/api/favoriteTours/${token}`)
-            const res = await axios.get(`http://localhost:3000/api/favoriteTours/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzY0ODUzODY2LCJleHAiOjE3NjQ5NDAyNjZ9.b8FnWCR3Mk5zmRkKWR5mJ1pv1zWxKy1-Dvwq_e3hNaQ`)
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`)
+            console.log(res.data);
             return res.data
+            
         } catch (error: AxiosError | any) {
             return error.response.message
         }
@@ -68,10 +70,11 @@ const FavoritesPage = () => {
     
 
     const favorites: FavoriteItem[] = dataFavorite ? dataFavorite.map((item) => {
+        const imgObj = images?.filter(img => img.tourId == item.id)[0];
         return {
             id: item.id,
             title: item.name,
-            image: images.filter(img => img.tourId == item.id)[0].url,
+            image: imgObj?.url || '',
             price: item.basePrice,
             location: item.address,
             subtitle: categories.find(cate => cate.id == item.categoryId)?.name,
@@ -83,7 +86,7 @@ const FavoritesPage = () => {
         if (!token) {
             return
         }
-        return axios.delete('http://localhost:3000/api/favoriteTours', {
+        return axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
             data: {
                 token,
                 tourId
@@ -93,7 +96,7 @@ const FavoritesPage = () => {
 
     const handleSaveFavorite = async (id: number) => {
         try {
-            const res = await axios.post('http://localhost:3000/api/favoriteTours', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
                 token,
                 tourId: id
             })

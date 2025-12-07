@@ -60,12 +60,10 @@ const TourScheduleManager = () => {
             const currentUser = await getUser();
             setUser(currentUser);
 
-            // Fetch tours with role-based filtering
             const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
             const toursRes = await tourAPI.getAll(userId);
             setTours(toursRes.data);
 
-            // Fetch all departures for all tours
             const allSchedules: TourSchedule[] = [];
             for (const tour of toursRes.data) {
                 const departuresRes = await tourDepartureAPI.getByTourId(tour.id);
@@ -114,7 +112,6 @@ const TourScheduleManager = () => {
     };
 
     const handleEdit = (record: TourScheduleGroup) => {
-        // Check permission for TOUR_MANAGER
         const tour = tours.find(t => t.id === record.tourId);
         if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
             notification.error({
@@ -136,7 +133,6 @@ const TourScheduleManager = () => {
     };
 
     const handleDelete = async (record: TourScheduleGroup) => {
-        // Check permission for TOUR_MANAGER
         const tour = tours.find(t => t.id === record.tourId);
         if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
             notification.error({
@@ -156,7 +152,6 @@ const TourScheduleManager = () => {
             cancelText: "Hủy",
             async onOk() {
                 try {
-                    // Delete all departures for this tour
                     await Promise.all(
                         record.departures.map(dep => tourDepartureAPI.delete(dep.id))
                     );
@@ -241,7 +236,6 @@ const TourScheduleManager = () => {
             }
 
             if (editingSchedule) {
-                // Edit mode - delete old departures and create new ones
                 const oldDepartures = schedules.find(s => s.tourId === editingSchedule.tourId)?.departures || [];
                 await Promise.all(
                     oldDepartures.map(dep => tourDepartureAPI.delete(dep.id))
@@ -265,7 +259,6 @@ const TourScheduleManager = () => {
                     placement: "topRight",
                 });
             } else {
-                // Add mode
                 const selectedTour = tours.find((tour) => tour.id === values.tourId);
                 const existingSchedule = schedules.find((s) => s.tourId === values.tourId);
 

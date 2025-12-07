@@ -148,7 +148,6 @@ const PromotionManager = () => {
 
     const handleFinish = async () => {
         try {
-            // Get content from editor before validation
             if (descriptionEditorRef.current) {
                 form.setFieldsValue({ description: descriptionEditorRef.current.getContent() });
             }

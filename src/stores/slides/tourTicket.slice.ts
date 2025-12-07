@@ -22,9 +22,9 @@ const initialState : initialStateType = {
 export const fetchDataTicketTour = createAsyncThunk('data/fetchDataTicketTour', async (info: {id: number}) => {
     const {id: tourId} = info
     const data = [
-        axios.get(`http://localhost:3000/api/tours/${tourId}`),
-        axios.get(`http://localhost:3000/api/tourDepartures/${tourId}`),
-        axios.get(`http://localhost:3000/api/tourImages/${tourId}`)
+        axios.get(`${import.meta.env.VITE_API_URL}/tours/${tourId}`),
+        axios.get(`${import.meta.env.VITE_API_URL}/tourDepartures/${tourId}`),
+        axios.get(`${import.meta.env.VITE_API_URL}/tourImages/${tourId}`)
     ]
 
     const  [tour, departures, images] = await Promise.all(data)

@@ -1,17 +1,17 @@
 import { Select } from "antd";
 
-export default function SortComponent({setWayToSort}: {setWayToSort: (value: number) => void}) {
+export default function SortComponent({setWayToSort, tourLength}: {setWayToSort: (value: number) => void, tourLength: number}) {
 
 
     return (
         <div className="flex justify-between items-center font-bold text-gray-600">
-            <p>Về 48 kết quả</p>
+            <p>Tìm thấy {tourLength} kết quả</p>
 
             <div className="flex gap-3 items-center justify-center">
                 <span>Xếp theo:</span>
 
                 <Select
-                    defaultValue="default"
+                    defaultValue={0}
                     style={{ width: 200 }}
                     onChange={(value) => setWayToSort(Number(value))}
                     options={[

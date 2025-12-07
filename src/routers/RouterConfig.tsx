@@ -3,6 +3,7 @@ import { LayoutMain } from '../pages/Layout/LayoutMain';
 import DashboardMain from '../pages/Dashboard/DashboardMain';
 import PromotionMain from '../pages/Promotion/PromotionMain';
 import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
+import { PaymentMain } from '../pages/Payment/PaymentInfo/PaymentMain';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
@@ -19,6 +20,9 @@ import AccountSettings from '../pages/Settings/SettingMain';
 import SettingPromotion from '../pages/Settings/SettingPromotion';
 import Auth from '../pages/Admin/components/Auth';
 import Dashboard from '../pages/Admin/components/Dashboard';
+import PaymentSuccess from '../pages/Payment/PaymentSuccess';
+import PaymentError from '../pages/Payment/PaymentError';
+import PaymentCancel from '../pages/Payment/PaymentCancel';
 
 const router = createBrowserRouter([
     {
@@ -39,7 +43,23 @@ const router = createBrowserRouter([
             },
             {
                 path: "payment/:id",
+                element: <PaymentMain />,
+            },
+            {
+                path: "payment-qr/:id",
                 element: <QRPaymentPage />,
+            },
+            {
+                path: "payment-success",
+                element: <PaymentSuccess />,
+            },
+            {
+                path: "payment-error",
+                element: <PaymentError />,
+            },
+            {
+                path: "payment-cancel",
+                element: <PaymentCancel />,
             },
             {
                 path: 'tour/:id',

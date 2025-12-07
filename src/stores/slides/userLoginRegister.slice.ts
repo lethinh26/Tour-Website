@@ -15,13 +15,13 @@ const initialState : initialStateType = {
 
 export const userLogin = createAsyncThunk('user/login', async (userInfo: {email: string, password: string}) => {
     const {email , password} = userInfo    
-    const res = await axios.post('http://localhost:3000/api/auth/login', {email, password} )
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {email, password} )
     return res.data
 })
 
 export const userRegister = createAsyncThunk('user/reg', async (userInfo: {name: string, email: string, password: string}) => {
     const {name, email, password} = userInfo
-    const res = await axios.post('http://localhost:3000/api/auth/reg', {name, email, password})
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reg`, {name, email, password})
     return res.data
 })
 
@@ -33,7 +33,7 @@ const userSlice = createSlice({
         userLogout: (state) => {
             state.token = ''
             state.status = 'idle';
-            state.error = null; // Nên xóa lỗi luôn nếu có
+            state.error = null; 
         }
     },
     extraReducers: (builder) => {

@@ -50,7 +50,7 @@ export default function PromotionMain() {
         try {
             console.log(token, promotionId);
             
-            const res = await axios.post('http://localhost:3000/api/promotions/token', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}promotions/token`, {
                 token, promotionId
             })
             
