@@ -72,7 +72,7 @@ export const TourMain = () => {
         <div className="mx-auto w-full max-w-[1200px] px-2 md:px-6 mt-25">
             <div className="mt-10 flex flex-col items-center justify-center w-full">
                 <div className="w-full flex flex-col lg:flex-row gap-6 items-start lg:relative">
-                    <div className="flex flex-col gap-5 w-full lg:w-[320px] min-w-[280px] mb-6 lg:mb-0 lg:sticky lg:top-25">
+                    <div className="flex flex-col gap-5 lg:w-[320px] min-w-[280px] mx-auto mb-6 lg:mb-0 lg:sticky lg:top-25">
                         <FilterPrice range={range} setRange={setRange}/>
                         <FilterTour setIdCategory={setIdCategory}/>
                     </div>

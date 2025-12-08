@@ -4,6 +4,9 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { getUser } from "../../services/api";
+import FileTextOutlined from "@ant-design/icons/lib/icons/FileTextOutlined";
+import ScheduleOutlined from "@ant-design/icons/lib/icons/ScheduleOutlined";
+import { PoweroffOutlined, SettingOutlined } from "@ant-design/icons";
 
 export default function AccountSettings() {
     const [oldPassword, setOldPassword] = useState('');
@@ -31,7 +34,7 @@ export default function AccountSettings() {
         )
         setTimeout(() => {
             window.location.reload();
-        }, 3000);
+        }, 1000);
     };
 
     const handle = async () => {
@@ -77,16 +80,16 @@ export default function AccountSettings() {
                     </div>
                     <ul className="space-y-3">
                         <li onClick={() => handleNavigation('/settings/bookings')} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-gray-200">
-                            <span>📌</span> Đặt chỗ của tôi
+                            <FileTextOutlined style={{ fontSize: 20, color: '#007AFF'}} /> Đặt chỗ của tôi
                         </li>
                         <li onClick={() => handleNavigation('/settings/transactions')} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-gray-200">
-                            <span>📄</span> Danh sách giao dịch
+                            <ScheduleOutlined style={{ fontSize: 20, color: '#007AFF' }} /> Danh sách giao dịch
                         </li>
                         <li className="flex items-center gap-2 p-2 rounded-lg bg-blue-600 text-white font-semibold">
-                            <span>⚙️</span> Tài khoản
+                            <SettingOutlined style={{ fontSize: 20, color: '#007AFF'}} /> Tài khoản
                         </li>
                         <li onClick={handleLogout} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-gray-200">
-                            <span>⏻</span> Đăng xuất
+                            <PoweroffOutlined style={{ fontSize: 20, color: '#007AFF' }} /> Đăng xuất
                         </li>
                     </ul>
                 </div>

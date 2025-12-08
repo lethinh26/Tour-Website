@@ -25,6 +25,7 @@ import PaymentError from '../pages/Payment/PaymentError';
 import PaymentCancel from '../pages/Payment/PaymentCancel';
 import TransactionHistory from '../pages/Settings/TransactionHistory';
 import MyBookings from '../pages/Settings/MyBookings';
+import ProtectedRoute from '../common/ProtectedRoute';
 
 const router = createBrowserRouter([
     {
@@ -75,7 +76,11 @@ const router = createBrowserRouter([
             },
             {
                 path: 'favorite-tour',
-                element: <FavoritesPage/>
+                element: (
+                    <ProtectedRoute>
+                        <FavoritesPage/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "*",
@@ -83,19 +88,35 @@ const router = createBrowserRouter([
             },    
             {
                 path: 'settings',
-                element: <AccountSettings />
+                element: (
+                    <ProtectedRoute>
+                        <AccountSettings />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: 'settings/promotion',
-                element: <SettingPromotion />
+                element: (
+                    <ProtectedRoute>
+                        <SettingPromotion />
+                    </ProtectedRoute>
+                )
             },
             {
                 path: 'settings/bookings',
-                element: <MyBookings/>
+                element: (
+                    <ProtectedRoute>
+                        <MyBookings/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: 'settings/transactions',
-                element: <TransactionHistory/>
+                element: (
+                    <ProtectedRoute>
+                        <TransactionHistory/>
+                    </ProtectedRoute>
+                )
             }
         ],
     },

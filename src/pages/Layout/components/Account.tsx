@@ -69,7 +69,7 @@ export default function Account() {
                 break
             }
             case ('account'):{
-                navigate('/setting')
+                navigate('/settings')
                 break;
             }
             case ('favorite-tour'): {
