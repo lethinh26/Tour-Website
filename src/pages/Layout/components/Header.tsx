@@ -11,8 +11,8 @@ import { useNavigate, useLocation } from "react-router";
 
 const Header = () => {
     const [api, contextHolder] = notification.useNotification();
-    const [currency, setCurrency] = useState("VND");
-    const [language, setLanguage] = useState("VI");
+    // const [currency, setCurrency] = useState("VND");
+    // const [language, setLanguage] = useState("VI");
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -20,7 +20,7 @@ const Header = () => {
     const [formLogin] = Form.useForm();
     const [formRegister] = Form.useForm();
     const dispatch = useDispatch<AppDispatch>();
-    const [showModalSet, setShowModalSet] = useState(false);
+    // const [showModalSet, setShowModalSet] = useState(false);
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -89,11 +89,11 @@ const Header = () => {
 
     const navItems = (
         <>
-            <div className="flex items-center space-x-1 text-gray-700 cursor-pointer text-sm hover:text-blue-500">
+            {/* <div className="flex items-center space-x-1 text-gray-700 cursor-pointer text-sm hover:text-blue-500">
                 <span onClick={() => setShowModalSet(!showModalSet)}>
                     {currency} | {language}
                 </span>
-            </div>
+            </div> */}
             <a 
                 className={`text-sm font-medium cursor-pointer transition-colors ${
                     location.pathname === "/" 
@@ -165,7 +165,7 @@ const Header = () => {
                             </div>
                         </div>
 
-                        {showModalSet && (
+                        {/* {showModalSet && (
                             <div className="absolute right-0 top-14 mt-2 w-[720px] bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                                 <div className="flex">
                                     <div className="flex-1 border-r border-gray-200 px-6 py-4">
@@ -250,7 +250,7 @@ const Header = () => {
                                     </button>
                                 </div>
                             </div>
-                        )}
+                        )} */}
                         <div className="md:hidden">
                             <button
                                 className="p-2 rounded-lg text-gray-700 hover:bg-gray-200"
