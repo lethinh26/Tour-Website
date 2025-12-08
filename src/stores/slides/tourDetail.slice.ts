@@ -19,19 +19,26 @@ const initialState : TourDetailState = {
 }
 
 export const fetchDataTourDetail = createAsyncThunk('dataTourDetail/getData', async (tourId: number) => {
-    // const {tourId} = info
+    try {
+        const data = [
+            axios.get(`${import.meta.env.VITE_API_URL}/tours/${tourId}`), // tour
+            axios.get(`${import.meta.env.VITE_API_URL}/tourImages/${tourId}`), // images
+            axios.get(`${import.meta.env.VITE_API_URL}/tourDepartures/${tourId}`), // departures
+        ]
 
-    const data = [
-        axios.get(`${import.meta.env.VITE_API_URL}/tours/${tourId}`), // tour
-        axios.get(`${import.meta.env.VITE_API_URL}/tourImages/${tourId}`), // images
-        axios.get(`${import.meta.env.VITE_API_URL}/tourDepartures/${tourId}`), // departures
-    ]
-
-    const [tour, tourImages, departure] = await Promise.all(data)
-    return {
-        tour : tour.data, 
-        images: tourImages.data, 
-        departures: departure.data,
+        const [tour, tourImages, departure] = await Promise.all(data)
+        return {
+            tour : tour.data, 
+            images: Array.isArray(tourImages.data) ? tourImages.data : [], 
+            departures: departure.data,
+        }
+    } catch (error) {
+        console.error('Error fetching tour detail:', error);
+        return {
+            tour: null,
+            images: [],
+            departures: null
+        }
     }
 })
 
@@ -51,6 +58,13 @@ const tourDetailSlice = createSlice({
         })
         builder.addCase(fetchDataTourDetail.pending, (state) => {
             state.status = 'loading'
+        })
+        builder.addCase(fetchDataTourDetail.rejected, (state, action) => {
+            state.status = 'failed'
+            state.error = action.error.message || 'Failed to fetch tour detail'
+            state.tour = null
+            state.images = []
+            state.departure = null
         })
     }
 })

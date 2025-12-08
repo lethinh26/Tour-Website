@@ -10,7 +10,7 @@ export default function FilterTour({setIdCategory} : {setIdCategory: (id : numbe
     
     const [collapsed, setCollapsed] = useState(false);
     const { categories } = useSelector((state: StoreType) => state.tourReducer);
-    const options = Array.isArray(categories) ? categories.map(cat => cat.name) : [];
+    const options = categories.map(cat => cat.name);
 
     const panels = [
         {
@@ -58,7 +58,7 @@ export default function FilterTour({setIdCategory} : {setIdCategory: (id : numbe
                     {panels.map(panel => (
                         <Panel header={panel.label} key={panel.key} className="bg-white">
                             <Radio.Group className="flex flex-col gap-2 pl-2"
-                            onChange={(e) => {setIdCategory(Array.isArray(categories) ? (categories.find(cat => cat.name === e.target.value)?.id || 0) : 0)}}>
+                            onChange={(e) => {setIdCategory(categories.find(cat => cat.name === e.target.value)!.id || 0)}}>
                                 {panel.options.map(opt => (
                                     <Radio key={opt} value={opt} className={`accent-${panel.color}-500`}>{opt} </Radio>
                                 ))}

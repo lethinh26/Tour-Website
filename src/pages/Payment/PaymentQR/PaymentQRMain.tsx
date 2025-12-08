@@ -22,6 +22,44 @@ const QRPaymentPage: React.FC = () => {
     const [processing, setProcessing] = useState(false);
     const [checking, setChecking] = useState(false);
 
+    // Hàm check payment status manual
+    const checkPaymentStatus = async () => {
+        if (!payment) return;
+        
+        try {
+            setChecking(true);
+            const response = await paymentAPI.getById(payment.id);
+            
+            if (response.status === 'SUCCESS') {
+                setPayment(response);
+                message.success('Thanh toán thành công!');
+                
+                setTimeout(() => {
+                    Modal.success({
+                        title: "Thanh toán thành công!",
+                        content: (
+                            <div className="text-center">
+                                <CheckCircleOutlined className="text-green-500 text-5xl mb-3" />
+                                <p>Đơn hàng của bạn đã được xác nhận.</p>
+                                <p className="text-sm text-gray-500">Cảm ơn bạn đã sử dụng dịch vụ.</p>
+                            </div>
+                        ),
+                        onOk: () => {
+                            navigate("/");
+                        },
+                    });
+                }, 300);
+            } else if (response.status === 'PENDING') {
+                message.info('Chưa nhận được thanh toán. Vui lòng thử lại sau vài giây.');
+            }
+        } catch (error) {
+            console.error('Check payment error:', error);
+            message.error('Không thể kiểm tra trạng thái thanh toán');
+        } finally {
+            setChecking(false);
+        }
+    };
+
     useEffect(() => {
         const fetchPayment = async () => {
             if (!id) return;
@@ -29,31 +67,9 @@ const QRPaymentPage: React.FC = () => {
                 setLoading(true);
                 const data = await paymentAPI.getById(id);
                 setPayment(data);
-            } catch (error) {
-                console.error("Fetch payment error:", error);
-                message.error("Không thể tải thông tin thanh toán");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPayment();
-    }, [id]);
-
-    // Polling để check payment status
-    useEffect(() => {
-        if (!payment || payment.status === 'SUCCESS') return;
-
-        const intervalId = setInterval(async () => {
-            try {
-                setChecking(true);
-                const response = await paymentAPI.getById(payment.id);
                 
-                if (response.status === 'SUCCESS') {
-                    setPayment(response);
-                    message.success('Thanh toán thành công!');
-                    clearInterval(intervalId);
-                    
-                    // Hiển thị modal thành công
+                // Nếu payment đã SUCCESS, hiển thị modal ngay
+                if (data.status === 'SUCCESS') {
                     Modal.success({
                         title: "Thanh toán thành công!",
                         content: (
@@ -69,11 +85,54 @@ const QRPaymentPage: React.FC = () => {
                     });
                 }
             } catch (error) {
+                console.error("Fetch payment error:", error);
+                message.error("Không thể tải thông tin thanh toán");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPayment();
+    }, [id, navigate]);
+
+    // Polling để check payment status
+    useEffect(() => {
+        if (!payment || payment.status === 'SUCCESS' || payment.status === 'FAILED') return;
+
+        const intervalId = setInterval(async () => {
+            try {
+                setChecking(true);
+                const response = await paymentAPI.getById(payment.id);
+                
+                console.log('Payment status check:', response.status); // Debug log
+                
+                if (response.status === 'SUCCESS') {
+                    setPayment(response);
+                    clearInterval(intervalId);
+                    message.success('Thanh toán thành công!');
+                    
+                    // Hiển thị modal thành công
+                    setTimeout(() => {
+                        Modal.success({
+                            title: "Thanh toán thành công!",
+                            content: (
+                                <div className="text-center">
+                                    <CheckCircleOutlined className="text-green-500 text-5xl mb-3" />
+                                    <p>Đơn hàng của bạn đã được xác nhận.</p>
+                                    <p className="text-sm text-gray-500">Cảm ơn bạn đã sử dụng dịch vụ.</p>
+                                </div>
+                            ),
+                            onOk: () => {
+                                navigate("/");
+                            },
+                        });
+                    }, 500);
+                }
+            } catch (error) {
                 console.error('Check payment error:', error);
             } finally {
                 setChecking(false);
             }
-        }, 3000); // Check mỗi 3 giây
+        }, 2000); // Check mỗi 2 giây (nhanh hơn)
 
         return () => clearInterval(intervalId);
     }, [payment, navigate]);
@@ -148,6 +207,41 @@ const QRPaymentPage: React.FC = () => {
         );
     }
 
+    // Nếu payment đã SUCCESS, hiển thị success screen
+    if (payment.status === 'SUCCESS') {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8 px-4">
+                <Card className="max-w-md w-full shadow-lg">
+                    <div className="text-center">
+                        <CheckCircleOutlined className="text-green-500 text-6xl mb-4" />
+                        <Title level={2} className="text-green-600 mb-2">Thanh toán thành công!</Title>
+                        <div className="space-y-2 mb-6">
+                            <Text className="block">Mã thanh toán: <Text strong>{payment.id}</Text></Text>
+                            <Text className="block">Số tiền: <Text strong className="text-lg text-red-600">{VND.format(Number(payment.amount))}</Text></Text>
+                            <Text type="secondary" className="block mt-4">
+                                Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được xác nhận.
+                            </Text>
+                        </div>
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"
+                                onClick={() => navigate('/')}
+                            >
+                                Về trang chủ
+                            </button>
+                            <button
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg"
+                                onClick={() => navigate('/settings/bookings')}
+                            >
+                                Xem đặt chỗ
+                            </button>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+        );
+    }
+
     const amount = Number(payment.amount || 0);
     const countdown = "35:20";
 
@@ -188,6 +282,19 @@ const QRPaymentPage: React.FC = () => {
 
                             {paymentMethod === "BANK_TRANSFER" && (
                                 <>
+                                    {checking && (
+                                        <Alert
+                                            type="info"
+                                            showIcon
+                                            message={
+                                                <div className="flex items-center gap-2">
+                                                    <Spin size="small" />
+                                                    <span>Đang tự động kiểm tra trạng thái thanh toán...</span>
+                                                </div>
+                                            }
+                                            className="mb-4"
+                                        />
+                                    )}
                                     <div className="border-y border-slate-200 bg-sky-500">
                                         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-sm text-white">
                                             <span>Chúng tôi đang giữ giá này cho bạn! Hãy hoàn tất thanh toán trong</span>
@@ -201,12 +308,21 @@ const QRPaymentPage: React.FC = () => {
                                             <Title level={4} className="mb-0!">
                                                 Quét mã QR để thanh toán
                                             </Title>
-                                            {checking && (
-                                                <Text type="secondary" className="text-sm">
-                                                    <Spin size="small" className="mr-2" />
-                                                    Đang kiểm tra...
-                                                </Text>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {checking && (
+                                                    <Text type="secondary" className="text-sm">
+                                                        <Spin size="small" className="mr-2" />
+                                                        Đang kiểm tra...
+                                                    </Text>
+                                                )}
+                                                <button
+                                                    onClick={checkPaymentStatus}
+                                                    disabled={checking}
+                                                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    Đã chuyển khoản
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <Alert

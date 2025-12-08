@@ -1,21 +1,18 @@
 import { Input, Select } from "antd";
 import type { StoreType } from "../../../../stores";
 import { useSelector } from "react-redux";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+
+const locationRender = [
+    { label: "Toàn quốc", value: "all" },
+];
 
 export default function SearchLocation({ setInputData, setLocation }: { setInputData: (value: string) => void, setLocation : (value: string) => void }) {
     const [inputLocation, setInputLocation] =  useState('')
     const { locations } = useSelector((state: StoreType) => state.tourReducer);
-    
-    const locationRender = useMemo(() => {
-        const options = [{ label: "Toàn quốc", value: "all" }];
-        if (Array.isArray(locations)) {
-            locations.forEach(item => {
-                options.push({ label: item.name, value: item.name });
-            });
-        }
-        return options;
-    }, [locations])
+    locations.forEach(item => {
+        locationRender.push({label : item.name, value: item.name})
+    })
     
     return (
         <div className="flex gap-3 w-full mb-6">

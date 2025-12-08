@@ -71,13 +71,13 @@ const PromotionCode = ({ payment, selectedPromotion, onPromotionChange }: Promot
           loading={loading}
           value={selectedPromotion?.id}
           onChange={(value) => {
-            const promo = promotions.find(p => p.id === value);
+            const promo = Array.isArray(promotions) ? promotions.find(p => p.id === value) : undefined;
             onPromotionChange?.(promo);
           }}
           allowClear
           onClear={() => onPromotionChange?.(null)}
         >
-          {promotions.map((promo) => (
+          {Array.isArray(promotions) && promotions.map((promo) => (
             <Option key={promo.id} value={promo.id}>
               <div className="flex justify-between items-center">
                 <span className="font-semibold">{promo.code}</span>

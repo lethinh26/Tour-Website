@@ -35,7 +35,7 @@ export const TourMain = () => {
 
     
 
-    const dataTour: TravelCardProps[] = Array.isArray(tours) ? tours.map(item => {
+    const dataTour: TravelCardProps[] = tours.map(item => {
         return {
             id: item.id,
             image: images.find(img => img.tourId === item.id)?.url || '',
@@ -48,7 +48,7 @@ export const TourMain = () => {
             categoryId: item.categoryId,
             location: item.address,
         }
-    }) : []
+    })
     const [range, setRange] = useState([0, 4000000]);
     const [inputData, setInputData] = useState("");
     const [idCategory, setIdCategory] = useState(0)

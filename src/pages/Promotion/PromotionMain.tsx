@@ -32,7 +32,7 @@ export default function PromotionMain() {
     }, [dispatch])
     const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
 
-    const pro = promotions.map(item => {
+    const pro = Array.isArray(promotions) ? promotions.map(item => {
         return {
             id: item.id,
             type: item.type,
@@ -43,7 +43,7 @@ export default function PromotionMain() {
             description: item.description,
             code: item.code,
         }
-    })
+    }) : []
     
     const handleSavePromotion = async (promotionId: number) => {
         const token = localStorage.getItem('token')

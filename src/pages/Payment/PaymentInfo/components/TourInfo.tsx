@@ -16,7 +16,7 @@ const TourInfo = ({ payment }: { payment?: any }) => {
   const tour = tourDeparture?.tour;
   const tourImage = tour?.images?.[0]?.url || 'https://via.placeholder.com/150';
   const departureDate = tourDeparture?.departure ? formatDate(tourDeparture.departure) : '';
-  const totalQuantity = orderItems.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const totalQuantity = Array.isArray(orderItems) ? orderItems.reduce((sum: number, item: any) => sum + item.quantity, 0) : 0;
   const location = tour?.location?.name || '';
   const unitPrice = firstItem?.unitPrice || 0;
 

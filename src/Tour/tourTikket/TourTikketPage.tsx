@@ -33,7 +33,7 @@ export default function TourTikket() {
     const navigate = useNavigate()
 
 
-    const times: string[] = Array.isArray(departures) && departures.length && selected ? departures.filter((item) => {
+    const times: string[] = departures.length && selected ? departures.filter((item) => {
         return getDMY(new Date(item.departure)) === getDMY(selected)
     }).map(item => getTime(new Date(item.departure)))
         : ['--:--']
@@ -42,9 +42,9 @@ export default function TourTikket() {
     const [selectedTime, setSelectedTime] = useState(times[0]); // ngay thang daypicked
 
 
-    const departureFind = Array.isArray(departures) ? departures.find(item =>
+    const departureFind = departures.find(item =>
         selected && getDMY(new Date(item.departure)) == getDMY(selected) && getTime(new Date(item.departure)) == selectedTime
-    ) : undefined
+    )
     const total = departureFind?.price ? numberTicket * departureFind?.price : 0
 
     const handleConfirmBooking = async () => {

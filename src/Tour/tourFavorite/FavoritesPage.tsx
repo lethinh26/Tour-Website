@@ -39,18 +39,18 @@ const FavoritesPage = () => {
             // setDataFavorite(data.tourFavorited)
 
             setFavoriteItem(() => {
-                return Array.isArray(data.tourFavorited) ? data.tourFavorited.map(item => {
-                    const imgObj = Array.isArray(images) ? images.filter(img => img.tourId == item.id)[0] : undefined;
+                return data.tourFavorited.map(item => {
+                    const imgObj = images?.filter(img => img.tourId == item.id)[0];
                     return {
                         id: item.id,
                         title: item.name,
                         image: imgObj?.url || '',
                         price: item.basePrice,
                         location: item.address,
-                        subtitle: Array.isArray(categories) ? categories.find(cate => cate.id == item.categoryId)?.name : undefined,
+                        subtitle: categories.find(cate => cate.id == item.categoryId)?.name,
                         tagActive: true
                     }
-                }) : []
+                })
             })
         }).catch((error) => {
             setDataFavorite([])
@@ -69,15 +69,15 @@ const FavoritesPage = () => {
 
     
 
-    const favorites: FavoriteItem[] = Array.isArray(dataFavorite) ? dataFavorite.map((item) => {
-        const imgObj = Array.isArray(images) ? images.filter(img => img.tourId == item.id)[0] : undefined;
+    const favorites: FavoriteItem[] = dataFavorite ? dataFavorite.map((item) => {
+        const imgObj = images?.filter(img => img.tourId == item.id)[0];
         return {
             id: item.id,
             title: item.name,
             image: imgObj?.url || '',
             price: item.basePrice,
             location: item.address,
-            subtitle: Array.isArray(categories) ? categories.find(cate => cate.id == item.categoryId)?.name : undefined,
+            subtitle: categories.find(cate => cate.id == item.categoryId)?.name,
             tagActive: true
         }
     }) : []

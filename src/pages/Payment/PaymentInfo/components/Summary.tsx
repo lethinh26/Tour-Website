@@ -76,7 +76,7 @@ const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromot
                         key="1"
                     >
                         <Space direction="vertical" size="small" className="w-full">
-                            {orderItems.map((item: any, index: number) => (
+                            {Array.isArray(orderItems) && orderItems.map((item: any, index: number) => (
                                 <div key={index} className="font-semibold flex justify-between">
                                     <span>Vé (x{item.quantity}):</span>
                                     <span>{formatVND(Number(item.unitPrice) * item.quantity)}</span>

@@ -5,21 +5,32 @@ import {
     PoweroffOutlined,
     DownOutlined,
     UserOutlined,
-    HeartFilled,
     HeartOutlined
 } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
 import { userLogout } from '../../../stores/slides/userLoginRegister.slice';
 import type { AppDispatch } from '../../../stores';
 import { useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getUser } from '../../../services/api';
 
 const PRIMARY_COLOR = '#007AFF';
 
 export default function Account() {
     const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState<{ name: string; email: string } | null>(null);
     const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userData = await getUser();
+            if (userData) {
+                setUser(userData);
+            }
+        };
+        fetchUser();
+    }, []);
     const menuItems = [
         {
             id: 'favorite-tour',
@@ -63,6 +74,15 @@ export default function Account() {
             }
             case ('favorite-tour'): {
                 navigate("/favorite-tour")
+                break;
+            }
+            case ('transactions'): {
+                navigate('/settings/transactions')
+                break;
+            }
+            case ('bookings'): {
+                navigate('/settings/bookings')
+                break;
             }
         }
     }
@@ -83,7 +103,7 @@ export default function Account() {
                         </div>
 
                         <span className="text-[#007AFF] font-bold text-sm tracking-wide ml-1">
-                            Lê Phú Thịnh
+                            {user?.name || 'User'}
                         </span>
 
                         <DownOutlined

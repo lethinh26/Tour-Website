@@ -15,8 +15,13 @@ const initialState: initialStateType = {
 }
 
 export const fetchDataPromotion = createAsyncThunk('promotion/fetchData', async () => {
-    const promotion = await axios.get(`${import.meta.env.VITE_API_URL}/promotions`)
-    return promotion.data
+    try {
+        const promotion = await axios.get(`${import.meta.env.VITE_API_URL}/promotions`)
+        return Array.isArray(promotion.data) ? promotion.data : []
+    } catch (error) {
+        console.error('Error fetching promotions:', error);
+        return []
+    }
 })
 
 const promotionSlice = createSlice({
@@ -32,6 +37,11 @@ const promotionSlice = createSlice({
         })
         builder.addCase(fetchDataPromotion.pending, (state) => {
             state.status = 'loading'
+        })
+        builder.addCase(fetchDataPromotion.rejected, (state, action) => {
+            state.status = 'error'
+            state.error = action.error.message || 'Failed to fetch promotions'
+            state.promotions = []
         })
     }
 })

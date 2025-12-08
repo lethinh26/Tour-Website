@@ -1,0 +1,293 @@
+import { useState, useEffect } from "react";
+import { Table, Tag, Button, Space, Modal, Descriptions } from "antd";
+import { EyeOutlined, LeftOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { useNavigate } from "react-router";
+
+interface Booking {
+    id: number;
+    userId: number;
+    totalAmount: string;
+    status: string;
+    createdAt: string;
+    items: Array<{
+        id: number;
+        quantity: number;
+        unitPrice: string;
+        departure: {
+            id: number;
+            departure: string;
+            availableSeats: number;
+            tour: {
+                id: number;
+                name: string;
+                address: string;
+                information: string;
+                category: {
+                    id: number;
+                    name: string;
+                };
+            };
+        };
+    }>;
+    payments: Array<{
+        id: number;
+        status: string;
+        method: string;
+    }>;
+}
+
+const MyBookings = () => {
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [detailVisible, setDetailVisible] = useState(false);
+    const [mapVisible, setMapVisible] = useState(false);
+    const [infoVisible, setInfoVisible] = useState(false);
+    const [currentAddress, setCurrentAddress] = useState("");
+    const [currentInfo, setCurrentInfo] = useState("");
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchBookings();
+    }, []);
+
+    const fetchBookings = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const userId = userRes.data.id;
+
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/payments/orders/all`);
+            const userBookings = Array.isArray(response.data)
+                ? response.data.filter((booking: Booking) => booking.userId === userId && booking.status === "PAID")
+                : [];
+            setBookings(userBookings);
+        } catch (error) {
+            console.error("Error fetching bookings:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getStatusTag = (status: string) => {
+        const statusMap: Record<string, { color: string; text: string }> = {
+            PENDING: { color: "gold", text: "Chờ thanh toán" },
+            PAID: { color: "green", text: "Đã thanh toán" },
+            CANCELLED: { color: "red", text: "Đã hủy" },
+        };
+        return <Tag color={statusMap[status]?.color || "default"}>{statusMap[status]?.text || status}</Tag>;
+    };
+
+    const columns = [
+        {
+            title: "Mã đặt chỗ",
+            dataIndex: "id",
+            key: "id",
+            render: (id: number) => `#${id}`,
+        },
+        {
+            title: "Tour",
+            key: "tour",
+            render: (_: unknown, record: Booking) => {
+                const firstItem = Array.isArray(record.items) && record.items.length > 0 ? record.items[0] : null;
+                if (!firstItem) return "N/A";
+                return (
+                    <div>
+                        <div className="font-semibold">{firstItem.departure.tour.name}</div>
+                        <div className="text-sm text-gray-500">{firstItem.departure.tour.category?.name || "N/A"}</div>
+                    </div>
+                );
+            },
+        },
+        {
+            title: "Ngày khởi hành",
+            key: "departureDate",
+            render: (_: unknown, record: Booking) => {
+                const firstItem = Array.isArray(record.items) && record.items.length > 0 ? record.items[0] : null;
+                return firstItem ? new Date(firstItem.departure.departure).toLocaleDateString("vi-VN") : "N/A";
+            },
+        },
+        {
+            title: "Số lượng",
+            key: "quantity",
+            align: "center" as const,
+            render: (_: unknown, record: Booking) => {
+                const totalQuantity = Array.isArray(record.items) ? record.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+                return totalQuantity;
+            },
+        },
+        {
+            title: "Tổng tiền",
+            dataIndex: "totalAmount",
+            key: "totalAmount",
+            render: (amount: string) => `${Number(amount).toLocaleString("vi-VN")} VNĐ`,
+        },
+        {
+            title: "Trạng thái",
+            dataIndex: "status",
+            key: "status",
+            render: (status: string) => getStatusTag(status),
+        },
+        {
+            title: "Ngày đặt",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
+        },
+        {
+            title: "Thao tác",
+            key: "action",
+            render: (_: unknown, record: Booking) => (
+                <Space>
+                    <Button
+                        type="primary"
+                        icon={<EyeOutlined />}
+                        onClick={() => {
+                            setSelectedBooking(record);
+                            setDetailVisible(true);
+                        }}
+                    >
+                        Chi tiết
+                    </Button>
+                </Space>
+            ),
+        },
+    ];
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <div className="py-4 px-6 mb-6">
+                <div className="mx-auto flex items-center gap-4 max-w-7xl">
+                    <Button icon={<LeftOutlined />} onClick={() => navigate("/settings")} type="text" style={{marginTop: 30}}>
+                        Quay lại
+                    </Button>
+                    <h1 className="text-2xl font-bold">Đặt chỗ của tôi</h1>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                    <Table
+                        columns={columns}
+                        dataSource={bookings}
+                        rowKey="id"
+                        loading={loading}
+                        pagination={{
+                            pageSize: 10,
+                            showTotal: (total) => `Tổng ${total} đặt chỗ`,
+                        }}
+                    />
+                </div>
+            </div>
+
+            <Modal
+                title="Chi tiết đặt chỗ"
+                open={detailVisible}
+                onCancel={() => setDetailVisible(false)}
+                footer={[
+                    <Button key="close" onClick={() => setDetailVisible(false)}>
+                        Đóng
+                    </Button>,
+                ]}
+                width={700}
+            >
+                {selectedBooking &&
+                    (() => {
+                        const firstItem = Array.isArray(selectedBooking.items) && selectedBooking.items.length > 0 ? selectedBooking.items[0] : null;
+                        const totalQuantity = Array.isArray(selectedBooking.items)
+                            ? selectedBooking.items.reduce((sum, item) => sum + item.quantity, 0)
+                            : 0;
+                        return (
+                            <Descriptions bordered column={1}>
+                                <Descriptions.Item label="Mã đặt chỗ">#{selectedBooking.id.toString().padStart(6, "0")}</Descriptions.Item>
+                                {firstItem && (
+                                    <>
+                                        <Descriptions.Item label="Tour">{firstItem.departure.tour.name}</Descriptions.Item>
+                                        <Descriptions.Item label="Địa điểm">
+                                            <div className="flex items-center justify-between">
+                                                <span>{firstItem.departure.tour.address}</span>
+                                                <Button
+                                                    type="link"
+                                                    size="small"
+                                                    onClick={() => {
+                                                        setCurrentAddress(firstItem.departure.tour.address);
+                                                        setMapVisible(true);
+                                                    }}
+                                                >
+                                                    Xem bản đồ
+                                                </Button>
+                                            </div>
+                                        </Descriptions.Item>
+                                        <Descriptions.Item label="Thông tin">
+                                            <Button
+                                                type="primary"
+                                                size="small"
+                                                onClick={() => {
+                                                    setCurrentInfo(firstItem.departure.tour.information);
+                                                    setInfoVisible(true);
+                                                }}
+                                            >
+                                                Xem chi tiết
+                                            </Button>
+                                        </Descriptions.Item>
+                                        <Descriptions.Item label="Ngày khởi hành">
+                                            {new Date(firstItem.departure.departure).toLocaleDateString("vi-VN")}
+                                        </Descriptions.Item>
+                                    </>
+                                )}
+                                <Descriptions.Item label="Số lượng khách">{totalQuantity} người</Descriptions.Item>
+                                <Descriptions.Item label="Tổng tiền">
+                                    <span className="text-lg font-semibold text-red-600">
+                                        {Number(selectedBooking.totalAmount).toLocaleString("vi-VN")} VNĐ
+                                    </span>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Trạng thái">{getStatusTag(selectedBooking.status)}</Descriptions.Item>
+                                <Descriptions.Item label="Ngày đặt">{new Date(selectedBooking.createdAt).toLocaleString("vi-VN")}</Descriptions.Item>
+                            </Descriptions>
+                        );
+                    })()}
+            </Modal>
+
+            {/* Modal Google Map */}
+            <Modal
+                title="Địa điểm trên bản đồ"
+                open={mapVisible}
+                onCancel={() => setMapVisible(false)}
+                footer={[
+                    <Button key="close" onClick={() => setMapVisible(false)}>
+                        Đóng
+                    </Button>,
+                ]}
+                width={800}
+            >
+                <iframe
+                    width="100%"
+                    height="450"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(currentAddress)}&output=embed`}
+                ></iframe>
+            </Modal>
+
+            {/* Modal Thông tin Tour */}
+            <Modal
+                title="Thông tin chi tiết Tour"
+                open={infoVisible}
+                onCancel={() => setInfoVisible(false)}
+                footer={[
+                    <Button key="close" onClick={() => setInfoVisible(false)}>
+                        Đóng
+                    </Button>,
+                ]}
+                width={900}
+            >
+                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentInfo }} />
+            </Modal>
+        </div>
+    );
+};
+
+export default MyBookings;

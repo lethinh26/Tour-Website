@@ -59,7 +59,7 @@ export default function SettingPromotion() {
             </div>
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-[150px]">
-                {promotionByToken
+                {Array.isArray(promotionByToken) && promotionByToken
                 .slice((currentPage - 1) * pageSize, currentPage * pageSize)
                     .filter(item => checkExpiry(item.startAt, item.endAt))
                     .map((promo, index) => {

@@ -23,6 +23,8 @@ import Dashboard from '../pages/Admin/components/Dashboard';
 import PaymentSuccess from '../pages/Payment/PaymentSuccess';
 import PaymentError from '../pages/Payment/PaymentError';
 import PaymentCancel from '../pages/Payment/PaymentCancel';
+import TransactionHistory from '../pages/Settings/TransactionHistory';
+import MyBookings from '../pages/Settings/MyBookings';
 
 const router = createBrowserRouter([
     {
@@ -78,13 +80,22 @@ const router = createBrowserRouter([
             {
                 path: "*",
                 element: <NotFoundPage />,
-            },    {
-                path: 'setting',
+            },    
+            {
+                path: 'settings',
                 element: <AccountSettings />
             },
             {
-                path: '/setting/promotion',
+                path: 'settings/promotion',
                 element: <SettingPromotion />
+            },
+            {
+                path: 'settings/bookings',
+                element: <MyBookings/>
+            },
+            {
+                path: 'settings/transactions',
+                element: <TransactionHistory/>
             }
         ],
     },
