@@ -19,10 +19,8 @@ const QRPaymentPage: React.FC = () => {
     const [payment, setPayment] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">("BANK_TRANSFER");
-    const [processing, setProcessing] = useState(false);
     const [checking, setChecking] = useState(false);
 
-    // Hàm check payment status manual
     const checkPaymentStatus = async () => {
         if (!payment) return;
         
@@ -68,7 +66,6 @@ const QRPaymentPage: React.FC = () => {
                 const data = await paymentAPI.getById(id);
                 setPayment(data);
                 
-                // Nếu payment đã SUCCESS, hiển thị modal ngay
                 if (data.status === 'SUCCESS') {
                     Modal.success({
                         title: "Thanh toán thành công!",
@@ -94,7 +91,6 @@ const QRPaymentPage: React.FC = () => {
         fetchPayment();
     }, [id, navigate]);
 
-    // Polling để check payment status
     useEffect(() => {
         if (!payment || payment.status === 'SUCCESS' || payment.status === 'FAILED') return;
 
@@ -103,14 +99,13 @@ const QRPaymentPage: React.FC = () => {
                 setChecking(true);
                 const response = await paymentAPI.getById(payment.id);
                 
-                console.log('Payment status check:', response.status); // Debug log
+                console.log('Payment status check:', response.status); 
                 
                 if (response.status === 'SUCCESS') {
                     setPayment(response);
                     clearInterval(intervalId);
                     message.success('Thanh toán thành công!');
                     
-                    // Hiển thị modal thành công
                     setTimeout(() => {
                         Modal.success({
                             title: "Thanh toán thành công!",
@@ -132,7 +127,7 @@ const QRPaymentPage: React.FC = () => {
             } finally {
                 setChecking(false);
             }
-        }, 2000); // Check mỗi 2 giây (nhanh hơn)
+        }, 2000);
 
         return () => clearInterval(intervalId);
     }, [payment, navigate]);
@@ -155,8 +150,7 @@ const QRPaymentPage: React.FC = () => {
                 cancelText: "Hủy",
                 onOk: async () => {
                     try {
-                        setProcessing(true);
-                        // Cập nhật payment status và method
+                        // setProcessing(true);
                         await paymentAPI.update(payment.id, {
                             method: "CASH",
                             status: "SUCCESS",
@@ -179,7 +173,7 @@ const QRPaymentPage: React.FC = () => {
                         console.error("Payment error:", error);
                         message.error("Có lỗi xảy ra, vui lòng thử lại");
                     } finally {
-                        setProcessing(false);
+                        // setProcessing(false);
                     }
                 },
                 onCancel: () => {
@@ -207,7 +201,6 @@ const QRPaymentPage: React.FC = () => {
         );
     }
 
-    // Nếu payment đã SUCCESS, hiển thị success screen
     if (payment.status === 'SUCCESS') {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8 px-4">

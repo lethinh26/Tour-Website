@@ -39,7 +39,7 @@ const FavoritesPage = () => {
             // setDataFavorite(data.tourFavorited)
 
             setFavoriteItem(() => {
-                return Array.isArray(data.tourFavorited) ? data.tourFavorited.map(item => {
+                return Array.isArray(data.tourFavorited) ? data.tourFavorited.map((item: any) => {
                     const imgObj = Array.isArray(images) ? images.filter(img => img.tourId == item.id)[0] : undefined;
                     return {
                         id: item.id,
@@ -52,7 +52,7 @@ const FavoritesPage = () => {
                     }
                 }) : []
             })
-        }).catch((error) => {
+        }).catch(() => {
             setDataFavorite([])
         })
     }, [images, categories])

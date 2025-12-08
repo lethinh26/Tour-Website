@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, Modal } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
 

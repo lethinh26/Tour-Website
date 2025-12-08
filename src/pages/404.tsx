@@ -1,5 +1,5 @@
 
-import React from "react";
+
 import { useNavigate } from "react-router";
 import bg from "../assets/404.png";
 import { RollbackOutlined } from "@ant-design/icons";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Collapse, Space, Modal, message } from "antd";
 import { useNavigate } from "react-router";
 import { paymentAPI, promotionAPI, getUser } from "../../../../services/api";

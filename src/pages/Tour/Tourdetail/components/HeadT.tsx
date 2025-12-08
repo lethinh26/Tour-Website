@@ -6,7 +6,7 @@ export default function HeadT({images}: {images: TourImage[]}) {
             <div className="bg-white top-20 left-1/12 h-80 w-3/4 flex rounded-2xl overflow-hidden">
                 <div className=" h-full w-2/5 p-2">
                     <div className="h-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-500 border-2 border-white rounded-xl">
-                        <img src={Array.isArray(images) && images[0]?.url} alt="Main Image" className="w-full h-full object-cover" />
+                        <img src={Array.isArray(images) && images[0]?.url || ''} alt="Main Image" className="w-full h-full object-cover" />
                     </div>
                 </div>
                 <div className="flex flex-wrap h-full w-3/5 gap-2 p-2">

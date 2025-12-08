@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, App, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";

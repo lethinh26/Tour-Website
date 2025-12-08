@@ -1,4 +1,3 @@
-import  { useState } from 'react';
 import { Avatar, Pagination } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 

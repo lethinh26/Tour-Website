@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Table, Button, Modal, Form, Input, InputNumber, Select, Steps, App, Spin } from "antd";
+import { useState, useEffect, useRef } from "react";
+import { Table, Button, Modal, Form, Input, InputNumber, Select, Steps, App } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { Editor } from "@tinymce/tinymce-react";
@@ -189,6 +189,7 @@ const TourList = () => {
         categoryId: Number(values.categoryId),
         description: values.description,
         information: values.information,
+        address: values.address || '',
       };
 
       if (editingTour) {

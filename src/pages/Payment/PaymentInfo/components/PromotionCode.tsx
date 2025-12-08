@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Select, Button, message } from 'antd';
 import { promotionAPI, getUser } from '../../../../services/api';
 
@@ -10,7 +10,7 @@ interface PromotionCodeProps {
   onPromotionChange?: (promotion: any) => void;
 }
 
-const PromotionCode = ({ payment, selectedPromotion, onPromotionChange }: PromotionCodeProps) => {
+const PromotionCode = ({ selectedPromotion, onPromotionChange }: PromotionCodeProps) => {
   const [promotions, setPromotions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);

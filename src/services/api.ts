@@ -122,7 +122,7 @@ export const tourAPI = {
         return res.data;
     },
 
-    count: async (token: string) => {
+    count: async () => {
         const res = await axios.get(`${API_BASE_URL}/tours/count`);
         return res.data;
     }
@@ -265,9 +265,9 @@ export const dashboardAPI = {
             ]);
             
             return {
-                totalTours: tours.length,
-                totalCategories: categories.length,
-                totalLocations: locations.length
+                totalTours: Array.isArray(tours.data) ? tours.data.length : 0,
+                totalCategories: Array.isArray(categories.data) ? categories.data.length : 0,
+                totalLocations: Array.isArray(locations.data) ? locations.data.length : 0
             };
         } catch (error) {
             console.error('Get stats failed:', error);
@@ -275,7 +275,7 @@ export const dashboardAPI = {
         }
     },
     
-    getRevenueData: async (userId?: number) => {
+    getRevenueData: async () => {
         try {
             return {
                 monthly: {

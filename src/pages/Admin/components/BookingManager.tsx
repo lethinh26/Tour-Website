@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Table, Select, Card, App, Tag, Descriptions, Spin } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { tourAPI, tourDepartureAPI } from "../../../services/api";

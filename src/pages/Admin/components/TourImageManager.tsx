@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Select, Upload, App, Image, Spin } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Select, Upload, App, Image } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, UploadOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { UploadFile, UploadProps } from "antd/es/upload";

@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Card } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
 

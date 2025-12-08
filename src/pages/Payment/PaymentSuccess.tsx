@@ -3,7 +3,7 @@ import { Card, Typography, Result } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const PaymentSuccess: React.FC = () => {
   const navigate = useNavigate();
