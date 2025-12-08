@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Table, Tag, Button, Space, Modal, Descriptions } from "antd";
-import { EyeOutlined, LeftOutlined } from "@ant-design/icons";
+import { Table, Tag, Button, Space, Modal, Descriptions, Rate, Input, message } from "antd";
+import { EyeOutlined, LeftOutlined, StarOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate } from "react-router";
 
@@ -44,8 +44,15 @@ const MyBookings = () => {
     const [detailVisible, setDetailVisible] = useState(false);
     const [mapVisible, setMapVisible] = useState(false);
     const [infoVisible, setInfoVisible] = useState(false);
+    const [reviewVisible, setReviewVisible] = useState(false);
     const [currentAddress, setCurrentAddress] = useState("");
     const [currentInfo, setCurrentInfo] = useState("");
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState("");
+    const [currentTourId, setCurrentTourId] = useState<number | null>(null);
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [existingReview, setExistingReview] = useState<any>(null);
+    const [loadingReview, setLoadingReview] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -78,6 +85,75 @@ const MyBookings = () => {
             CANCELLED: { color: "red", text: "Đã hủy" },
         };
         return <Tag color={statusMap[status]?.color || "default"}>{statusMap[status]?.text || status}</Tag>;
+    };
+
+    const handleSubmitReview = async () => {
+        if (!rating) {
+            message.error("Vui lòng chọn số sao đánh giá");
+            return;
+        }
+
+        if (!currentTourId) {
+            message.error("Không tìm thấy thông tin tour");
+            return;
+        }
+
+        setSubmittingReview(true);
+        try {
+            const token = localStorage.getItem("token");
+            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const userId = userRes.data.id;
+
+            await axios.post(`${import.meta.env.VITE_API_URL}/tours/reviews`, {
+                tourId: currentTourId,
+                userId: userId,
+                rating: rating,
+                comment: comment || null
+            });
+
+            message.success("Đánh giá của bạn đã được gửi thành công!");
+            setReviewVisible(false);
+            setRating(0);
+            setComment("");
+            setCurrentTourId(null);
+            setExistingReview(null);
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            message.error("Không thể gửi đánh giá. Vui lòng thử lại!");
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+
+    const handleOpenReviewModal = async (tourId: number) => {
+        setLoadingReview(true);
+        try {
+            const token = localStorage.getItem("token");
+            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const userId = userRes.data.id;
+
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/tours/reviews/user/${userId}/tour/${tourId}`
+            );
+
+            if (response.data.hasReviewed) {
+                setExistingReview(response.data.review);
+                setRating(response.data.review.rating);
+                setComment(response.data.review.comment || "");
+            } else {
+                setExistingReview(null);
+                setRating(0);
+                setComment("");
+            }
+
+            setCurrentTourId(tourId);
+            setReviewVisible(true);
+        } catch (error) {
+            console.error("Error fetching review:", error);
+            message.error("Không thể tải thông tin đánh giá!");
+        } finally {
+            setLoadingReview(false);
+        }
     };
 
     const columns = [
@@ -150,6 +226,17 @@ const MyBookings = () => {
                         }}
                     >
                         Chi tiết
+                    </Button>
+                    <Button
+                        icon={<StarOutlined />}
+                        onClick={() => {
+                            const firstItem = Array.isArray(record.items) && record.items.length > 0 ? record.items[0] : null;
+                            if (firstItem) {
+                                handleOpenReviewModal(firstItem.departure.tour.id);
+                            }
+                        }}
+                    >
+                        Đánh giá
                     </Button>
                 </Space>
             ),
@@ -285,6 +372,86 @@ const MyBookings = () => {
                 width={900}
             >
                 <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentInfo }} />
+            </Modal>
+
+            {/* Modal Đánh giá */}
+            <Modal
+                title={existingReview ? "Đánh giá của bạn" : "Đánh giá Tour"}
+                open={reviewVisible}
+                onCancel={() => {
+                    setReviewVisible(false);
+                    setRating(0);
+                    setComment("");
+                    setCurrentTourId(null);
+                    setExistingReview(null);
+                }}
+                footer={
+                    existingReview
+                        ? [
+                              <Button
+                                  key="close"
+                                  onClick={() => {
+                                      setReviewVisible(false);
+                                      setRating(0);
+                                      setComment("");
+                                      setCurrentTourId(null);
+                                      setExistingReview(null);
+                                  }}
+                              >
+                                  Đóng
+                              </Button>,
+                          ]
+                        : [
+                              <Button
+                                  key="cancel"
+                                  onClick={() => {
+                                      setReviewVisible(false);
+                                      setRating(0);
+                                      setComment("");
+                                      setCurrentTourId(null);
+                                      setExistingReview(null);
+                                  }}
+                              >
+                                  Hủy
+                              </Button>,
+                              <Button key="submit" type="primary" onClick={handleSubmitReview} loading={submittingReview}>
+                                  Gửi đánh giá
+                              </Button>,
+                          ]
+                }
+                width={500}
+            >
+                {loadingReview ? (
+                    <div className="text-center py-8">Đang tải...</div>
+                ) : (
+                    <div className="flex flex-col gap-4 py-4">
+                        {existingReview && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                                <p className="text-sm text-blue-700">
+                                    Bạn đã đánh giá tour này vào{" "}
+                                    {new Date(existingReview.createdAt).toLocaleDateString("vi-VN")}
+                                </p>
+                            </div>
+                        )}
+                        <div>
+                            <label className="block mb-2 font-semibold">Đánh giá của bạn (1-10 sao):</label>
+                            <Rate count={10} value={rating} onChange={setRating} className="text-2xl" disabled={!!existingReview} />
+                            <span className="ml-3 text-lg font-semibold text-blue-600">{rating > 0 ? `${rating}/10` : "Chưa chọn"}</span>
+                        </div>
+                        <div>
+                            <label className="block mb-2 font-semibold">Nhận xét (tùy chọn):</label>
+                            <Input.TextArea
+                                rows={4}
+                                placeholder="Chia sẻ trải nghiệm của bạn về tour này..."
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                maxLength={500}
+                                showCount
+                                disabled={!!existingReview}
+                            />
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );

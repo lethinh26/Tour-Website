@@ -1,7 +1,6 @@
 import InfoHeader from "./components/InfoHeader";
 import Section from "./components/Section";
 import HeadT from "./components/HeadT";
-
 import "react-day-picker/style.css"
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -10,6 +9,7 @@ import { fetchDataTourDetail } from "../../../stores/slides/tourDetail.slice";
 import type { AppDispatch, StoreType } from "../../../stores";
 import ShowMore from "./components/ShowMore";
 import FullPageLoader from "../../../common/Loading";
+import ReviewCard from "./components/ReviewCard";
 
 export default function TourDetailMain() {
     const id = Number(useParams().id)
@@ -19,7 +19,7 @@ export default function TourDetailMain() {
         dispatch(fetchDataTourDetail(id))
     },[dispatch, id])
     
-    const {tour, images, status} = useSelector((state: StoreType) => state.tourDetailReducer)
+    const {tour, images, reviews, averageRating, totalReviews, status} = useSelector((state: StoreType) => state.tourDetailReducer)
     const htmlObjectDesciption = { __html: tour?.description || ""};
     const htmlObjectInfomation = { __html: tour?.information || ""};
     if(status == 'loading'){
@@ -49,6 +49,12 @@ export default function TourDetailMain() {
                         </div>
                         
                     </Section>
+
+                    <ReviewCard 
+                        reviews={reviews} 
+                        averageRating={averageRating} 
+                        totalReviews={totalReviews} 
+                    />
                 </div>
             </div>
         </div>

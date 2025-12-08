@@ -1,11 +1,63 @@
-import { TagOutlined } from "@ant-design/icons";
+import { TagOutlined, TagFilled } from "@ant-design/icons";
 import { Button, Tooltip } from "antd";
 import { useNavigate, useParams } from "react-router";
 import type { Tour } from "../../../../types/types";
+import { useState } from "react";
+import axios from "axios";
 
 export default function InfoHeader({tour} : {tour: Tour | null}) {
     const navigate = useNavigate();
     const id = useParams().id
+    const [token] = useState(() => localStorage.getItem('token'));
+    const [tagActive, setTagActive] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    useState(() => {
+        const fetchFavoriteTours = async () => {
+            if (!token) return;
+            try {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`);
+                const favorited = res.data?.tourFavorited || [];
+                const isFavorited = favorited.some((tour: any) => tour.id === Number(id));
+                setTagActive(isFavorited);
+            } catch (error) {
+                setTagActive(false);
+            }
+        };
+        fetchFavoriteTours();
+    });
+
+    const handleSaveFavorite = async () => {
+        setLoading(true);
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
+                token,
+                tourId: Number(id)
+            });
+            setTagActive(true);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUnFavorite = async () => {
+        setLoading(true);
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
+                data: {
+                    token,
+                    tourId: Number(id)
+                }
+            });
+            setTagActive(false);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
     
     const formatVND = (value: number | string  | undefined) => {
         const num = typeof value === 'string'? parseInt(value) : value;
@@ -17,14 +69,25 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-center">
                     <h2 className="font-bold text-3xl mb-4 md:mb-0">{tour?.name}</h2>
                     <div className="flex items-center gap-3 mt-2 md:mt-0">
-                        <Tooltip title="Lưu vào danh sách yêu thích">
-                            <Button
-                                shape="circle"
-                                size="large"
-                                className="bg-blue-100 text-blue-500 border-none shadow"
-                                icon={<TagOutlined />}
-                            ></Button>
-                        </Tooltip>
+                        {token && (
+                            <Tooltip title={tagActive ? "Huỷ Yêu Thích" : "Lưu vào danh sách yêu thích"}>
+                                <Button
+                                    shape="circle"
+                                    size="large"
+                                    className={`border-none shadow ${tagActive ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-500'} ${loading ? 'opacity-60 pointer-events-none' : ''}`}
+                                    icon={tagActive ? <TagFilled /> : <TagOutlined />}
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        if (loading) return;
+                                        if (tagActive) {
+                                            handleUnFavorite();
+                                        } else {
+                                            handleSaveFavorite();
+                                        }
+                                    }}
+                                />
+                            </Tooltip>
+                        )}
                     </div>
                 </div>
             </div>
