@@ -162,7 +162,7 @@ export const tourDepartureAPI = {
     },
     
     getByTourId: async (tourId: number) => {
-        const res = await axios.get(`${API_BASE_URL}/tourDepartures/${tourId}`);
+        const res = await axios.get(`${API_BASE_URL}/tourDepartures/tour/${tourId}`);
         return { data: res.data };
     },
     
@@ -245,12 +245,12 @@ export const promotionAPI = {
     }) => {
         console.log(data.description);
         
-        const res = await axios.patch(`${API_BASE_URL}/promotion/${id}`, data);
+        const res = await axios.patch(`${API_BASE_URL}/promotions/${id}`, data);
         return res.data;
     },
     
     delete: async (id: number) => {
-        const res = await axios.delete(`${API_BASE_URL}/promotion/${id}`);
+        const res = await axios.delete(`${API_BASE_URL}/promotions/${id}`);
         return res.data;
     }
 };
@@ -379,6 +379,17 @@ export const bookingAPI = {
         
         const res = await axios.get(`${API_BASE_URL}/bookings/monthlyRevenue`, {
             headers: { Authorization: `Bearer ${token}` },
+            params
+        });
+        return res.data;
+    },
+
+    // Admin only: Doanh thu theo tháng toàn hệ thống
+    monthlyRevenueAll: async (month: number, year?: number) => {
+        const params: any = { month };
+        if (year) params.year = year;
+        
+        const res = await axios.get(`${API_BASE_URL}/bookings/monthlyRevenueAll`, {
             params
         });
         return res.data;

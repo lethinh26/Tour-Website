@@ -96,7 +96,9 @@ const Dashboard = () => {
       setTopTours(formattedTours);
 
       const revenuePromises = Array.from({ length: 12 }, (_, i) => 
-        bookingAPI.monthlyRevenue(i + 1, selectedYear)
+        isAdmin 
+          ? bookingAPI.monthlyRevenueAll(i + 1, selectedYear)
+          : bookingAPI.monthlyRevenue(i + 1, selectedYear)
       );
       const revenueResults = await Promise.all(revenuePromises);
       const revenues = revenueResults.map(res => res.totalRevenue);

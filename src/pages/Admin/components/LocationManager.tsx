@@ -25,13 +25,15 @@ const LocationManager = () => {
     try {
       setLoading(true);
       const response = await locationAPI.getAll();
-      setLocations(response.data);
+      const locations = Array.isArray(response.data) ? response.data : [];
+      setLocations(locations);
     } catch (error) {
       notification.error({
         message: 'Lỗi',
         description: 'Không thể tải danh sách địa điểm',
         placement: 'topRight',
       });
+      setLocations([]);
     } finally {
       setLoading(false);
     }

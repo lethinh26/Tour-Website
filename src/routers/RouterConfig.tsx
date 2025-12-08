@@ -16,6 +16,7 @@ import TourList from '../pages/Admin/components/TourList';
 import TourImageManager from '../pages/Admin/components/TourImageManager';
 import FavoritesPage from '../pages/Tour/tourFavorite/FavoritesPage';
 import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
+import BookingManager from '../pages/Admin/components/BookingManager';
 import AccountSettings from '../pages/Settings/SettingMain';
 import SettingPromotion from '../pages/Settings/SettingPromotion';
 import Auth from '../pages/Admin/components/Auth';
@@ -184,7 +185,7 @@ const router = createBrowserRouter([
                 path: "booking-manager",
                 element: (
                     <Auth allowedRoles={["ADMIN"]}>
-                        <div className="p-8"><h1 className="text-2xl font-bold">Booking Manager</h1></div>
+                        <BookingManager />
                     </Auth>
                 ),
             },
