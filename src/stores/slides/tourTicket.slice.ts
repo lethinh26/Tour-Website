@@ -24,7 +24,7 @@ export const fetchDataTicketTour = createAsyncThunk('data/fetchDataTicketTour', 
         const {id: tourId} = info
         const data = [
             axios.get(`${import.meta.env.VITE_API_URL}/tours/${tourId}`),
-            axios.get(`${import.meta.env.VITE_API_URL}/tourDepartures/${tourId}`),
+            axios.get(`${import.meta.env.VITE_API_URL}/tourDepartures/tour/${tourId}`),
             axios.get(`${import.meta.env.VITE_API_URL}/tourImages/${tourId}`)
         ]
 

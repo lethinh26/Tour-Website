@@ -79,7 +79,7 @@ export default function PromotionMain() {
                 </div>
                 <div className="flex items-center justify-between py-3">
                     <Button color="primary" variant="solid" onClick={() => {
-                        navigate('/setting/promotion')
+                        navigate('/settings/promotion')
                     }}>Kho Khuyến Mãi</Button>
                 </div>
             </div>

@@ -22,7 +22,7 @@ const ContactInfo = ({ user }: ContactInfoProps) => {
             <Card title={titleJSX} className="mb-4 shadow-md w-full">
                 <Form layout="vertical" className="flex justify-between px-6!">
                     <Form.Item label={<h3 className="text-[#687176]! font-semibold">Số điện thoại</h3>}>
-                        <Input placeholder="Nhập số điện thoại" className="rounded-md font-bold" disabled value="+84 123 456 789" />
+                        <Input placeholder="Nhập số điện thoại" className="rounded-md font-bold" disabled value={user?.phoneNumber || 'Chưa cập nhật'} />
                     </Form.Item>
                     <Form.Item label={<h3 className="text-[#687176]! font-semibold">Email</h3>}>
                         <Input placeholder="Nhập email" className="rounded-md font-bold" disabled value={user?.email || ''} />

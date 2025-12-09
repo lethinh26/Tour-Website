@@ -288,8 +288,8 @@ const Header = () => {
                                 label="Name"
                                 name="name"
                                 rules={[
-                                    { required: true, message: "Không được để trống email" },
-                                    { type: "string", message: "Email phải đúng định dạng" },
+                                    { required: true, message: "Không được để trống name" },
+                                    { type: "string", message: "Name phải đúng định dạng" },
                                 ]}
                             >
                                 <Input type="name" placeholder="Nhập name" className="p-3 rounded-xl" />
@@ -303,6 +303,16 @@ const Header = () => {
                                 ]}
                             >
                                 <Input type="email" placeholder="Nhập email" className="p-3 rounded-xl" />
+                            </Form.Item>
+                            <Form.Item
+                                label="Số điện thoại"
+                                name="phoneNumber"
+                                rules={[
+                                    { required: true, message: "Không được để trống số điện thoại" },
+                                    { pattern: /^[0-9]{10,11}$/, message: "Số điện thoại phải có 10-11 chữ số" },
+                                ]}
+                            >
+                                <Input type="tel" placeholder="Nhập số điện thoại" className="p-3 rounded-xl" />
                             </Form.Item>
                             <Form.Item
                                 label="Password"

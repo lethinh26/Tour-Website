@@ -40,6 +40,7 @@ interface Booking {
         id: number;
         name: string;
         email: string;
+        phoneNumber?: string;
     };
     items: BookingItem[];
     totalAmount: number;
@@ -192,11 +193,14 @@ const BookingManager = () => {
         {
             title: "Người đặt",
             key: "user",
-            width: 200,
+            width: 250,
             render: (_, record) => (
                 <div>
                     <div className="font-medium">{record.user.name}</div>
                     <div className="text-xs text-gray-500">{record.user.email}</div>
+                    {record.user.phoneNumber && (
+                        <div className="text-xs text-gray-600 mt-1">📞 {record.user.phoneNumber}</div>
+                    )}
                 </div>
             ),
         },

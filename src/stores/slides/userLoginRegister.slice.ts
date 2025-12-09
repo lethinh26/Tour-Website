@@ -19,9 +19,9 @@ export const userLogin = createAsyncThunk('user/login', async (userInfo: {email:
     return res.data
 })
 
-export const userRegister = createAsyncThunk('user/reg', async (userInfo: {name: string, email: string, password: string}) => {
-    const {name, email, password} = userInfo
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reg`, {name, email, password})
+export const userRegister = createAsyncThunk('user/reg', async (userInfo: {name: string, email: string, password: string, phoneNumber: string}) => {
+    const {name, email, password, phoneNumber} = userInfo
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reg`, {name, email, password, phoneNumber})
     return res.data
 })
 
