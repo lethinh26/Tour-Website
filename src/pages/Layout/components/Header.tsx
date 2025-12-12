@@ -74,7 +74,7 @@ const Header = () => {
     );
 
     const handleRegister = useCallback(
-        async (values: { name: string; email: string; password: string }) => {
+        async (values: { name: string; email: string; password: string; phoneNumber: string }) => {
             await dispatch(userRegister(values));
             setShowRegister(false);
             formRegister.resetFields();
