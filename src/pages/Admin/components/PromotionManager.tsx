@@ -148,7 +148,6 @@ const PromotionManager = () => {
 
     const handleFinish = async () => {
         try {
-            // Get content from editor before validation
             if (descriptionEditorRef.current) {
                 form.setFieldsValue({ description: descriptionEditorRef.current.getContent() });
             }
@@ -190,7 +189,7 @@ const PromotionManager = () => {
 
             handleCancel();
             fetchPromotions();
-        } catch (error: unknown) {
+        } catch (error: any) {
             notification.error({
                 message: editingPromotion ? "Cập nhật thất bại" : "Thêm thất bại",
                 description: error.response?.data?.message || "Vui lòng kiểm tra lại thông tin đã nhập!",
@@ -393,5 +392,6 @@ const PromotionManager = () => {
         </div>
     );
 };
+
 
 export default PromotionManager;

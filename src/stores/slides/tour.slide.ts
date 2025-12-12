@@ -22,21 +22,33 @@ const initialState: TourState = {
 }
 
 export const fetchData = createAsyncThunk('data/fetchData', async () => {
-    const data = [
-        axios.get('http://localhost:3000/api/tours'),
-        axios.get('http://localhost:3000/api/tourImages'),
-        axios.get('http://localhost:3000/api/categories'),
-        axios.get('http://localhost:3000/api/tourDepartures'),
-        axios.get('http://localhost:3000/api/locations')
-    ]
+    try {
+        const data = [
+            axios.get(`${import.meta.env.VITE_API_URL}/tours`),
+            axios.get(`${import.meta.env.VITE_API_URL}/tourImages`),
+            axios.get(`${import.meta.env.VITE_API_URL}/categories`),
+            axios.get(`${import.meta.env.VITE_API_URL}/tourDepartures`),
+            axios.get(`${import.meta.env.VITE_API_URL}/locations`)
+        ]
 
-    const [tours, tourImage, categories, departures, locations] = await Promise.all(data)
-    return {
-        tours: tours.data,
-        tourImage: tourImage.data,
-        categories: categories.data,
-        departures: departures.data,
-        locations: locations.data
+        const [tours, tourImage, categories, departures, locations] = await Promise.all(data)
+        
+        return {
+            tours: Array.isArray(tours.data) ? tours.data : [],
+            tourImage: Array.isArray(tourImage.data) ? tourImage.data : [],
+            categories: Array.isArray(categories.data) ? categories.data : [],
+            departures: Array.isArray(departures.data) ? departures.data : [],
+            locations: Array.isArray(locations.data) ? locations.data : []
+        }
+    } catch (error) {
+        console.error('Error fetching tour data:', error);
+        return {
+            tours: [],
+            tourImage: [],
+            categories: [],
+            departures: [],
+            locations: []
+        }
     }
 })
 

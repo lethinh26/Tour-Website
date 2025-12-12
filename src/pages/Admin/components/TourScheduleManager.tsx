@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Select, InputNumber, App, Empty, Spin } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Select, InputNumber, App, Empty } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { DayPicker } from "react-day-picker";
@@ -60,20 +60,20 @@ const TourScheduleManager = () => {
             const currentUser = await getUser();
             setUser(currentUser);
 
-            // Fetch tours with role-based filtering
             const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
             const toursRes = await tourAPI.getAll(userId);
-            setTours(toursRes.data);
+            const toursList = Array.isArray(toursRes.data) ? toursRes.data : [];
+            setTours(toursList);
 
-            // Fetch all departures for all tours
             const allSchedules: TourSchedule[] = [];
-            for (const tour of toursRes.data) {
+            for (const tour of toursList) {
                 const departuresRes = await tourDepartureAPI.getByTourId(tour.id);
-                if (departuresRes.data.length > 0) {
+                const departuresList = Array.isArray(departuresRes.data) ? departuresRes.data : [];
+                if (departuresList.length > 0) {
                     allSchedules.push({
                         tourId: tour.id,
                         tourTitle: tour.name,
-                        departures: departuresRes.data.map((dep: any) => ({
+                        departures: departuresList.map((dep: any) => ({
                             id: dep.id,
                             date: new Date(dep.departure),
                             price: dep.price,
@@ -89,6 +89,8 @@ const TourScheduleManager = () => {
                 description: error.response?.data?.message || 'Không thể tải danh sách lịch khởi hành',
                 placement: 'topRight',
             });
+            setTours([]);
+            setSchedules([]);
         } finally {
             setLoading(false);
         }
@@ -114,7 +116,6 @@ const TourScheduleManager = () => {
     };
 
     const handleEdit = (record: TourScheduleGroup) => {
-        // Check permission for TOUR_MANAGER
         const tour = tours.find(t => t.id === record.tourId);
         if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
             notification.error({
@@ -136,7 +137,6 @@ const TourScheduleManager = () => {
     };
 
     const handleDelete = async (record: TourScheduleGroup) => {
-        // Check permission for TOUR_MANAGER
         const tour = tours.find(t => t.id === record.tourId);
         if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
             notification.error({
@@ -156,7 +156,6 @@ const TourScheduleManager = () => {
             cancelText: "Hủy",
             async onOk() {
                 try {
-                    // Delete all departures for this tour
                     await Promise.all(
                         record.departures.map(dep => tourDepartureAPI.delete(dep.id))
                     );
@@ -198,9 +197,9 @@ const TourScheduleManager = () => {
             return;
         }
 
-        const maxId = Math.max(...departures.map((d) => d.id), 0);
+        const tempId = Date.now();
         const newDeparture: Departure = {
-            id: maxId + 1,
+            id: tempId,
             date: selectedDate,
             price: values.price,
             capacity: values.capacity,
@@ -241,31 +240,59 @@ const TourScheduleManager = () => {
             }
 
             if (editingSchedule) {
-                // Edit mode - delete old departures and create new ones
                 const oldDepartures = schedules.find(s => s.tourId === editingSchedule.tourId)?.departures || [];
-                await Promise.all(
-                    oldDepartures.map(dep => tourDepartureAPI.delete(dep.id))
+                
+                const departuresToDelete = oldDepartures.filter(oldDep => 
+                    !departures.some(newDep => newDep.id === oldDep.id)
+                );
+                
+                const departuresToCreate = departures.filter(dep => 
+                    !oldDepartures.some(oldDep => oldDep.id === dep.id)
+                );
+                
+                const departuresToUpdate = departures.filter(dep => 
+                    oldDepartures.some(oldDep => oldDep.id === dep.id)
                 );
 
-                await Promise.all(
-                    departures.map(dep =>
-                        tourDepartureAPI.create({
-                            tourId: editingSchedule.tourId,
-                            departure: dep.date.toISOString(),
-                            price: dep.price,
-                            capacity: dep.capacity,
-                            availableSeats: dep.capacity,
-                        })
-                    )
-                );
+                if (departuresToDelete.length > 0) {
+                    await Promise.all(
+                        departuresToDelete.map(dep => tourDepartureAPI.delete(dep.id))
+                    );
+                }
+
+                if (departuresToCreate.length > 0) {
+                    await Promise.all(
+                        departuresToCreate.map(dep =>
+                            tourDepartureAPI.create({
+                                tourId: editingSchedule.tourId,
+                                departure: dep.date.toISOString(),
+                                price: dep.price,
+                                capacity: dep.capacity,
+                                availableSeats: dep.capacity,
+                            })
+                        )
+                    );
+                }
+
+                if (departuresToUpdate.length > 0) {
+                    await Promise.all(
+                        departuresToUpdate.map(dep =>
+                            tourDepartureAPI.update(dep.id, {
+                                departure: dep.date.toISOString(),
+                                price: dep.price,
+                                capacity: dep.capacity,
+                                availableSeats: dep.capacity,
+                            })
+                        )
+                    );
+                }
 
                 notification.success({
                     message: "Cập nhật thành công",
-                    description: `Đã cập nhật ${departures.length} lịch khởi hành cho tour "${editingSchedule.tourTitle}".`,
+                    description: `Đã cập nhật lịch khởi hành cho tour "${editingSchedule.tourTitle}".`,
                     placement: "topRight",
                 });
             } else {
-                // Add mode
                 const selectedTour = tours.find((tour) => tour.id === values.tourId);
                 const existingSchedule = schedules.find((s) => s.tourId === values.tourId);
 

@@ -32,7 +32,7 @@ export default function PromotionMain() {
     }, [dispatch])
     const { promotions } = useSelector((state: StoreType) => state.promotionReducer)
 
-    const pro = promotions.map(item => {
+    const pro = Array.isArray(promotions) ? promotions.map(item => {
         return {
             id: item.id,
             type: item.type,
@@ -43,14 +43,14 @@ export default function PromotionMain() {
             description: item.description,
             code: item.code,
         }
-    })
+    }) : []
     
     const handleSavePromotion = async (promotionId: number) => {
         const token = localStorage.getItem('token')
         try {
             console.log(token, promotionId);
             
-            const res = await axios.post('http://localhost:3000/api/promotions/token', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}promotions/token`, {
                 token, promotionId
             })
             
@@ -79,7 +79,7 @@ export default function PromotionMain() {
                 </div>
                 <div className="flex items-center justify-between py-3">
                     <Button color="primary" variant="solid" onClick={() => {
-                        navigate('/setting/promotion')
+                        navigate('/settings/promotion')
                     }}>Kho Khuyến Mãi</Button>
                 </div>
             </div>

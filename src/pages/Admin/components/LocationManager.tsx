@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, notification, App, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
@@ -25,13 +25,15 @@ const LocationManager = () => {
     try {
       setLoading(true);
       const response = await locationAPI.getAll();
-      setLocations(response.data);
+      const locations = Array.isArray(response.data) ? response.data : [];
+      setLocations(locations);
     } catch (error) {
       notification.error({
         message: 'Lỗi',
         description: 'Không thể tải danh sách địa điểm',
         placement: 'topRight',
       });
+      setLocations([]);
     } finally {
       setLoading(false);
     }

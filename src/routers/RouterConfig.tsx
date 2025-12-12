@@ -3,6 +3,7 @@ import { LayoutMain } from '../pages/Layout/LayoutMain';
 import DashboardMain from '../pages/Dashboard/DashboardMain';
 import PromotionMain from '../pages/Promotion/PromotionMain';
 import QRPaymentPage from '../pages/Payment/PaymentQR/PaymentQRMain';
+import { PaymentMain } from '../pages/Payment/PaymentInfo/PaymentMain';
 import TourDetailMain from '../pages/Tour/Tourdetail/TourdetailMain';
 import { TourMain } from '../pages/Tour/tourMain/TourMain';
 import TourTikket from '../pages/Tour/tourTikket/TourTikketPage';
@@ -15,10 +16,17 @@ import TourList from '../pages/Admin/components/TourList';
 import TourImageManager from '../pages/Admin/components/TourImageManager';
 import FavoritesPage from '../pages/Tour/tourFavorite/FavoritesPage';
 import TourScheduleManager from '../pages/Admin/components/TourScheduleManager';
+import BookingManager from '../pages/Admin/components/BookingManager';
 import AccountSettings from '../pages/Settings/SettingMain';
 import SettingPromotion from '../pages/Settings/SettingPromotion';
 import Auth from '../pages/Admin/components/Auth';
 import Dashboard from '../pages/Admin/components/Dashboard';
+import PaymentSuccess from '../pages/Payment/PaymentSuccess';
+import PaymentError from '../pages/Payment/PaymentError';
+import PaymentCancel from '../pages/Payment/PaymentCancel';
+import TransactionHistory from '../pages/Settings/TransactionHistory';
+import MyBookings from '../pages/Settings/MyBookings';
+import ProtectedRoute from '../common/ProtectedRoute';
 
 const router = createBrowserRouter([
     {
@@ -39,7 +47,23 @@ const router = createBrowserRouter([
             },
             {
                 path: "payment/:id",
+                element: <PaymentMain />,
+            },
+            {
+                path: "payment-qr/:id",
                 element: <QRPaymentPage />,
+            },
+            {
+                path: "payment-success",
+                element: <PaymentSuccess />,
+            },
+            {
+                path: "payment-error",
+                element: <PaymentError />,
+            },
+            {
+                path: "payment-cancel",
+                element: <PaymentCancel />,
             },
             {
                 path: 'tour/:id',
@@ -53,18 +77,47 @@ const router = createBrowserRouter([
             },
             {
                 path: 'favorite-tour',
-                element: <FavoritesPage/>
+                element: (
+                    <ProtectedRoute>
+                        <FavoritesPage/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "*",
                 element: <NotFoundPage />,
-            },    {
-                path: 'setting',
-                element: <AccountSettings />
+            },    
+            {
+                path: 'settings',
+                element: (
+                    <ProtectedRoute>
+                        <AccountSettings />
+                    </ProtectedRoute>
+                )
             },
             {
-                path: '/setting/promotion',
-                element: <SettingPromotion />
+                path: 'settings/promotion',
+                element: (
+                    <ProtectedRoute>
+                        <SettingPromotion />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'settings/bookings',
+                element: (
+                    <ProtectedRoute>
+                        <MyBookings/>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: 'settings/transactions',
+                element: (
+                    <ProtectedRoute>
+                        <TransactionHistory/>
+                    </ProtectedRoute>
+                )
             }
         ],
     },
@@ -132,7 +185,7 @@ const router = createBrowserRouter([
                 path: "booking-manager",
                 element: (
                     <Auth allowedRoles={["ADMIN"]}>
-                        <div className="p-8"><h1 className="text-2xl font-bold">Booking Manager</h1></div>
+                        <BookingManager />
                     </Auth>
                 ),
             },

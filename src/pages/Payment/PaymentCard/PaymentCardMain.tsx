@@ -93,10 +93,8 @@ export default function PaymentCardMain() {
         <div className="min-h-screen max-w-[1200px] mx-auto ">
 
 
-            {/* nội dung */}
             <div className=" px-4 py-6 lg:py-8">
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {/* Cột trái: phương thức thanh toán */}
                     <div className="lg:col-span-2 space-y-6">
                         <Card
                             title={
@@ -143,7 +141,6 @@ export default function PaymentCardMain() {
                                                                 {item.extra}
                                                             </div>
 
-                                                            {/* phần mở rộng theo lựa chọn */}
                                                             {method === "vietqr" && item.key === "vietqr" && (
                                                                 <div className="mt-3 space-y-3">
                                                                     <Alert
@@ -182,7 +179,6 @@ export default function PaymentCardMain() {
                                 </Radio.Group>
                             </div>
 
-                            {/* khối mã giảm giá */}
                             <Divider className="my-6!" />
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                 <div className="text-sm font-medium text-slate-700">
@@ -206,7 +202,6 @@ export default function PaymentCardMain() {
                                 </Button>
                             </div>
 
-                            {/* Sticky bottom hành động (chỉ trong card) */}
                             <Divider />
                             <div className="flex flex-col p-2 text-center">
                                 <div className="flex justify-between w-full">
@@ -223,7 +218,6 @@ export default function PaymentCardMain() {
                         </Card>
                     </div>
 
-                    {/* Cột phải: tóm tắt */}
                     <div className="lg:col-span-1">
                         <Card className="shadow-sm">
                             <div className="flex items-start justify-between">
@@ -283,7 +277,6 @@ export default function PaymentCardMain() {
                 </div>
             </div>
 
-            {/* Modal hiển thị QR khi thanh toán */}
             <Modal
                 open={showQR}
                 onCancel={() => setShowQR(false)}

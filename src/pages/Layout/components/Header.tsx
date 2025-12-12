@@ -7,12 +7,10 @@ import type { AppDispatch } from "../../../stores";
 import { userLogin, userRegister } from "../../../stores/slides/userLoginRegister.slice";
 import Account from "./Account";
 import axios from "axios";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 const Header = () => {
     const [api, contextHolder] = notification.useNotification();
-    const [currency, setCurrency] = useState("VND");
-    const [language, setLanguage] = useState("VI");
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -20,9 +18,10 @@ const Header = () => {
     const [formLogin] = Form.useForm();
     const [formRegister] = Form.useForm();
     const dispatch = useDispatch<AppDispatch>();
-    const [showModalSet, setShowModalSet] = useState(false);
+    // const [showModalSet, setShowModalSet] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const getUser = useCallback(async () => {
         try {
@@ -31,10 +30,11 @@ const Header = () => {
                 setUser(null);
                 return;
             }
-            const res = await axios.post("http://localhost:3000/api/auth/getUser", { token: tokenUser });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token: tokenUser });
             setUser(res.data);
         } catch (error) {
             console.error("Failed to get user:", error);
+            localStorage.removeItem("token");
             setUser(null);
         }
     }, []);
@@ -72,7 +72,7 @@ const Header = () => {
     );
 
     const handleRegister = useCallback(
-        async (values: { name: string; email: string; password: string }) => {
+        async (values: { name: string; email: string; password: string; phoneNumber: string }) => {
             await dispatch(userRegister(values));
             setShowRegister(false);
             formRegister.resetFields();
@@ -87,17 +87,31 @@ const Header = () => {
 
     const navItems = (
         <>
-            <div className="flex items-center space-x-1 text-gray-700 cursor-pointer text-sm hover:text-blue-500">
+            {/* <div className="flex items-center space-x-1 text-gray-700 cursor-pointer text-sm hover:text-blue-500">
                 <span onClick={() => setShowModalSet(!showModalSet)}>
                     {currency} | {language}
                 </span>
-            </div>
-            <a className="flex items-center text-sm font-medium text-blue-500 hover:text-blue-600">
-                <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
-                Khuyến mãi
+            </div> */}
+            <a 
+                className={`text-sm font-medium cursor-pointer transition-colors ${
+                    location.pathname === "/" 
+                        ? "text-blue-600 font-semibold" 
+                        : "text-gray-700 hover:text-blue-500"
+                }`}
+                onClick={() => navigate("/")}
+            >
+                Trang chủ
             </a>
-            <div className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Hỗ trợ</div>
-            <a className="text-sm font-medium text-gray-700 hover:text-blue-500 cursor-pointer">Đặt chỗ của tôi</a>
+            <a 
+                className={`text-sm font-medium cursor-pointer transition-colors ${
+                    location.pathname === "/tour" 
+                        ? "text-blue-600 font-semibold" 
+                        : "text-gray-700 hover:text-blue-500"
+                }`}
+                onClick={() => navigate("/tour")}
+            >
+                Tour
+            </a>
             {!user ? (
                 <>
                     <button
@@ -114,7 +128,20 @@ const Header = () => {
                     </button>
                 </>
             ) : (
-                <Account />
+                <>
+                    <a 
+                        className={`flex items-center text-sm font-medium cursor-pointer transition-colors ${
+                            location.pathname === "/promotion" 
+                                ? "text-blue-600 font-semibold" 
+                                : "text-blue-500 hover:text-blue-600"
+                        }`}
+                        onClick={() => navigate("/promotion")}
+                    >
+                        <img src={promotion_icon} alt="promotion" className="w-6 mr-1" />
+                        Khuyến mãi
+                    </a>
+                    <Account />
+                </>
             )}
         </>
     );
@@ -136,7 +163,7 @@ const Header = () => {
                             </div>
                         </div>
 
-                        {showModalSet && (
+                        {/* {showModalSet && (
                             <div className="absolute right-0 top-14 mt-2 w-[720px] bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                                 <div className="flex">
                                     <div className="flex-1 border-r border-gray-200 px-6 py-4">
@@ -221,7 +248,7 @@ const Header = () => {
                                     </button>
                                 </div>
                             </div>
-                        )}
+                        )} */}
                         <div className="md:hidden">
                             <button
                                 className="p-2 rounded-lg text-gray-700 hover:bg-gray-200"
@@ -259,8 +286,8 @@ const Header = () => {
                                 label="Name"
                                 name="name"
                                 rules={[
-                                    { required: true, message: "Không được để trống email" },
-                                    { type: "string", message: "Email phải đúng định dạng" },
+                                    { required: true, message: "Không được để trống name" },
+                                    { type: "string", message: "Name phải đúng định dạng" },
                                 ]}
                             >
                                 <Input type="name" placeholder="Nhập name" className="p-3 rounded-xl" />
@@ -274,6 +301,16 @@ const Header = () => {
                                 ]}
                             >
                                 <Input type="email" placeholder="Nhập email" className="p-3 rounded-xl" />
+                            </Form.Item>
+                            <Form.Item
+                                label="Số điện thoại"
+                                name="phoneNumber"
+                                rules={[
+                                    { required: true, message: "Không được để trống số điện thoại" },
+                                    { pattern: /^[0-9]{10,11}$/, message: "Số điện thoại phải có 10-11 chữ số" },
+                                ]}
+                            >
+                                <Input type="tel" placeholder="Nhập số điện thoại" className="p-3 rounded-xl" />
                             </Form.Item>
                             <Form.Item
                                 label="Password"

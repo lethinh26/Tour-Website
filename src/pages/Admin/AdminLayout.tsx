@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { App, Layout, Menu } from "antd";
 import {
@@ -34,7 +34,7 @@ const AdminLayout = () => {
                 return;
             }
 
-            const res = await axios.post<UserResponse>("http://localhost:3000/api/auth/getUser", { token });
+            const res = await axios.post<UserResponse>(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
 
             if (res.data.role === "USER") {
                 navigate("/");

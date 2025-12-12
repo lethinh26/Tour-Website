@@ -35,7 +35,7 @@ export const TourMain = () => {
 
     
 
-    const dataTour: TravelCardProps[] = tours.map(item => {
+    const dataTour: TravelCardProps[] = Array.isArray(tours) ? tours.map(item => {
         return {
             id: item.id,
             image: images.find(img => img.tourId === item.id)?.url || '',
@@ -48,7 +48,7 @@ export const TourMain = () => {
             categoryId: item.categoryId,
             location: item.address,
         }
-    })
+    }) : []
     const [range, setRange] = useState([0, 4000000]);
     const [inputData, setInputData] = useState("");
     const [idCategory, setIdCategory] = useState(0)
@@ -69,16 +69,16 @@ export const TourMain = () => {
     else
 
     return (
-        <div className="mx-auto w-full max-w-[1200px] px-2 md:px-6">
+        <div className="mx-auto w-full max-w-[1200px] px-2 md:px-6 mt-25">
             <div className="mt-10 flex flex-col items-center justify-center w-full">
                 <div className="w-full flex flex-col lg:flex-row gap-6 items-start lg:relative">
-                    <div className="flex flex-col gap-5 w-full lg:w-[320px] min-w-[280px] mb-6 lg:mb-0 lg:sticky lg:top-10">
+                    <div className="flex flex-col gap-5 lg:w-[320px] min-w-[280px] mx-auto mb-6 lg:mb-0 lg:sticky lg:top-25">
                         <FilterPrice range={range} setRange={setRange}/>
                         <FilterTour setIdCategory={setIdCategory}/>
                     </div>
                     <div className="flex-1 flex flex-col gap-5 sticky top-4">
                         <SearchLocation setInputData={setInputData} setLocation={setLocation}/>
-                        <SortComponent setWayToSort={setWayToSort}/>
+                        <SortComponent setWayToSort={setWayToSort} tourLength={tours.length}/>
                         <ListCard dataTour={dataTour
                         .sort(wayToSort !== 0 ? sortFunctions[wayToSort] : () => 0)
                         .filter(item => location === '' ? true : item.address.toLowerCase().includes(location.toLowerCase()))

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Select, Upload, App, Image, Spin } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Select, Upload, App, Image } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, UploadOutlined, ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { UploadFile, UploadProps } from "antd/es/upload";
@@ -50,12 +50,10 @@ const TourImageManager = () => {
       const currentUser = await getUser();
       setUser(currentUser);
 
-      // Fetch tours with role-based filtering
       const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
       const toursRes = await tourAPI.getAll(userId);
       setTours(toursRes.data);
 
-      // Fetch all images for all tours
       const allImages: TourImage[] = [];
       for (const tour of toursRes.data) {
         const imagesRes = await tourImageAPI.getByTourId(tour.id);
@@ -110,7 +108,6 @@ const TourImageManager = () => {
   };
 
   const handleEdit = (record: TourImageGroup) => {
-    // Check permission for TOUR_MANAGER
     const tour = tours.find(t => t.id === record.tourId);
     if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
       notification.error({
@@ -145,7 +142,6 @@ const TourImageManager = () => {
   };
 
   const handleDelete = async (record: TourImageGroup) => {
-    // Check permission for TOUR_MANAGER
     const tour = tours.find(t => t.id === record.tourId);
     if (user?.role === 'TOUR_MANAGER' && tour?.createdBy !== user.id) {
       notification.error({
@@ -165,7 +161,6 @@ const TourImageManager = () => {
       cancelText: 'Hủy',
       async onOk() {
         try {
-          // Delete all images for this tour
           await Promise.all(
             record.images.map(img => tourImageAPI.delete(img.id))
           );
@@ -298,13 +293,11 @@ const TourImageManager = () => {
       const selectedTour = tours.find(tour => tour.id === targetTourId);
       
       if (editingTour) {
-        // Delete all old images first
         const oldImages = tourImages.filter(img => img.tourId === editingTour.tourId);
         await Promise.all(
           oldImages.map(img => tourImageAPI.delete(img.id))
         );
 
-        // Create new images
         await Promise.all(
           uploadedImages.map(img =>
             tourImageAPI.create({
@@ -321,7 +314,6 @@ const TourImageManager = () => {
           placement: 'topRight',
         });
       } else {
-        // Create new images
         await Promise.all(
           uploadedImages.map(img =>
             tourImageAPI.create({
