@@ -11,8 +11,6 @@ import { useNavigate, useLocation } from "react-router";
 
 const Header = () => {
     const [api, contextHolder] = notification.useNotification();
-    // const [currency, setCurrency] = useState("VND");
-    // const [language, setLanguage] = useState("VI");
     const [showRegister, setShowRegister] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
