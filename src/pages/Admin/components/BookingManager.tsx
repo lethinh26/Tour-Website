@@ -107,7 +107,7 @@ const BookingManager = () => {
         
         try {
             setLoadingBookings(true);
-            const response = await axios.get(`http://160.191.236.178:3000/api/orders/departure/${departureId}`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/orders/departure/${departureId}`);
             
             // Transform data to match Booking interface
             const ordersData = Array.isArray(response.data) ? response.data : [];
