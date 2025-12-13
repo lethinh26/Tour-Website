@@ -31,9 +31,7 @@ export const TourMain = () => {
         fetchUser();
     }, [fetchUser])
     
-    const { tours, images, departures, status } = useSelector((state: StoreType) => state.tourReducer);
-
-    
+    const { tours, images, departures, status } = useSelector((state: StoreType) => state.tourReducer);    
 
     const dataTour: TravelCardProps[] = Array.isArray(tours) ? tours.map(item => {
         return {
@@ -41,14 +39,15 @@ export const TourMain = () => {
             image: images.find(img => img.tourId === item.id)?.url || '',
             title: item.name,
             address: item.address,
-            rating: 5.0,
-            reviews: 5,
+            rating: item.averageRating || 0,
+            reviews: item.totalReviews || 0,
             price: departures.find(dep => dep.tourId === item.id)?.price || item.basePrice,
             oldPrice: item.basePrice,
             categoryId: item.categoryId,
             location: item.address,
         }
     }) : []
+    
     const [range, setRange] = useState([0, 4000000]);
     const [inputData, setInputData] = useState("");
     const [idCategory, setIdCategory] = useState(0)
@@ -61,6 +60,23 @@ export const TourMain = () => {
         3: (a, b) => b.rating - a.rating,               // Đánh giá cao đến thấp
         4: (a, b) => a.rating - b.rating,               // Đánh giá thấp đến cao
     };
+
+    const filteredTours = dataTour
+        .filter(item => location === '' ? true : item.address.toLowerCase().includes(location.toLowerCase()))
+        .filter(item => item.title.toLowerCase().includes(inputData.toLowerCase()))
+        .filter(item => idCategory == 0 ? true : item.categoryId === idCategory)
+        .filter(item => {
+            if (range[1] === 4000000){
+                return Number(item.price) >= range[0]
+            }else{
+                return Number(item.price) >= range[0] && Number(item.price) <= range[1]
+            } 
+        });
+
+    const sortedTours = wayToSort !== 0 
+        ? [...filteredTours].sort(sortFunctions[wayToSort]) 
+        : filteredTours;
+
     if (status == 'loading'){
         return <>
             <FullPageLoader/>
@@ -78,19 +94,8 @@ export const TourMain = () => {
                     </div>
                     <div className="flex-1 flex flex-col gap-5 sticky top-4">
                         <SearchLocation setInputData={setInputData} setLocation={setLocation}/>
-                        <SortComponent setWayToSort={setWayToSort} tourLength={tours.length}/>
-                        <ListCard dataTour={dataTour
-                        .sort(wayToSort !== 0 ? sortFunctions[wayToSort] : () => 0)
-                        .filter(item => location === '' ? true : item.address.toLowerCase().includes(location.toLowerCase()))
-                        .filter(item => item.title.toLowerCase().includes(inputData.toLowerCase()))
-                        .filter(item => idCategory == 0 ? true : item.categoryId === idCategory)
-                        .filter(item => {
-                            if (range[1] === 4000000){
-                                return Number(item.price) >= range[0]
-                            }else{
-                                return Number(item.price) >= range[0] && Number(item.price) <= range[1]
-                            } 
-                        })} isLogin={isLogin} />
+                        <SortComponent setWayToSort={setWayToSort} tourLength={filteredTours.length}/>
+                        <ListCard dataTour={sortedTours} isLogin={isLogin} />
                     </div>
                 </div>
             </div>

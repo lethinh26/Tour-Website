@@ -337,7 +337,6 @@ const MyBookings = () => {
                     })()}
             </Modal>
 
-            {/* Modal Google Map */}
             <Modal
                 title="Địa điểm trên bản đồ"
                 open={mapVisible}
@@ -359,7 +358,6 @@ const MyBookings = () => {
                 ></iframe>
             </Modal>
 
-            {/* Modal Thông tin Tour */}
             <Modal
                 title="Thông tin chi tiết Tour"
                 open={infoVisible}
@@ -374,7 +372,6 @@ const MyBookings = () => {
                 <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentInfo }} />
             </Modal>
 
-            {/* Modal Đánh giá */}
             <Modal
                 title={existingReview ? "Đánh giá của bạn" : "Đánh giá Tour"}
                 open={reviewVisible}

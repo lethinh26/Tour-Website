@@ -73,12 +73,34 @@ const Header = () => {
 
     const handleRegister = useCallback(
         async (values: { name: string; email: string; password: string; phoneNumber: string }) => {
-            await dispatch(userRegister(values));
-            setShowRegister(false);
-            formRegister.resetFields();
-            getUser();
+            try {
+                const result = await dispatch(userRegister(values));
+                if (result?.payload?.token) {
+                    api.success({
+                        message: 'Đăng ký thành công',
+                        description: 'Chào mừng bạn đến với Triploka!',
+                        placement: 'topRight',
+                    });
+                    setShowRegister(false);
+                    formRegister.resetFields();
+                    getUser();
+                } else {
+                    api.error({
+                        message: 'Đăng ký thất bại',
+                        description: result?.payload?.message || 'Email đã được sử dụng!',
+                        placement: 'topRight',
+                    });
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                api.error({
+                    message: 'Đăng ký thất bại',
+                    description: 'Có lỗi xảy ra, vui lòng thử lại!',
+                    placement: 'topRight',
+                });
+            }
         },
-        [dispatch, formRegister, getUser]
+        [dispatch, formRegister, getUser, api]
     );
 
     useEffect(() => {

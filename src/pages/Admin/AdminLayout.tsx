@@ -124,7 +124,7 @@ const AdminLayout = () => {
                                     </div>
                                     <span className="text-sm font-medium text-gray-700">{user?.name}</span>
                                 </div>
-                                <LogoutOutlined className="text-red-400! text-xl! font-bold! cursor-pointer!" />
+                                <LogoutOutlined className="text-red-400! text-xl! font-bold! cursor-pointer!" onClick={() => navigate("/")}/>
                             </div>
                         </div>
                     )}

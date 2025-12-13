@@ -21,7 +21,7 @@ export interface TravelCardProps {
 
 
 function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLogin: boolean}) {
-    const { id, image, title, address: location, price, oldPrice } = propTravel;
+    const { id, image, title, address: location, price, oldPrice, rating, reviews } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
     const formatVND = (value: number | string | undefined) => {
         const num = typeof value === 'string' ? parseInt(value) : value;
@@ -31,22 +31,6 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
     const [token] = useState(() => localStorage.getItem('token'));
     const [tagActive, setTagActive] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [reviewData, setReviewData] = useState({ averageRating: 0, totalReviews: 0 });
-
-    useEffect(() => {
-        const fetchReviews = async () => {
-            try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/tours/reviews/tour/${id}`);
-                setReviewData({
-                    averageRating: res.data?.averageRating || 0,
-                    totalReviews: res.data?.totalReviews || 0
-                });
-            } catch (error) {
-                setReviewData({ averageRating: 0, totalReviews: 0 });
-            }
-        };
-        fetchReviews();
-    }, [id]);
 
     useState(() => {
         const fetchFavoriteTours = async () => {
@@ -130,8 +114,8 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
             </div>
             <div className="flex items-center text-sm mb-2">
                 <img src={logo_triploka} alt="Triploka" className="w-4 h-4 mr-1" />
-                <span className="text-blue-600 font-semibold mr-1">{reviewData.averageRating.toFixed(1)}</span>
-                <span className="text-gray-500">({reviewData.totalReviews} đánh giá)</span>
+                <span className="text-blue-600 font-semibold mr-1">{rating.toFixed(1)}</span>
+                <span className="text-gray-500">({reviews} đánh giá)</span>
             </div>
             <div className="border-t pt-3 mt-2">
                 <p className="text-sm text-gray-500 mb-1!">Bắt đầu từ</p>

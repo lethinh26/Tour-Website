@@ -56,7 +56,7 @@ export default function Account() {
         {
             id: 'logout',
             label: 'Đăng xuất',
-            icon: <PoweroffOutlined style={{ fontSize: 20, color: PRIMARY_COLOR }} />,
+            icon: <PoweroffOutlined style={{ fontSize: 20, color: "#ff6647" }} />,
         },
     ];
     
