@@ -31,7 +31,9 @@ export interface Tour {
   discount?: Money | null;
   createdAt: string;
   categoryId: number;
-  locationId: number
+  locationId: number;
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 export interface Location {

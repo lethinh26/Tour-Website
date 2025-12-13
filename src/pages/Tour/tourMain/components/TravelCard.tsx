@@ -3,7 +3,7 @@ import { TagOutlined, TagFilled } from "@ant-design/icons";
 import logo_triploka from "../../../../assets/logos/logo_tripoka.png";
 import icon_location from "../../../../assets/icons/icon_location.png";
 import { useNavigate } from "react-router";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 
 export interface TravelCardProps {
