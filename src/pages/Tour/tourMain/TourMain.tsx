@@ -75,7 +75,7 @@ export const TourMain = () => {
                 tourImageAPI.getAll(),
                 tourDepartureAPI.getAll()
             ]);
-let mappedTours: TravelCardProps[] = (response.data || []).map((item: any) => ({
+            const mappedTours: TravelCardProps[] = (response.data || []).map((item: any) => ({
                 id: item.id,
                 image: imagesData.data.find((img: any) => img.tourId === item.id)?.url || '',
                 title: item.name,

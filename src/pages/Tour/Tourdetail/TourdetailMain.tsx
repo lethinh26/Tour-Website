@@ -46,13 +46,11 @@ export default function TourDetailMain() {
 
             setTour(tourRes.data);
             setImages(imagesData.data);
-            setReviews(reviewsData.data);
             
-            if (reviewsData.data && reviewsData.data.length > 0) {
-                const totalRating = reviewsData.data.reduce((sum: number, review: any) => sum + review.rating, 0);
-                setAverageRating(Number((totalRating / reviewsData.data.length).toFixed(1)));
-                setTotalReviews(reviewsData.data.length);
-            }
+            const reviewResponse = reviewsData.data;
+            setReviews(reviewResponse.reviews || []);
+            setAverageRating(reviewResponse.averageRating || 0);
+            setTotalReviews(reviewResponse.totalReviews || 0);
         } catch (error) {
             console.error('Error fetching tour detail:', error);
         } finally {

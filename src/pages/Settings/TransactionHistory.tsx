@@ -97,7 +97,7 @@ const TransactionHistory = () => {
             render: (id: string) => <span className="font-mono text-xs">{id.substring(0, 8)}...</span>,
         },
         {
-            title: "Tour/Dịch vụ",
+            title: "Tour",
             key: "tour",
             render: (_: unknown, record: Payment) => (
                 <div>
