@@ -38,8 +38,8 @@ export const TourMain = () => {
     const sortMapping: { [key: number]: { sortBy: string, sortOrder: 'asc' | 'desc' } } = {
         1: { sortBy: 'basePrice', sortOrder: 'asc' },
         2: { sortBy: 'basePrice', sortOrder: 'desc' },
-        3: { sortBy: 'createdAt', sortOrder: 'desc' },
-        4: { sortBy: 'createdAt', sortOrder: 'asc' },
+        3: { sortBy: 'rating', sortOrder: 'desc' },
+        4: { sortBy: 'rating', sortOrder: 'asc' },
     };
 
     const fetchTours = useCallback(async (page: number = 1) => {
@@ -56,17 +56,16 @@ export const TourMain = () => {
             if (range[0] > 0) params.minPrice = range[0];
             if (range[1] < 4000000) params.maxPrice = range[1];
             
-            if (wayToSort !== 0 && sortMapping[wayToSort]) {
+            // Chỉ gửi sortBy/sortOrder cho backend nếu sort theo price
+            if (wayToSort !== 0 && sortMapping[wayToSort] && wayToSort <= 2) {
                 params.sortBy = sortMapping[wayToSort].sortBy;
                 params.sortOrder = sortMapping[wayToSort].sortOrder;
             }
 
             const response = await tourAPI.getPaginated(params);
-            console.log('API params:', params);
-            console.log('API response:', response);
             
             if (!response || !response.data) {
-                console.error('Invalid response structure:', response);
+                console.error('Invalid response:', response);
                 setDataTour([]);
                 setPagination({ page: 1, pageSize: 6, total: 0, totalPages: 0 });
                 return;
@@ -77,8 +76,7 @@ export const TourMain = () => {
                 tourImageAPI.getAll(),
                 tourDepartureAPI.getAll()
             ]);
-
-            const mappedTours: TravelCardProps[] = (response.data || []).map((item: any) => ({
+let mappedTours: TravelCardProps[] = (response.data || []).map((item: any) => ({
                 id: item.id,
                 image: imagesData.data.find((img: any) => img.tourId === item.id)?.url || '',
                 title: item.name,
@@ -91,7 +89,12 @@ export const TourMain = () => {
                 location: item.address,
             }));
 
-            console.log('Mapped tours for ListCard:', mappedTours);
+            if (wayToSort === 3) {
+                mappedTours.sort((a, b) => b.rating - a.rating);
+            } else if (wayToSort === 4) {
+                mappedTours.sort((a, b) => a.rating - b.rating);
+            }
+
             setDataTour(mappedTours);
             setPagination(response.pagination || { page: 1, pageSize: 6, total: 0, totalPages: 0 });
         } catch (error) {
