@@ -3,7 +3,7 @@ import { Table, Button, Modal, Form, Input, InputNumber, Select, Steps, App } fr
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { Editor } from "@tinymce/tinymce-react";
-import { tourAPI, categoryAPI, locationAPI, getUser } from "../../../services/api";
+import { tourAPI, getUser } from "../../../services/api";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, StoreType } from "../../../stores";
 import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
@@ -20,16 +20,6 @@ interface Tour {
   description: string;
   information: string;
   createdBy?: number;
-}
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Location {
-  id: number;
-  name: string;
 }
 
 const TourList = () => {

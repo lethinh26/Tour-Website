@@ -202,10 +202,10 @@ const PromotionManager = () => {
         },
     ];
 
-    const formattedPromotions = Array.isArray(promotions) ? promotions.map((promo: any) => ({
+    const formattedPromotions: PromotionColumn[] = Array.isArray(promotions) ? promotions.map((promo: any) => ({
         id: promo.id,
         code: promo.code,
-        amount: promo.discount,
+        amount: promo.discount || 0,
         discount: promo.amount,
         startDate: promo.startAt,
         endDate: promo.endAt || "",

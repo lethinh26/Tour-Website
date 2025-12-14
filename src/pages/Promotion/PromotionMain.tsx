@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchDataPromotion } from "../../stores/slides/promotion.slice";
 import { Button, Pagination, notification } from "antd";
 import { useNavigate } from "react-router";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import type { Promotion } from "../../types/types";
 
 export default function PromotionMain() {

@@ -4,7 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined }
 import type { ColumnsType } from "antd/es/table";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { tourAPI, tourDepartureAPI, getUser } from "../../../services/api";
+import { tourDepartureAPI, getUser } from "../../../services/api";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, StoreType } from "../../../stores";
 import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
@@ -43,7 +43,7 @@ interface Tour {
 const TourScheduleManager = () => {
     const { modal, notification } = App.useApp();
     const dispatch = useDispatch<AppDispatch>();
-    const { tours: reduxTours, status } = useSelector((state: StoreType) => state.tourReducer);
+    const { tours: reduxTours } = useSelector((state: StoreType) => state.tourReducer);
 
     const [schedules, setSchedules] = useState<TourSchedule[]>([]);
     const [loading, setLoading] = useState(false);
@@ -95,7 +95,6 @@ const TourScheduleManager = () => {
                 description: error.response?.data?.message || 'Không thể tải danh sách lịch khởi hành',
                 placement: 'topRight',
             });
-            setTours([]);
             setSchedules([]);
         } finally {
             setLoading(false);
