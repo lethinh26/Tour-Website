@@ -24,7 +24,8 @@ const PromotionCode = ({ onPromotionChange }: PromotionCodeProps) => {
         if (!token) return;
 
         const data = await promotionAPI.getByToken(token);
-        setPromotions(data.promotion || []);
+        
+        setPromotions(data.data.promotion || []);
       } catch (error) {
         console.error('promotions error:', error);
       } finally {
@@ -55,6 +56,8 @@ const PromotionCode = ({ onPromotionChange }: PromotionCodeProps) => {
       }
 
       const result = await promotionAPI.checkUsable(localSelectedPromo.code, user.id);
+      console.log("bruhh",result);
+      
       
       if (result.usable) {
         onPromotionChange?.(localSelectedPromo);

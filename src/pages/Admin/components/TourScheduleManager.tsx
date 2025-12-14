@@ -4,10 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined }
 import type { ColumnsType } from "antd/es/table";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { tourDepartureAPI, getUser } from "../../../services/api";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../../stores";
-import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
+import { tourDepartureAPI, getUser, tourAPI } from "../../../services/api";
 import type { Tour, User } from "../../../types/types";
 import icon_person from "../../../assets/icons/icon_person.png"
 import icon_currency from "../../../assets/icons/icon_currency.png"
@@ -37,9 +34,7 @@ interface TourScheduleGroup {
 
 const TourScheduleManager = () => {
     const { modal, notification } = App.useApp();
-    const dispatch = useDispatch<AppDispatch>();
-    const { tours: reduxTours } = useSelector((state: StoreType) => state.tourReducer);
-
+    const [tours, setTours] = useState<Tour[]>([]);
     const [schedules, setSchedules] = useState<TourSchedule[]>([]);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<User | null>(null);
@@ -55,19 +50,18 @@ const TourScheduleManager = () => {
         fetchData();
     }, []);
 
-    const tours: Tour[] = Array.isArray(reduxTours) ? reduxTours : [];
-
     const fetchData = async () => {
         setLoading(true);
         try {
             const currentUser = await getUser();
             setUser(currentUser);
 
-            dispatch(fetchTourData());
-            const toursList = Array.isArray(reduxTours) ? reduxTours : [];
+            const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
+            const toursRes = await tourAPI.getAll(userId);
+            setTours(toursRes.data);
 
             const allSchedules: TourSchedule[] = [];
-            for (const tour of toursList) {
+            for (const tour of toursRes.data) {
                 const departuresRes = await tourDepartureAPI.getByTourId(tour.id);
                 const departuresList = Array.isArray(departuresRes.data) ? departuresRes.data : [];
                 if (departuresList.length > 0) {

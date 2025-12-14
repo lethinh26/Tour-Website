@@ -3,8 +3,8 @@ import { TagOutlined, TagFilled } from "@ant-design/icons";
 import logo_triploka from "../../../../assets/logos/logo_tripoka.png";
 import icon_location from "../../../../assets/icons/icon_location.png";
 import { useNavigate } from "react-router";
-import { useState } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { favoriteTourAPI } from "../../../../services/api";
 
 export interface TravelCardProps {
     id: number;
@@ -32,48 +32,43 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
     const [tagActive, setTagActive] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    useState(() => {
+    useEffect(() => {
         const fetchFavoriteTours = async () => {
             if (!token) return;
             try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`);
+                const res = await favoriteTourAPI.getByToken(token);
                 const favorited = res.data?.tourFavorited || [];
                 const isFavorited = favorited.some((tour: any) => tour.id === id);
                 setTagActive(isFavorited);
             } catch (error) {
+                console.error('Error fetching favorites:', error);
                 setTagActive(false);
             }
         };
         fetchFavoriteTours();
-    });
+    }, [token, id]);
 
     const handleSaveFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                token,
-                tourId: id
-            });
+            await favoriteTourAPI.add(token, id);
             setTagActive(true);
         } catch (error) {
-            console.log(error);
+            console.error('Error adding favorite:', error);
         } finally {
             setLoading(false);
         }
     };
 
     const handleUnFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                data: {
-                    token,
-                    tourId: id
-                }
-            });
+            await favoriteTourAPI.remove(token, id);
             setTagActive(false);
         } catch (error) {
-            console.log(error);
+            console.error('Error removing favorite:', error);
         } finally {
             setLoading(false);
         }

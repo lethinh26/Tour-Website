@@ -24,7 +24,10 @@ export default function ReviewCard({ reviews, averageRating, totalReviews }: Rev
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    const paginatedReviews = reviews.slice(
+    // Ensure reviews is an array
+    const reviewsArray = Array.isArray(reviews) ? reviews : [];
+
+    const paginatedReviews = reviewsArray.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
@@ -38,7 +41,7 @@ export default function ReviewCard({ reviews, averageRating, totalReviews }: Rev
         return diffWeeks > 0 ? `${diffWeeks} tuần` : `${diffDays} ngày`;
     };
 
-    if (!reviews || reviews.length === 0) {
+    if (reviewsArray.length === 0) {
         return (
             <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm mt-6">
                 <h3 className="text-xl font-bold mb-4">Đánh giá của khách hàng</h3>
@@ -111,12 +114,12 @@ export default function ReviewCard({ reviews, averageRating, totalReviews }: Rev
                 </div>
             </div>
 
-            {totalReviews > itemsPerPage && (
+            {reviewsArray.length > itemsPerPage && (
                 <div className="flex items-center justify-center gap-4 pt-4">
                     <span className="text-gray-600">Số lượng đánh giá trên mỗi trang</span>
                     <Pagination 
                         current={currentPage}
-                        total={totalReviews} 
+                        total={reviewsArray.length} 
                         pageSize={itemsPerPage}
                         showSizeChanger={false}
                         onChange={setCurrentPage}

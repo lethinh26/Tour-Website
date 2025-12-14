@@ -57,16 +57,20 @@ const TourImageManager = () => {
 
       const allImages: TourImage[] = [];
       for (const tour of toursRes.data) {
-        const imagesRes = await tourImageAPI.getByTourId(tour.id);
-        imagesRes.data.forEach((img: any) => {
-          allImages.push({
-            id: img.id,
-            tourId: tour.id,
-            tourTitle: tour.name,
-            imageUrl: img.url,
-            position: img.position,
+        try {
+          const imagesRes = await tourImageAPI.getByTourId(tour.id);
+          imagesRes.data.forEach((img: any) => {
+            allImages.push({
+              id: img.id,
+              tourId: tour.id,
+              tourTitle: tour.name,
+              imageUrl: img.url,
+              position: img.position,
+            });
           });
-        });
+        } catch (error) {
+          // ignore
+        }
       }
       setTourImages(allImages);
     } catch (error: any) {

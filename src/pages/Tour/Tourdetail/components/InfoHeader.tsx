@@ -3,7 +3,7 @@ import { Button, Tooltip, notification } from "antd";
 import { useNavigate, useParams } from "react-router";
 import type { Tour } from "../../../../types/types";
 import { useState } from "react";
-import axios from "axios";
+import { favoriteTourAPI } from "../../../../services/api";
 
 export default function InfoHeader({tour} : {tour: Tour | null}) {
     const [api, contextHolder] = notification.useNotification();
@@ -17,7 +17,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
         const fetchFavoriteTours = async () => {
             if (!token) return;
             try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`);
+                const res = await favoriteTourAPI.getByToken(token);
                 const favorited = res.data?.tourFavorited || [];
                 const isFavorited = favorited.some((tour: any) => tour.id === Number(id));
                 setTagActive(isFavorited);
@@ -31,10 +31,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
     const handleSaveFavorite = async () => {
         setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                token,
-                tourId: Number(id)
-            });
+            await favoriteTourAPI.add(token, Number(id));
             setTagActive(true);
         } catch (error) {
             console.log(error);
@@ -46,12 +43,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
     const handleUnFavorite = async () => {
         setLoading(true);
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                data: {
-                    token,
-                    tourId: Number(id)
-                }
-            });
+            await favoriteTourAPI.remove(token, Number(id));
             setTagActive(false);
         } catch (error) {
             console.log(error);

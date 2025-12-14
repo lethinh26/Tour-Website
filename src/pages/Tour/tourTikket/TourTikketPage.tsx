@@ -2,33 +2,52 @@ import { useEffect, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { useNavigate, useParams } from "react-router";
 import ModalShowInfo from "./components/ModalShowInfo";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../../stores";
-import { fetchDataTicketTour } from "../../../stores/slides/tourTicket.slice";
 import FullPageLoader from "../../../common/Loading";
 import { Empty, Modal, notification } from "antd";
-import { orderAPI, paymentAPI, getUser } from "../../../services/api";
+import { orderAPI, paymentAPI, getUser, tourAPI, tourImageAPI, tourDepartureAPI } from "../../../services/api";
+import type { Tour, TourImage, TourDeparture } from "../../../types/types";
 
 const formatVND = (n: number) => new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " VND";
 const getDMY = (date: Date) => {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
 }
 const getTime = (date: Date) => {
-
     return `${date.getHours() < 10 ? `0${date.getHours()}` : date.getHours()}:${date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes()}`
 }
 
 export default function TourTikket() {
     const id = Number(useParams().id)
-    const dispatch = useDispatch<AppDispatch>()
-    useEffect(() => {
-        dispatch(fetchDataTicketTour({ id }))
-    }, [dispatch, id])
-    const { tour, images, departures, status } = useSelector((state: StoreType) => state.tourTicketReducer)
+    const [tour, setTour] = useState<Tour | null>(null);
+    const [images, setImages] = useState<TourImage[]>([]);
+    const [departures, setDepartures] = useState<TourDeparture[]>([]);
+    const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState<Date>();
     const [api, contextHolder] = notification.useNotification();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+
+    useEffect(() => {
+        fetchTourData();
+    }, [id]);
+
+    const fetchTourData = async () => {
+        setLoading(true);
+        try {
+            const [tourRes, imagesData, departuresData] = await Promise.all([
+                tourAPI.getById(id),
+                tourImageAPI.getByTourId(id),
+                tourDepartureAPI.getByTourId(id)
+            ]);
+
+            setTour(tourRes.data);
+            setImages(imagesData.data);
+            setDepartures(departuresData.data);
+        } catch (error) {
+            console.error('Error fetching tour data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const navigate = useNavigate()
 
@@ -50,8 +69,8 @@ export default function TourTikket() {
     const handleConfirmBooking = async () => {
         setIsCreatingPayment(true);
         try {
-            const user = await getUser();
-            if (!user) {
+            const userResponse = await getUser();
+            if (!userResponse) {
                 api.error({
                     message: 'Lỗi',
                     description: 'Vui lòng đăng nhập để đặt vé',
@@ -71,9 +90,8 @@ export default function TourTikket() {
                 return;
             }
 
-            // Tạo order
             const orderData = {
-                userId: user.id,
+                userId: userResponse.id,
                 items: [{
                     quantity: numberTicket,
                     unitPrice: Number(departureFind.price),
@@ -84,10 +102,9 @@ export default function TourTikket() {
             };
             const order = await orderAPI.create(orderData);
 
-            // Tạo payment
             const paymentData = {
                 orderId: order.id,
-                userId: user.id,
+                userId: userResponse.id,
                 amount: Number(total),
                 method: 'BANK_TRANSFER' as const,
                 status: 'PENDING' as const
@@ -99,7 +116,6 @@ export default function TourTikket() {
                 description: 'Đã tạo đơn đặt vé. Chuyển đến trang thanh toán...',
             });
 
-            // Chuyển đến trang payment với UUID
             setTimeout(() => {
                 navigate(`/payment/${payment.id}`);
             }, 1000);
@@ -115,9 +131,10 @@ export default function TourTikket() {
         }
     };
 
-    if (status == 'loading'){
+    if (loading){
         return <FullPageLoader/>
-    }else
+    }
+    
     return (
         <div className="w-full min-h-screen bg-gray-50">
             {contextHolder}
@@ -192,7 +209,6 @@ export default function TourTikket() {
                                 <DayPicker mode="single" selected={selected} onSelect={setSelected} />
                             </div>
 
-                            {/* Time picker */}
                             <div className="mt-6 text-center">
                                 <h4 className="text-lg font-semibold text-gray-800">Chọn thời gian ưu tiên</h4>
                                 <p className="mt-1 text-sm text-gray-500">Hãy chắc chắn chọn thời gian chính xác trước khi đặt chỗ.</p>

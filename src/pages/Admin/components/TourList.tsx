@@ -3,10 +3,7 @@ import { Table, Button, Modal, Form, Input, InputNumber, Select, Steps, App } fr
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { Editor } from "@tinymce/tinymce-react";
-import { tourAPI, getUser } from "../../../services/api";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../../stores";
-import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
+import { tourAPI, getUser, categoryAPI, locationAPI } from "../../../services/api";
 import type { User } from "../../../types/types";
 
 interface Tour {
@@ -25,9 +22,11 @@ interface Tour {
 
 const TourList = () => {
   const { modal, notification } = App.useApp();
-  const dispatch = useDispatch<AppDispatch>();
-  const { tours: reduxTours, categories: reduxCategories, locations: reduxLocations, status } = useSelector((state: StoreType) => state.tourReducer);
   const [user, setUser] = useState<User | null>(null);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -45,28 +44,37 @@ const TourList = () => {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const currentUser = await getUser();
       setUser(currentUser);
-      dispatch(fetchTourData());
+
+      const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
+      const [toursRes, categoriesRes, locationsRes] = await Promise.all([
+        tourAPI.getAll(userId),
+        categoryAPI.getAll(),
+        locationAPI.getAll()
+      ]);
+
+      const toursWithNames = toursRes.data.map((tour: any) => ({
+        ...tour,
+        locationName: locationsRes.data.find((l: any) => l.id === tour.locationId)?.name,
+        categoryName: categoriesRes.data.find((c: any) => c.id === tour.categoryId)?.name,
+      }));
+
+      setTours(toursWithNames);
+      setCategories(categoriesRes.data);
+      setLocations(locationsRes.data);
     } catch (error: any) {
       notification.error({
         message: 'Lỗi tải dữ liệu',
         description: error.response?.data?.message || 'Không thể tải danh sách tour',
         placement: 'topRight',
       });
+    } finally {
+      setLoading(false);
     }
   };
-
-  const tours = Array.isArray(reduxTours) ? reduxTours.map((tour: any) => ({
-    ...tour,
-    locationName: reduxLocations.find((l: any) => l.id === tour.locationId)?.name,
-    categoryName: reduxCategories.find((c: any) => c.id === tour.categoryId)?.name,
-  })) : [];
-
-  const categories = Array.isArray(reduxCategories) ? reduxCategories : [];
-  const locations = Array.isArray(reduxLocations) ? reduxLocations : [];
-  const loading = status === 'loading';
 
   const handleAdd = () => {
     setEditingTour(null);
@@ -89,6 +97,7 @@ const TourList = () => {
     setCurrentStep(0);
     form.setFieldsValue({
       name: record.name,
+      address: (record as any).address || '',
       basePrice: record.basePrice,
       discount: record.discount,
       locationId: record.locationId,
@@ -124,7 +133,7 @@ const TourList = () => {
             description: `Tour "${record.name}" đã được xóa khỏi hệ thống.`,
             placement: 'topRight',
           });
-          dispatch(fetchTourData());
+          fetchData();
         } catch (error: any) {
           notification.error({
             message: 'Xóa thất bại',
@@ -139,7 +148,7 @@ const TourList = () => {
   const handleNext = async () => {
     try {
       if (currentStep === 0) {
-        await form.validateFields(['name', 'basePrice', 'discount', 'locationId', 'categoryId']);
+        await form.validateFields(['name', 'address', 'basePrice', 'discount', 'locationId', 'categoryId']);
         setCurrentStep(1);
       }
     } catch (error) {
@@ -160,18 +169,22 @@ const TourList = () => {
         form.setFieldsValue({ information: informationEditorRef.current.getContent() });
       }
 
-      await form.validateFields();
-      const values = form.getFieldsValue();
+      await form.validateFields([
+        'name', 'address', 'basePrice', 'discount', 'locationId', 'categoryId',
+        'description', 'information'
+      ]);
+      const values = form.getFieldsValue(true);
 
       const tourData = {
         name: values.name,
+        address: values.address,
         basePrice: Number(values.basePrice),
         discount: Number(values.discount),
         locationId: Number(values.locationId),
         categoryId: Number(values.categoryId),
         description: values.description,
         information: values.information,
-        address: values.address || '',
+        createdBy: user?.id,
       };
 
       if (editingTour) {
@@ -193,7 +206,7 @@ const TourList = () => {
       setIsModalOpen(false);
       setCurrentStep(0);
       form.resetFields();
-      dispatch(fetchTourData());
+      fetchData();
     } catch (error: any) {
       notification.error({
         message: editingTour ? 'Cập nhật thất bại' : 'Thêm thất bại',
@@ -324,6 +337,17 @@ const TourList = () => {
                 ]}
               >
                 <Input placeholder="Nhập tên tour" />
+              </Form.Item>
+
+              <Form.Item
+                name="address"
+                label="Địa chỉ"
+                rules={[
+                  { required: true, message: "Vui lòng nhập địa chỉ!" },
+                  { max: 255, message: "Địa chỉ không được dài quá 255 ký tự!" },
+                ]}
+              >
+                <Input placeholder="Nhập địa chỉ chi tiết" />
               </Form.Item>
 
               <div className="flex gap-4">

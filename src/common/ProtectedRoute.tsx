@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import axios from 'axios';
-import { Spin } from 'antd';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { Spin } from "antd";
+import { authAPI } from '../services/api';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -14,31 +14,30 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const token = localStorage.getItem('token');
-                
+                const token = localStorage.getItem("token");
+
                 if (!token) {
                     setIsAuthenticated(false);
-                    navigate('/');
+                    navigate("/");
                     return;
                 }
 
-                const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/auth/getUser`,
-                    { token }
-                );
+                const userData = await authAPI.getUser(token);
 
-                if (response.data && response.data.id) {
+                if (userData.data && userData.data.id) {
                     setIsAuthenticated(true);
                 } else {
-                    setIsAuthenticated(false);
-                    localStorage.removeItem('token');
-                    navigate('/');
+                    // setIsAuthenticated(false);
+                    // localStorage.removeItem("token");
+                    // navigate("/");
+                    // window.location.reload();
                 }
             } catch (error) {
-                console.error('Authentication error:', error);
-                setIsAuthenticated(false);
-                localStorage.removeItem('token');
-                navigate('/');
+                console.error("Authentication error:", error);
+                // setIsAuthenticated(false);
+                // localStorage.removeItem("token");
+                // navigate("/");
+                // window.location.reload();
             }
         };
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Pagination } from "antd";
 import {  useNavigate } from "react-router";
-import axios from "axios";
 import type { Promotion } from "../../types/types";
+import { promotionAPI } from "../../services/api";
 
 export default function SettingPromotion() {
     const pageSize = 6
@@ -26,18 +26,16 @@ export default function SettingPromotion() {
 
     const getPromotionByToke = async () => {
         const token = localStorage.getItem('token')
-        return await axios.get(`${import.meta.env.VITE_API_URL}/promotions/token/${token}`)
+        const response = await promotionAPI.getByToken(token)
+        return response.data
     }
 
     useEffect(() => {
-        getPromotionByToke().then((data) => {
-            
-            setPromotionByToken(() => data.data.promotion)
+        getPromotionByToke().then((data) => {            
+            setPromotionByToken(() => data?.promotion || [])
         })
     }, [])
-    
-    console.log("promotion", promotionByToken);
-    
+        
     return (
         <div className='h-screen'>
             <div className="bg-white shadow-sm py-3 px-[150px] flex justify-between text-2xl">
@@ -93,7 +91,7 @@ export default function SettingPromotion() {
                                         {formatDateToString(promo.startAt)}
                                         {" - "}
                                         {formatDateToString(promo.endAt)}
-                                    </span> : <span className="font-medium">Forever</span>}
+                                    </span> : <span className="font-medium">Bắt đầu từ {formatDateToString(promo.startAt)}</span>}
                                 </div>
                                 {/* <div className="text-sm text-gray-600 mb-3">{promo.location}</div> */}
                                 <div className="text-xs text-gray-500 mb-3" dangerouslySetInnerHTML={{ __html: promo.description }}></div>

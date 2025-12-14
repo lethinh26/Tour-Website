@@ -1,9 +1,8 @@
 import { Input, Button, Modal, notification } from "antd";
 import type { NotificationPlacement } from "antd/es/notification/interface";
-import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { getUser } from "../../services/api";
+import { getUser, authAPI } from "../../services/api";
 import FileTextOutlined from "@ant-design/icons/lib/icons/FileTextOutlined";
 import ScheduleOutlined from "@ant-design/icons/lib/icons/ScheduleOutlined";
 import { PoweroffOutlined, SettingOutlined, DashboardOutlined, ExclamationCircleFilled } from "@ant-design/icons";
@@ -50,7 +49,7 @@ export default function AccountSettings() {
             return;
         }
         try {
-            const res = await axios.patch(`${import.meta.env.VITE_API_URL}/auth/updateInfo`, {
+            const res = await authAPI.updateInfo({
                 token,
                 name,
                 phoneNumber,
@@ -76,7 +75,7 @@ export default function AccountSettings() {
             return;
         }
         try {
-            const res = await axios.patch(`${import.meta.env.VITE_API_URL}/auth/changepass`, {
+            const res = await authAPI.changePassword({
                 token,
                 oldPassword,
                 newPassword,
@@ -102,9 +101,7 @@ export default function AccountSettings() {
     const handleDeleteAccount = async () => {
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`${import.meta.env.VITE_API_URL}/auth/deleteAccount`, {
-                data: { token }
-            });
+            await authAPI.deleteAccount(token);
             
             openNotification("topRight", "success", "Tài khoản đã được xóa thành công");
             

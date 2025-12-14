@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Table, Tag, Button, Space, Modal, Descriptions, Rate, Input, message } from "antd";
+import { Table, Tag, Button, Space, Modal, Descriptions, Rate, Input, notification } from "antd";
 import { EyeOutlined, LeftOutlined, StarOutlined } from "@ant-design/icons";
-import axios from "axios";
 import { useNavigate } from "react-router";
+import { authAPI, paymentAPI, reviewAPI } from "../../services/api";
 
 interface Booking {
     id: number;
@@ -56,6 +56,7 @@ const MyBookings = () => {
     const [reviewedOrders, setReviewedOrders] = useState<Set<number>>(new Set());
     const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
     const navigate = useNavigate();
+    const [api, contextHolder] = notification.useNotification();
 
     useEffect(() => {
         fetchBookings();
@@ -66,14 +67,16 @@ const MyBookings = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
-            const userId = userRes.data.id;
-
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/payments/orders/all`);
-            const userBookings = Array.isArray(response.data)
-                ? response.data.filter((booking: Booking) => booking.userId === userId && booking.status === "PAID")
+            const user = await authAPI.getUser(token!);
+            const userId = user.data.id;
+            
+            const response = await paymentAPI.getAllOrders();
+            
+            const userBookings = Array.isArray(response)
+                ? response.filter((booking: Booking) => booking.userId === userId && booking.status === "PAID")
                 : [];
             setBookings(userBookings);
+            
         } catch (error) {
             console.error("Error fetching bookings:", error);
         } finally {
@@ -84,10 +87,12 @@ const MyBookings = () => {
     const fetchReviewedOrders = async () => {
         try {
             const token = localStorage.getItem("token");
-            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
-            const userId = userRes.data.id;
+            const user = await authAPI.getUser(token!);
+            const userId = user.data.id;
 
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/tours/reviews`);
+            const response = await reviewAPI.getAll();
+            console.log("review",response);
+            
             const userReviews = Array.isArray(response.data)
                 ? response.data.filter((review: any) => review.userId === userId)
                 : [];
@@ -95,7 +100,7 @@ const MyBookings = () => {
             const orderIds = new Set(userReviews.map((review: any) => review.orderId));
             setReviewedOrders(orderIds);
         } catch (error) {
-            console.error("Error fetching reviewed orders:", error);
+            console.error("Error reviewed orders:", error);
         }
     };
 
@@ -110,22 +115,30 @@ const MyBookings = () => {
 
     const handleSubmitReview = async () => {
         if (!rating) {
-            message.error("Vui lòng chọn số sao đánh giá");
+            api.error({
+                message: "Lỗi",
+                description: "Vui lòng chọn số sao đánh giá",
+                placement: "topRight"
+            });
             return;
         }
 
         if (!currentTourId || !currentOrderId) {
-            message.error("Không tìm thấy thông tin tour hoặc đơn hàng");
+            api.error({
+                message: "Lỗi",
+                description: "Không tìm thấy thông tin tour hoặc đơn hàng",
+                placement: "topRight"
+            });
             return;
         }
 
         setSubmittingReview(true);
         try {
             const token = localStorage.getItem("token");
-            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const userRes = await authAPI.getUser(token!);
             const userId = userRes.data.id;
 
-            await axios.post(`${import.meta.env.VITE_API_URL}/tours/reviews`, {
+            await reviewAPI.create({
                 tourId: currentTourId,
                 userId: userId,
                 orderId: currentOrderId,
@@ -133,7 +146,11 @@ const MyBookings = () => {
                 comment: comment || null
             });
 
-            message.success("Đánh giá của bạn đã được gửi thành công!");
+            api.success({
+                message: "Thành công",
+                description: "Đánh giá của bạn đã được gửi thành công!",
+                placement: "topRight"
+            });
             setReviewVisible(false);
             setRating(0);
             setComment("");
@@ -145,7 +162,11 @@ const MyBookings = () => {
             setExistingReview(null);
         } catch (error) {
             console.error("Error submitting review:", error);
-            message.error("Không thể gửi đánh giá. Vui lòng thử lại!");
+            api.error({
+                message: "Lỗi",
+                description: "Không thể gửi đánh giá. Vui lòng thử lại!",
+                placement: "topRight"
+            });
         } finally {
             setSubmittingReview(false);
         }
@@ -155,17 +176,16 @@ const MyBookings = () => {
         setLoadingReview(true);
         try {
             const token = localStorage.getItem("token");
-            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
-            const userId = userRes.data.id;
+            const user = await authAPI.getUser(token!);
 
-            const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/tours/reviews/order/${orderId}/user/${userId}`
-            );
+            const response = await paymentAPI.getOrderReview(Number(orderId), user.data.id);
+            console.log("bruh",response);
+            
 
-            if (response.data.hasReviewed) {
-                setExistingReview(response.data.review);
-                setRating(response.data.review.rating);
-                setComment(response.data.review.comment || "");
+            if (response.hasReviewed) {
+                setExistingReview(response.review);
+                setRating(response.review.rating);
+                setComment(response.review.comment || "");
             } else {
                 setExistingReview(null);
                 setRating(0);
@@ -177,7 +197,11 @@ const MyBookings = () => {
             setReviewVisible(true);
         } catch (error) {
             console.error("Error fetching review:", error);
-            message.error("Không thể tải thông tin đánh giá");
+            api.error({
+                message: "Lỗi",
+                description: "Không thể tải thông tin đánh giá",
+                placement: "topRight"
+            });
         } finally {
             setLoadingReview(false);
         }
@@ -278,6 +302,7 @@ const MyBookings = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {contextHolder}
             <div className="py-4 px-6 mb-6">
                 <div className="mx-auto flex items-center gap-4 max-w-7xl">
                     <Button icon={<LeftOutlined />} onClick={() => navigate("/settings")} type="text" style={{marginTop: 30}}>

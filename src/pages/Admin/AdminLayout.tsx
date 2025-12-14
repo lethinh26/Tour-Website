@@ -11,7 +11,7 @@ import {
     LogoutOutlined,
 } from "@ant-design/icons";
 import logo_triploka from "../../assets/logos/logo_tripoka.png";
-import axios from "axios";
+import { authAPI } from "../../services/api";
 const { Sider, Content } = Layout;  
 
 interface UserResponse {
@@ -34,7 +34,7 @@ const AdminLayout = () => {
                 return;
             }
 
-            const res = await axios.post<UserResponse>(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const res = await authAPI.getUser(token);
 
             if (res.data.role === "USER") {
                 navigate("/");

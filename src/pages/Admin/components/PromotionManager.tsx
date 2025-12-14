@@ -7,9 +7,6 @@ import type { Promo, Promotion } from "../../../types/types";
 import { Editor } from "@tinymce/tinymce-react";
 import dayjs from "dayjs";
 import { promotionAPI } from "../../../services/api";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../../stores";
-import { fetchDataPromotion } from "../../../stores/slides/promotion.slice";
 
 interface PromotionColumn {
     id: number;
@@ -26,8 +23,8 @@ interface PromotionColumn {
 
 const PromotionManager = () => {
     const { modal, notification } = App.useApp();
-    const dispatch = useDispatch<AppDispatch>();
-    const { promotions, status } = useSelector((state: StoreType) => state.promotionReducer);
+    const [promotions, setPromotions] = useState<Promotion[]>([]);
+    const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [editingPromotion, setEditingPromotion] = useState<PromotionColumn | null>(null);
@@ -35,11 +32,23 @@ const PromotionManager = () => {
     const descriptionEditorRef = useRef<any>(null);
 
     useEffect(() => {
-        dispatch(fetchDataPromotion());
-    }, [dispatch]);
+        fetchPromotions();
+    }, []);
 
     const fetchPromotions = async () => {
-        dispatch(fetchDataPromotion());
+        setLoading(true);
+        try {
+            const res = await promotionAPI.getAll();
+            setPromotions(res.data);
+        } catch (error) {
+            notification.error({
+                message: 'Lỗi tải dữ liệu',
+                description: 'Không thể tải danh sách khuyến mãi',
+                placement: 'topRight',
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const steps = [
@@ -222,7 +231,7 @@ const PromotionManager = () => {
                     Add Promotion
                 </Button>
             </div>
-            <Spin spinning={status === 'loading'}>
+            <Spin spinning={loading}>
                 <Table
                     columns={column}
                     dataSource={formattedPromotions}

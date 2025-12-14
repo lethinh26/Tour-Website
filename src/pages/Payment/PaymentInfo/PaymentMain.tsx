@@ -57,8 +57,8 @@ export const PaymentMain = () => {
         <div className="col-span-2">
           <Space direction="vertical" size={[40, 40]} style={{ display: 'flex' }}>
             <Space direction="vertical" size="small"> 
-              <h3 className='text-2xl font-bold'>Đặt chỗ của tôi</h3>
-              <p className='font-semibold text-[#687176]'>Điền thông tin và xem lại đặt chỗ</p>
+              <h3 className='text-2xl font-bold'>Thông tin thanh toán</h3>
+              <p className='font-semibold text-[#687176]'>Kiểm tra lại thông tin trước khi thanh toán</p>
             </Space>
             <ContactInfo user={(payment as any)?.user} />
             <LocationInfo tour={(payment as any)?.order?.items?.[0]?.departure?.tour} />
@@ -68,7 +68,7 @@ export const PaymentMain = () => {
             <Summary payment={payment} selectedPromotion={selectedPromotion} />
           </Space>
         </div>
-        <div className='top-63 w-full right-35 sticky h-fit'>
+        <div className='top-69 w-full right-35 sticky h-fit'>
           <TourInfo payment={payment} />
         </div>
       </Content>

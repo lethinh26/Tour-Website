@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Table, Tag, Button, Space, Modal, Descriptions } from "antd";
 import { EyeOutlined, LeftOutlined } from "@ant-design/icons";
-import axios from "axios";
 import { useNavigate } from "react-router";
+import { authAPI, paymentAPI } from "../../services/api";
 
 interface Payment {
     id: string;
@@ -50,17 +50,17 @@ const TransactionHistory = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const userRes = await authAPI.getUser(token);
             const userId = userRes.data.id;
 
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/payments`);
-
-            // Filter by userId and ensure order items exist
-            const userPayments = Array.isArray(response.data)
-                ? response.data.filter(
+            const response = await paymentAPI.getAll();
+            
+            const userPayments = Array.isArray(response)
+                ? response.filter(
                       (payment: Payment) => payment.userId === userId && payment.order?.items?.length > 0 && payment.orderId !== undefined
                   )
                 : [];
+            
 
             setPayments(userPayments);
         } catch (error) {
@@ -84,7 +84,6 @@ const TransactionHistory = () => {
         const methodMap: Record<string, { color: string; text: string }> = {
             CASH: { color: "orange", text: "Tiền mặt" },
             BANK_TRANSFER: { color: "blue", text: "Chuyển khoản" },
-            CREDIT_CARD: { color: "purple", text: "Thẻ tín dụng" },
         };
         return <Tag color={methodMap[method]?.color || "default"}>{methodMap[method]?.text || method}</Tag>;
     };

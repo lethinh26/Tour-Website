@@ -1,12 +1,9 @@
 import { Card, Button, Empty, Tooltip, Pagination } from "antd";
 import { EnvironmentOutlined, TagFilled, TagOutlined } from "@ant-design/icons";
-import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import type { Tour } from "../../../types/types";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, StoreType } from "../../../stores";
-import { fetchData } from "../../../stores/slides/tour.slide";
 import { useNavigate } from "react-router";
+import { favoriteTourAPI, tourImageAPI, categoryAPI } from "../../../services/api";
 
 
 interface FavoriteItem {
@@ -20,86 +17,59 @@ interface FavoriteItem {
 }
 
 const FavoritesPage = () => {
-    const dispatch = useDispatch<AppDispatch>()
-
-    const [dataFavorite, setDataFavorite] = useState<Tour[]>([])
     const [token] = useState(localStorage.getItem('token'))
-    const { images, categories } = useSelector((state: StoreType) => state.tourReducer)
     const navigate = useNavigate()
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 3
     const [favoriteItem, setFavoriteItem] = useState<FavoriteItem[]>([])
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        dispatch(fetchData())
-    }, [dispatch])
+        fetchFavorites();
+    }, [token])
 
-    useEffect(() => {
-        getDataFavoriteTours().then((data) => {
-            // setDataFavorite(data.tourFavorited)
-
-            setFavoriteItem(() => {
-                return Array.isArray(data.tourFavorited) ? data.tourFavorited.map((item: any) => {
-                    const imgObj = Array.isArray(images) ? images.filter(img => img.tourId == item.id)[0] : undefined;
-                    return {
-                        id: item.id,
-                        title: item.name,
-                        image: imgObj?.url || '',
-                        price: item.basePrice,
-                        location: item.address,
-                        subtitle: Array.isArray(categories) ? categories.find(cate => cate.id == item.categoryId)?.name : undefined,
-                        tagActive: true
-                    }
-                }) : []
-            })
-        }).catch(() => {
-            setDataFavorite([])
-        })
-    }, [images, categories])
-    const getDataFavoriteTours = async () => {
+    const fetchFavorites = async () => {
+        if (!token) return;
+        
+        setLoading(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`)
-            console.log(res.data);
-            return res.data
-            
-        } catch (error: AxiosError | any) {
-            return error.response.message
+            const [favData, imagesRes, categoriesRes] = await Promise.all([
+                favoriteTourAPI.getByToken(token),
+                tourImageAPI.getAll(),
+                categoryAPI.getAll()
+            ]);
+
+            const items = Array.isArray(favData.data?.tourFavorited) ? favData.data.tourFavorited.map((item: any) => {
+                const imgObj = imagesRes.data.find((img: any) => img.tourId == item.id);
+                return {
+                    id: item.id,
+                    title: item.name,
+                    image: imgObj?.url || '',
+                    price: item.basePrice,
+                    location: item.address,
+                    subtitle: categoriesRes.data.find((cate: any) => cate.id == item.categoryId)?.name,
+                    tagActive: true
+                }
+            }) : [];
+
+            setFavoriteItem(items);
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
+            setFavoriteItem([]);
+        } finally {
+            setLoading(false);
         }
     }
 
-    
-
-    const favorites: FavoriteItem[] = Array.isArray(dataFavorite) ? dataFavorite.map((item) => {
-        const imgObj = Array.isArray(images) ? images.filter(img => img.tourId == item.id)[0] : undefined;
-        return {
-            id: item.id,
-            title: item.name,
-            image: imgObj?.url || '',
-            price: item.basePrice,
-            location: item.address,
-            subtitle: Array.isArray(categories) ? categories.find(cate => cate.id == item.categoryId)?.name : undefined,
-            tagActive: true
-        }
-    }) : []
-
     const handleUnFavorite = async (tourId: number) => {
-        if (!token) {
-            return
-        }
-        return axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-            data: {
-                token,
-                tourId
-            }
-        })
+        if (!token) return;
+        return favoriteTourAPI.remove(token, tourId);
     }
 
     const handleSaveFavorite = async (id: number) => {
+        if (!token) return;
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                token,
-                tourId: id
-            })
+            const res = await favoriteTourAPI.add(token, id);
             console.log(res.data);
         } catch (error) {
             console.log(error);
@@ -168,7 +138,7 @@ const FavoritesPage = () => {
 
                                                     <div className="flex items-center justify-between pt-4 border-t">
                                                         <div>
-                                                            <p className="text-2xl font-bold text-red-500">{item.price} VND</p>
+                                                            <p className="text-2xl font-bold text-red-600!">{item.price} VND</p>
                                                         </div>
                                                         <div className="flex gap-2">
                                                             <Button type="primary" onClick={() => {
@@ -191,7 +161,7 @@ const FavoritesPage = () => {
                         defaultCurrent={1}
                         pageSize={pageSize}
                         onChange={setCurrentPage}
-                        total={Math.ceil(favorites.length)}
+                        total={favoriteItem.length}
                     />
                 </div>
             </div>

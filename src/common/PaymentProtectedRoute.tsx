@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import axios from 'axios';
 import { Spin } from 'antd';
+import { authAPI, paymentAPI } from '../services/api';
 
 interface PaymentProtectedRouteProps {
     children: React.ReactNode;
@@ -23,31 +23,33 @@ const PaymentProtectedRoute = ({ children }: PaymentProtectedRouteProps) => {
                     return;
                 }
 
-                const userResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/auth/getUser`,
-                    { token }
-                );
+                const userData = await authAPI.getUser(token);
+                console.log(userData.data);
+                // debugger;
+                
+                // console.log("gooodaaaa");
 
-                if (!userResponse.data || !userResponse.data.id) {
+                if (!userData.data || !userData.data.id) {                    
                     setIsAuthorized(false);
                     localStorage.removeItem('token');
                     navigate('/');
                     return;
                 }
+                // console.log("goood");
 
-                const currentUserId = userResponse.data.id;
+                const currentUserId = userData.data.id;
+                console.log(currentUserId);
+                
+                const paymentResponse = await paymentAPI.getById(id);
+                
 
-                const paymentResponse = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/payments/${id}`
-                );
-
-                if (!paymentResponse.data) {
+                if (!paymentResponse) {
                     setIsAuthorized(false);
                     navigate('/');
                     return;
                 }
 
-                if (paymentResponse.data.userId !== currentUserId) {
+                if (paymentResponse.userId !== currentUserId) {
                     setIsAuthorized(false);
                     navigate('/');
                     return;

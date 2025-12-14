@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { Spin } from "antd";
-import axios from "axios";
+import { authAPI } from "../../../services/api";
 
 interface UserResponse {
     role: "ADMIN" | "TOUR_MANAGER" | "USER";
@@ -30,7 +30,7 @@ export const Auth = ({ children, allowedRoles }: AuthProps) => {
                     return;
                 }
 
-                const res = await axios.post<UserResponse>(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+                const res = await authAPI.getUser(token);
                 const userData = res.data;
 
                 if (userData.role === "USER") {
