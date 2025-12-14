@@ -56,7 +56,6 @@ export const TourMain = () => {
             if (range[0] > 0) params.minPrice = range[0];
             if (range[1] < 4000000) params.maxPrice = range[1];
             
-            // Chỉ gửi sortBy/sortOrder cho backend nếu sort theo price
             if (wayToSort !== 0 && sortMapping[wayToSort] && wayToSort <= 2) {
                 params.sortBy = sortMapping[wayToSort].sortBy;
                 params.sortOrder = sortMapping[wayToSort].sortOrder;
