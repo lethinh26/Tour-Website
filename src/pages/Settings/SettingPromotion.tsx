@@ -26,6 +26,7 @@ export default function SettingPromotion() {
 
     const getPromotionByToke = async () => {
         const token = localStorage.getItem('token')
+        if (!token) return { promotion: [] };
         const response = await promotionAPI.getByToken(token)
         return response.data
     }

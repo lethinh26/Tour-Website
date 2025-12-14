@@ -27,17 +27,17 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
                 if (userData.data && userData.data.id) {
                     setIsAuthenticated(true);
                 } else {
-                    // setIsAuthenticated(false);
-                    // localStorage.removeItem("token");
-                    // navigate("/");
-                    // window.location.reload();
+                    setIsAuthenticated(false);
+                    localStorage.removeItem("token");
+                    navigate("/");
+                    window.location.reload();
                 }
             } catch (error) {
                 console.error("Authentication error:", error);
-                // setIsAuthenticated(false);
-                // localStorage.removeItem("token");
-                // navigate("/");
-                // window.location.reload();
+                setIsAuthenticated(false);
+                localStorage.removeItem("token");
+                navigate("/");
+                window.location.reload();
             }
         };
 

@@ -40,6 +40,12 @@ const PaymentProtectedRoute = ({ children }: PaymentProtectedRouteProps) => {
                 const currentUserId = userData.data.id;
                 console.log(currentUserId);
                 
+                if (!id) {
+                    setIsAuthorized(false);
+                    navigate('/');
+                    return;
+                }
+                
                 const paymentResponse = await paymentAPI.getById(id);
                 
 

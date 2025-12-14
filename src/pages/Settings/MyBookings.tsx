@@ -143,7 +143,7 @@ const MyBookings = () => {
                 userId: userId,
                 orderId: currentOrderId,
                 rating: rating,
-                comment: comment || null
+                comment: comment || undefined
             });
 
             api.success({

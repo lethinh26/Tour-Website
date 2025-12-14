@@ -8,7 +8,19 @@ import ShowMore from "./components/ShowMore";
 import FullPageLoader from "../../../common/Loading";
 import ReviewCard from "./components/ReviewCard";
 import { tourAPI, tourImageAPI, reviewAPI } from "../../../services/api";
-import type { Tour, TourImage, Review } from "../../../types/types";
+import type { Tour, TourImage } from "../../../types/types";
+
+interface Review {
+    id: number;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+    };
+}
 
 export default function TourDetailMain() {
     const id = Number(useParams().id)

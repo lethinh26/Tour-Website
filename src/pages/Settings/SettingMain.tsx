@@ -44,6 +44,10 @@ export default function AccountSettings() {
 
     const handleUpdateInfo = async () => {
         const token = localStorage.getItem("token");
+        if (!token) {
+            openNotification("topRight", "error", "Vui lòng đăng nhập");
+            return;
+        }
         if (!name.trim() || !phoneNumber.trim()) {
             openNotification("topRight", "warning", "Tên và số điện thoại không được để trống");
             return;
@@ -70,6 +74,10 @@ export default function AccountSettings() {
 
     const handle = async () => {
         const token = localStorage.getItem("token");
+        if (!token) {
+            openNotification("topRight", "error", "Vui lòng đăng nhập");
+            return;
+        }
         if (newPassword.length < 6 || oldPassword.length < 6) {
             openNotification("topRight", "warning", "Mật khẩu mới phải có ít nhất 6 ký tự");
             return;
@@ -101,6 +109,10 @@ export default function AccountSettings() {
     const handleDeleteAccount = async () => {
         try {
             const token = localStorage.getItem("token");
+            if (!token) {
+                openNotification("topRight", "error", "Vui lòng đăng nhập");
+                return;
+            }
             await authAPI.deleteAccount(token);
             
             openNotification("topRight", "success", "Tài khoản đã được xóa thành công");

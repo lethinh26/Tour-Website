@@ -50,6 +50,7 @@ const TransactionHistory = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
+            if (!token) return;
             const userRes = await authAPI.getUser(token);
             const userId = userRes.data.id;
 

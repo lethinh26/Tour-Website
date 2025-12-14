@@ -29,6 +29,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
     });
 
     const handleSaveFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
             await favoriteTourAPI.add(token, Number(id));
@@ -41,6 +42,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
     };
 
     const handleUnFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
             await favoriteTourAPI.remove(token, Number(id));

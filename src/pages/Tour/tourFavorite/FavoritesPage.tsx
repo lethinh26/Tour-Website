@@ -1,7 +1,6 @@
 import { Card, Button, Empty, Tooltip, Pagination } from "antd";
 import { EnvironmentOutlined, TagFilled, TagOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import type { Tour } from "../../../types/types";
 import { useNavigate } from "react-router";
 import { favoriteTourAPI, tourImageAPI, categoryAPI } from "../../../services/api";
 
@@ -22,7 +21,6 @@ const FavoritesPage = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const pageSize = 3
     const [favoriteItem, setFavoriteItem] = useState<FavoriteItem[]>([])
-    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         fetchFavorites();
@@ -31,7 +29,6 @@ const FavoritesPage = () => {
     const fetchFavorites = async () => {
         if (!token) return;
         
-        setLoading(true);
         try {
             const [favData, imagesRes, categoriesRes] = await Promise.all([
                 favoriteTourAPI.getByToken(token),
@@ -56,8 +53,6 @@ const FavoritesPage = () => {
         } catch (error) {
             console.error('Error fetching favorites:', error);
             setFavoriteItem([]);
-        } finally {
-            setLoading(false);
         }
     }
 

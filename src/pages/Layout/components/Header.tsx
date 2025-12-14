@@ -25,14 +25,10 @@ const Header = () => {
 
     const handleLogin = useCallback(
         async (values: { email: string; password: string }) => {
-            console.log('🔵 [LOGIN] Starting login process with:', values.email);
             try {
                 const result = await dispatch(userLogin(values));
-                console.log('🔵 [LOGIN] Dispatch result:', result);
-                console.log('🔵 [LOGIN] Token from result:', result?.payload?.token);
                 
                 if (result?.payload?.token) {
-                    console.log('✅ [LOGIN] Login successful! Token saved to localStorage');
                     api.success({
                         message: 'Đăng nhập thành công',
                         description: 'Chào mừng bạn quay trở lại!',
@@ -40,12 +36,10 @@ const Header = () => {
                     });
                     setShowLogin(false);
                     formLogin.resetFields();
-                    console.log('🔄 [LOGIN] Reloading page in 500ms...');
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);
                 } else {
-                    console.log('❌ [LOGIN] Login failed:', result?.payload);
                     api.error({
                         message: 'Đăng nhập thất bại',
                         description: result?.payload?.message || 'Sai tài khoản hoặc mật khẩu!',
@@ -53,10 +47,9 @@ const Header = () => {
                     });
                 }
             } catch (error) {
-                console.error('❌ [LOGIN] Login error:', error);
                 api.error({
                     message: 'Đăng nhập thất bại',
-                    description: 'Có lỗi xảy ra, vui lòng thử lại!',
+                    description: `Có lỗi xảy ra, vui lòng thử lại! ${error}`,
                     placement: 'topRight',
                 });
             }
@@ -66,14 +59,10 @@ const Header = () => {
 
     const handleRegister = useCallback(
         async (values: { name: string; email: string; password: string; phoneNumber: string }) => {
-            console.log('🟢 [REGISTER] Starting registration for:', values.email);
             try {
                 const result = await dispatch(userRegister(values));
-                console.log('🟢 [REGISTER] Dispatch result:', result);
-                console.log('🟢 [REGISTER] Token from result:', result?.payload?.token);
                 
                 if (result?.payload?.token) {
-                    console.log('✅ [REGISTER] Registration successful! Token saved to localStorage');
                     api.success({
                         message: 'Đăng ký thành công',
                         description: 'Chào mừng bạn đến với Triploka!',
@@ -81,12 +70,10 @@ const Header = () => {
                     });
                     setShowRegister(false);
                     formRegister.resetFields();
-                    console.log('🔄 [REGISTER] Reloading page in 500ms...');
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);
                 } else {
-                    console.log('❌ [REGISTER] Registration failed:', result?.payload);
                     api.error({
                         message: 'Đăng ký thất bại',
                         description: result?.payload?.message || 'Email đã được sử dụng!',
@@ -94,10 +81,9 @@ const Header = () => {
                     });
                 }
             } catch (error) {
-                console.error('❌ [REGISTER] Registration error:', error);
                 api.error({
                     message: 'Đăng ký thất bại',
-                    description: 'Có lỗi xảy ra, vui lòng thử lại!',
+                    description: `Có lỗi xảy ra, vui lòng thử lại! ${error}`,
                     placement: 'topRight',
                 });
             }
@@ -106,25 +92,19 @@ const Header = () => {
     );
 
     useEffect(() => {
-        console.log('🚀 [HEADER] Component mounted - Checking user authentication...');
         const checkUser = async () => {
             const tokenUser = localStorage.getItem("token");
-            console.log('🔑 [HEADER] Token from localStorage:', tokenUser ? `${tokenUser.substring(0, 20)}...` : 'NULL');
             
             if (tokenUser) {
                 try {
-                    console.log('📡 [HEADER] Calling authAPI.getUser...');
                     const response = await authAPI.getUser(tokenUser);
-                    console.log('✅ [HEADER] User data from API:', response.data);
                     setUser(response.data);
-                    console.log('👤 [HEADER] User state updated - should show Account now');
                 } catch (error) {
-                    console.error("❌ [HEADER] Failed to get user:", error);
                     localStorage.removeItem("token");
                     setUser(null);
                 }
             } else {
-                console.log('⚠️ [HEADER] No token found - user not logged in');
+                setUser(null);
             }
         };
         checkUser();
@@ -158,7 +138,6 @@ const Header = () => {
                 Tour
             </a>
             {(() => {
-                console.log('🎨 [RENDER] Rendering nav buttons, user state:', user);
                 return !user ? (
                     <>
                         <button
