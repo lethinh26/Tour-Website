@@ -146,15 +146,13 @@ const TourScheduleManager = () => {
         modal.confirm({
             title: "Xác nhận xóa",
             icon: <ExclamationCircleOutlined />,
-            content: `Bạn có chắc chắn muốn xóa tất cả ${record.departureCount} lịch khởi hành của tour "${record.tourTitle}"?`,
+            content: `Bạn có chắc chắn muốn xóa hết ${record.departureCount} lịch khởi hành của tour "${record.tourTitle}"?`,
             okText: "Xóa",
             okType: "danger",
             cancelText: "Hủy",
             async onOk() {
                 try {
-                    await Promise.all(
-                        record.departures.map(dep => tourDepartureAPI.delete(dep.id))
-                    );
+                    await tourDepartureAPI.deleteByTourId(record.tourId);
                     notification.success({
                         message: "Xóa thành công",
                         description: `Đã xóa tất cả lịch khởi hành của tour "${record.tourTitle}".`,

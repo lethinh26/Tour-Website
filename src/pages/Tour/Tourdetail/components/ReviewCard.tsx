@@ -24,7 +24,6 @@ export default function ReviewCard({ reviews, averageRating, totalReviews }: Rev
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    // Ensure reviews is an array
     const reviewsArray = Array.isArray(reviews) ? reviews : [];
 
     const paginatedReviews = reviewsArray.slice(

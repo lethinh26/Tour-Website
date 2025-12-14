@@ -204,7 +204,14 @@ export const tourDepartureAPI = {
     
     delete: async (id: number) => {
         const res = await axios.delete(`${API_BASE_URL}/tourDepartures/${id}`);
-        return res.data;
+        console.log(res);
+        
+        return { data: res.data };
+    },
+
+    deleteByTourId: async (tourId: number) => {
+        const res = await axios.delete(`${API_BASE_URL}/tourDepartures/tour/${tourId}`);
+        return { data: res.data };
     }
 };
 
