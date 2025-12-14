@@ -59,7 +59,16 @@ export default function SettingPromotion() {
             </div>
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-[150px]">
-                {Array.isArray(promotionByToken) && promotionByToken
+                {Array.isArray(promotionByToken) && promotionByToken.length === 0 ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20">
+                        <div className="text-6xl mb-4">📭</div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">Kho trống</h3>
+                        <p className="text-gray-500 mb-4">Bạn chưa có khuyến mãi nào trong kho</p>
+                        <Button color="primary" variant="solid" onClick={() => navigate('/promotion')}>
+                            Nhận khuyến mãi ngay
+                        </Button>
+                    </div>
+                ) : Array.isArray(promotionByToken) && promotionByToken
                 .slice((currentPage - 1) * pageSize, currentPage * pageSize)
                     .filter(item => checkExpiry(item.startAt, item.endAt))
                     .map((promo, index) => {
@@ -87,7 +96,7 @@ export default function SettingPromotion() {
                                     </span> : <span className="font-medium">Forever</span>}
                                 </div>
                                 {/* <div className="text-sm text-gray-600 mb-3">{promo.location}</div> */}
-                                <div className="text-xs text-gray-500 mb-3">{promo.description}</div>
+                                <div className="text-xs text-gray-500 mb-3" dangerouslySetInnerHTML={{ __html: promo.description }}></div>
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 flex-1">
                                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">

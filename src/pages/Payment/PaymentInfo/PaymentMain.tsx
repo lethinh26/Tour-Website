@@ -24,7 +24,7 @@ export const PaymentMain = () => {
         const data = await paymentAPI.getById(id);
         setPayment(data);
       } catch (error) {
-        console.error('Fetch payment error:', error);
+        console.error('payment error:', error);
       } finally {
         setLoading(false);
       }
@@ -63,7 +63,6 @@ export const PaymentMain = () => {
             <LocationInfo tour={payment?.order?.items?.[0]?.departure?.tour} />
             <PromotionCode 
               payment={payment}
-              selectedPromotion={selectedPromotion}
               onPromotionChange={setSelectedPromotion}
             />
             <Summary payment={payment} selectedPromotion={selectedPromotion} />

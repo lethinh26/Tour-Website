@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Card, Select, Button, message } from 'antd';
+import { Card, Select, Button, notification } from 'antd';
 import { promotionAPI, getUser } from '../../../../services/api';
 
 const { Option } = Select;
 
 interface PromotionCodeProps {
   payment?: any;
-  selectedPromotion?: any;
   onPromotionChange?: (promotion: any) => void;
 }
 
-const PromotionCode = ({ selectedPromotion, onPromotionChange }: PromotionCodeProps) => {
+const PromotionCode = ({ onPromotionChange }: PromotionCodeProps) => {
+  const [api, contextHolder] = notification.useNotification();
   const [promotions, setPromotions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [localSelectedPromo, setLocalSelectedPromo] = useState<any>(null);
 
   useEffect(() => {
     const fetchPromotions = async () => {
@@ -25,7 +26,7 @@ const PromotionCode = ({ selectedPromotion, onPromotionChange }: PromotionCodePr
         const data = await promotionAPI.getByToken(token);
         setPromotions(data.promotion || []);
       } catch (error) {
-        console.error('Fetch promotions error:', error);
+        console.error('promotions error:', error);
       } finally {
         setLoading(false);
       }
@@ -34,8 +35,11 @@ const PromotionCode = ({ selectedPromotion, onPromotionChange }: PromotionCodePr
   }, []);
 
   const handleApply = async () => {
-    if (!selectedPromotion) {
-      message.warning('Vui lòng chọn mã khuyến mãi');
+    if (!localSelectedPromo) {
+      api.warning({
+        message: 'Vui lòng chọn mã khuyến mãi',
+        placement: 'topRight',
+      });
       return;
     }
 
@@ -43,39 +47,57 @@ const PromotionCode = ({ selectedPromotion, onPromotionChange }: PromotionCodePr
       setApplying(true);
       const user = await getUser();
       if (!user) {
-        message.error('Vui lòng đăng nhập');
+        api.error({
+          message: 'Vui lòng đăng nhập',
+          placement: 'topRight',
+        });
         return;
       }
 
-      const result = await promotionAPI.checkUsable(selectedPromotion.code, user.id);
+      const result = await promotionAPI.checkUsable(localSelectedPromo.code, user.id);
       
       if (result.usable) {
-        message.success(`Áp dụng mã ${selectedPromotion.code} thành công! Giảm ${selectedPromotion.discount}%`);
+        onPromotionChange?.(localSelectedPromo);
+        api.success({
+          message: 'Áp dụng mã thành công',
+          description: `Mã ${localSelectedPromo.code} - Giảm ${localSelectedPromo.discount}%`,
+          placement: 'topRight',
+        });
       }
     } catch (error: any) {
       console.error('Apply promotion error:', error);
-      message.error(error?.response?.data?.message || 'Không thể áp dụng mã giảm giá');
-      onPromotionChange?.(null);
+      const errorMessage = error?.response?.data?.message || 'Không thể áp dụng mã khuyến mãi';
+      api.error({
+        message: 'Áp dụng mã thất bại',
+        description: errorMessage,
+        placement: 'topRight',
+      });
+      setLocalSelectedPromo(null);
     } finally {
       setApplying(false);
     }
   };
 
   return (
-    <Card title={<h3 className="text-lg font-bold">Áp mã khuyến mãi</h3>} className="mb-4 shadow-md">
-      <div className="flex gap-2">
+    <>
+      {contextHolder}
+      <Card title={<h3 className="text-lg font-bold">Áp mã khuyến mãi</h3>} className="mb-4 shadow-md">
+        <div className="flex gap-2">
         <Select
           style={{height: 50}}
           placeholder="Chọn mã khuyến mãi"
           className="flex-1"
           loading={loading}
-          value={selectedPromotion?.id}
+          value={localSelectedPromo?.id}
           onChange={(value) => {
             const promo = Array.isArray(promotions) ? promotions.find(p => p.id === value) : undefined;
-            onPromotionChange?.(promo);
+            setLocalSelectedPromo(promo);
           }}
           allowClear
-          onClear={() => onPromotionChange?.(null)}
+          onClear={() => {
+            setLocalSelectedPromo(null);
+            onPromotionChange?.(null);
+          }}
         >
           {Array.isArray(promotions) && promotions.map((promo) => (
             <Option key={promo.id} value={promo.id}>
@@ -91,12 +113,13 @@ const PromotionCode = ({ selectedPromotion, onPromotionChange }: PromotionCodePr
           type="primary" 
           onClick={handleApply}
           loading={applying}
-          disabled={!selectedPromotion}
+          disabled={!localSelectedPromo}
         >
           Áp dụng
         </Button>
-      </div>
-    </Card>
+        </div>
+      </Card>
+    </>
   );
 };
 

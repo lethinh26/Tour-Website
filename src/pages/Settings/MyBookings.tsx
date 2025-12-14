@@ -53,10 +53,13 @@ const MyBookings = () => {
     const [submittingReview, setSubmittingReview] = useState(false);
     const [existingReview, setExistingReview] = useState<any>(null);
     const [loadingReview, setLoadingReview] = useState(false);
+    const [reviewedOrders, setReviewedOrders] = useState<Set<number>>(new Set());
+    const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchBookings();
+        fetchReviewedOrders();
     }, []);
 
     const fetchBookings = async () => {
@@ -78,6 +81,24 @@ const MyBookings = () => {
         }
     };
 
+    const fetchReviewedOrders = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const userRes = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token });
+            const userId = userRes.data.id;
+
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/tours/reviews`);
+            const userReviews = Array.isArray(response.data)
+                ? response.data.filter((review: any) => review.userId === userId)
+                : [];
+            
+            const orderIds = new Set(userReviews.map((review: any) => review.orderId));
+            setReviewedOrders(orderIds);
+        } catch (error) {
+            console.error("Error fetching reviewed orders:", error);
+        }
+    };
+
     const getStatusTag = (status: string) => {
         const statusMap: Record<string, { color: string; text: string }> = {
             PENDING: { color: "gold", text: "Chờ thanh toán" },
@@ -93,8 +114,8 @@ const MyBookings = () => {
             return;
         }
 
-        if (!currentTourId) {
-            message.error("Không tìm thấy thông tin tour");
+        if (!currentTourId || !currentOrderId) {
+            message.error("Không tìm thấy thông tin tour hoặc đơn hàng");
             return;
         }
 
@@ -107,6 +128,7 @@ const MyBookings = () => {
             await axios.post(`${import.meta.env.VITE_API_URL}/tours/reviews`, {
                 tourId: currentTourId,
                 userId: userId,
+                orderId: currentOrderId,
                 rating: rating,
                 comment: comment || null
             });
@@ -115,7 +137,11 @@ const MyBookings = () => {
             setReviewVisible(false);
             setRating(0);
             setComment("");
+            if (currentOrderId) {
+                setReviewedOrders(prev => new Set([...prev, currentOrderId]));
+            }
             setCurrentTourId(null);
+            setCurrentOrderId(null);
             setExistingReview(null);
         } catch (error) {
             console.error("Error submitting review:", error);
@@ -125,7 +151,7 @@ const MyBookings = () => {
         }
     };
 
-    const handleOpenReviewModal = async (tourId: number) => {
+    const handleOpenReviewModal = async (tourId: number, orderId: number) => {
         setLoadingReview(true);
         try {
             const token = localStorage.getItem("token");
@@ -133,7 +159,7 @@ const MyBookings = () => {
             const userId = userRes.data.id;
 
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/tours/reviews/user/${userId}/tour/${tourId}`
+                `${import.meta.env.VITE_API_URL}/tours/reviews/order/${orderId}/user/${userId}`
             );
 
             if (response.data.hasReviewed) {
@@ -147,10 +173,11 @@ const MyBookings = () => {
             }
 
             setCurrentTourId(tourId);
+            setCurrentOrderId(orderId);
             setReviewVisible(true);
         } catch (error) {
             console.error("Error fetching review:", error);
-            message.error("Không thể tải thông tin đánh giá!");
+            message.error("Không thể tải thông tin đánh giá");
         } finally {
             setLoadingReview(false);
         }
@@ -227,17 +254,23 @@ const MyBookings = () => {
                     >
                         Chi tiết
                     </Button>
-                    <Button
-                        icon={<StarOutlined />}
-                        onClick={() => {
-                            const firstItem = Array.isArray(record.items) && record.items.length > 0 ? record.items[0] : null;
-                            if (firstItem) {
-                                handleOpenReviewModal(firstItem.departure.tour.id);
-                            }
-                        }}
-                    >
-                        Đánh giá
-                    </Button>
+                    {(() => {
+                        const firstItem = Array.isArray(record.items) && record.items.length > 0 ? record.items[0] : null;
+                        const isReviewed = reviewedOrders.has(record.id);
+                        return (
+                            <Button
+                                icon={<StarOutlined />}
+                                onClick={() => {
+                                    if (firstItem) {
+                                        handleOpenReviewModal(firstItem.departure.tour.id, record.id);
+                                    }
+                                }}
+                                type={isReviewed ? "default" : "primary"}
+                            >
+                                {isReviewed ? "Xem đánh giá" : "Đánh giá"}
+                            </Button>
+                        );
+                    })()}
                 </Space>
             ),
         },
@@ -380,6 +413,7 @@ const MyBookings = () => {
                     setRating(0);
                     setComment("");
                     setCurrentTourId(null);
+                    setCurrentOrderId(null);
                     setExistingReview(null);
                 }}
                 footer={

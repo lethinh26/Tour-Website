@@ -12,8 +12,11 @@ export default function AccountSettings() {
 
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [user, setUser] = useState<{ name: string; email: string; role?: string } | null>(null);
+    const [user, setUser] = useState<{ name: string; email: string; phoneNumber: string; role?: string } | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [name, setName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [isEditingInfo, setIsEditingInfo] = useState(false);
     const navigate = useNavigate();
 
     const [api, contextHolder] = notification.useNotification();
@@ -23,6 +26,8 @@ export default function AccountSettings() {
             const userData = await getUser();
             if (userData) {
                 setUser(userData);
+                setName(userData.name || "");
+                setPhoneNumber(userData.phoneNumber || "");
             }
         };
         fetchUser();
@@ -36,6 +41,32 @@ export default function AccountSettings() {
         setTimeout(() => {
             window.location.reload();
         }, 1000);
+    };
+
+    const handleUpdateInfo = async () => {
+        const token = localStorage.getItem("token");
+        if (!name.trim() || !phoneNumber.trim()) {
+            openNotification("topRight", "warning", "Tên và số điện thoại không được để trống");
+            return;
+        }
+        try {
+            const res = await axios.patch(`${import.meta.env.VITE_API_URL}/auth/updateInfo`, {
+                token,
+                name,
+                phoneNumber,
+            });
+            openNotification("topRight", "success", res.data.message);
+            setIsEditingInfo(false);
+        } catch (err: unknown) {
+            const error = err as { response?: { data?: { message?: string } } };
+            openNotification("topRight", "error", error.response?.data?.message || "Có lỗi xảy ra");
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setName(user?.name || "");
+        setPhoneNumber(user?.phoneNumber || "");
+        setIsEditingInfo(false);
     };
 
     const handle = async () => {
@@ -136,6 +167,44 @@ export default function AccountSettings() {
 
                     <div className="flex gap-6 pb-2 mb-6">
                         <button className="font-semibold text-blue-600 border-b-2 border-blue-600 pb-1">Mật khẩu & Bảo mật</button>
+                    </div>
+
+                    <div className="bg-gray-50 p-6 rounded-xl shadow-sm mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Thông tin cá nhân</h3>
+                            {!isEditingInfo && (
+                                <Button type="link" onClick={() => setIsEditingInfo(true)}>
+                                    Chỉnh sửa
+                                </Button>
+                            )}
+                        </div>
+                        {isEditingInfo ? (
+                            <>
+                                <div className="grid grid-cols-2 gap-1">
+                                    <Input placeholder="Họ và tên" value={name} onChange={(e) => setName(e.target.value)} />
+                                    <Input placeholder="Số điện thoại" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button type="primary" className="rounded-lg px-8" onClick={handleUpdateInfo}>
+                                        Lưu
+                                    </Button>
+                                    <Button className="rounded-lg px-8" onClick={handleCancelEdit}>
+                                        Hủy
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-gray-500 text-sm mb-1">Họ và tên</p>
+                                    <p className="font-medium">{name || "Chưa cập nhật"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500 text-sm mb-1">Số điện thoại</p>
+                                    <p className="font-medium">{phoneNumber || "Chưa cập nhật"}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-gray-50 p-6 rounded-xl shadow-sm mb-6">

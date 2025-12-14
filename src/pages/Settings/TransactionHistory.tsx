@@ -151,6 +151,14 @@ const TransactionHistory = () => {
                     >
                         Chi tiết
                     </Button>
+                    {record.status === "PENDING" && (
+                        <Button
+                            type="default"
+                            onClick={() => navigate(`/payment/${record.id}`)}
+                        >
+                            Thanh toán
+                        </Button>
+                    )}
                 </Space>
             ),
         },

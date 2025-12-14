@@ -32,6 +32,7 @@ const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromot
                         const user = await getUser();
                         if (user) {
                             try {
+                                // console.log("Hi")
                                 await promotionAPI.use(selectedPromotion.code, user.id);
                             } catch (error) {
                                 console.error("Use promotion error:", error);
@@ -52,7 +53,7 @@ const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromot
                     }, 1000);
                 } catch (error: any) {
                     console.error("Payment error:", error);
-                    message.error(error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại");
+                    message.error(error?.response?.data?.message || "Lỗi... ko thể tiếp tục thanh toán");
                 } finally {
                     setLoading(false);
                 }

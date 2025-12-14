@@ -7,6 +7,9 @@ import type { Promo } from "../../../types/types";
 import { Editor } from "@tinymce/tinymce-react";
 import dayjs from "dayjs";
 import { promotionAPI } from "../../../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, StoreType } from "../../../stores";
+import { fetchDataPromotion } from "../../../stores/slides/promotion.slice";
 
 interface PromotionColumn {
     id: number;
@@ -23,43 +26,20 @@ interface PromotionColumn {
 
 const PromotionManager = () => {
     const { modal, notification } = App.useApp();
-    const [promotions, setPromotions] = useState<PromotionColumn[]>([]);
+    const dispatch = useDispatch<AppDispatch>();
+    const { promotions, status } = useSelector((state: StoreType) => state.promotionReducer);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [editingPromotion, setEditingPromotion] = useState<PromotionColumn | null>(null);
     const [form] = useForm();
-    const [loading, setLoading] = useState(false);
     const descriptionEditorRef = useRef<any>(null);
 
     useEffect(() => {
-        fetchPromotions();
-    }, []);
+        dispatch(fetchDataPromotion());
+    }, [dispatch]);
 
     const fetchPromotions = async () => {
-        try {
-            setLoading(true);
-            const response = await promotionAPI.getAll();
-            const formattedData = response.data.map((promo: any) => ({
-                id: promo.id,
-                code: promo.code,
-                amount: promo.discount,
-                discount: promo.amount,
-                startDate: promo.startAt,
-                endDate: promo.endAt || "",
-                type: promo.type,
-                title: promo.name,
-                description: promo.description
-            }));
-            setPromotions(formattedData);
-        } catch (error) {
-            notification.error({
-                message: 'Lỗi',
-                description: 'Không thể tải danh sách khuyến mãi',
-                placement: 'topRight',
-            });
-        } finally {
-            setLoading(false);
-        }
+        dispatch(fetchDataPromotion());
     };
 
     const steps = [
@@ -221,6 +201,19 @@ const PromotionManager = () => {
             ),
         },
     ];
+
+    const formattedPromotions = Array.isArray(promotions) ? promotions.map((promo: any) => ({
+        id: promo.id,
+        code: promo.code,
+        amount: promo.discount,
+        discount: promo.amount,
+        startDate: promo.startAt,
+        endDate: promo.endAt || "",
+        type: promo.type,
+        title: promo.name,
+        description: promo.description
+    })) : [];
+
     return (
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
@@ -229,10 +222,10 @@ const PromotionManager = () => {
                     Add Promotion
                 </Button>
             </div>
-            <Spin spinning={loading}>
+            <Spin spinning={status === 'loading'}>
                 <Table
                     columns={column}
-                    dataSource={promotions}
+                    dataSource={formattedPromotions}
                     rowKey="id"
                     pagination={{
                         defaultPageSize: 10,

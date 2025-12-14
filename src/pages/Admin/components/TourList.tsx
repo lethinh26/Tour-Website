@@ -4,6 +4,9 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined }
 import type { ColumnsType } from "antd/es/table";
 import { Editor } from "@tinymce/tinymce-react";
 import { tourAPI, categoryAPI, locationAPI, getUser } from "../../../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, StoreType } from "../../../stores";
+import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
 
 interface Tour {
   id: number;
@@ -31,10 +34,8 @@ interface Location {
 
 const TourList = () => {
   const { modal, notification } = App.useApp();
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { tours: reduxTours, categories: reduxCategories, locations: reduxLocations, status } = useSelector((state: StoreType) => state.tourReducer);
   const [user, setUser] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
@@ -53,38 +54,28 @@ const TourList = () => {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
       const currentUser = await getUser();
       setUser(currentUser);
-
-      const [categoriesRes, locationsRes] = await Promise.all([
-        categoryAPI.getAll(),
-        locationAPI.getAll(),
-      ]);
-      setCategories(categoriesRes.data);
-      setLocations(locationsRes.data);
-
-      const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
-      const toursRes = await tourAPI.getAll(userId);
-      
-      const toursWithNames = toursRes.data.map((tour: any) => ({
-        ...tour,
-        locationName: locationsRes.data.find((l: Location) => l.id === tour.locationId)?.name,
-        categoryName: categoriesRes.data.find((c: Category) => c.id === tour.categoryId)?.name,
-      }));
-      
-      setTours(toursWithNames);
+      dispatch(fetchTourData());
     } catch (error: any) {
       notification.error({
         message: 'Lỗi tải dữ liệu',
         description: error.response?.data?.message || 'Không thể tải danh sách tour',
         placement: 'topRight',
       });
-    } finally {
-      setLoading(false);
     }
   };
+
+  const tours = Array.isArray(reduxTours) ? reduxTours.map((tour: any) => ({
+    ...tour,
+    locationName: reduxLocations.find((l: any) => l.id === tour.locationId)?.name,
+    categoryName: reduxCategories.find((c: any) => c.id === tour.categoryId)?.name,
+  })) : [];
+
+  const categories = Array.isArray(reduxCategories) ? reduxCategories : [];
+  const locations = Array.isArray(reduxLocations) ? reduxLocations : [];
+  const loading = status === 'loading';
 
   const handleAdd = () => {
     setEditingTour(null);
@@ -142,7 +133,7 @@ const TourList = () => {
             description: `Tour "${record.name}" đã được xóa khỏi hệ thống.`,
             placement: 'topRight',
           });
-          fetchData();
+          dispatch(fetchTourData());
         } catch (error: any) {
           notification.error({
             message: 'Xóa thất bại',
@@ -211,7 +202,7 @@ const TourList = () => {
       setIsModalOpen(false);
       setCurrentStep(0);
       form.resetFields();
-      fetchData();
+      dispatch(fetchTourData());
     } catch (error: any) {
       notification.error({
         message: editingTour ? 'Cập nhật thất bại' : 'Thêm thất bại',

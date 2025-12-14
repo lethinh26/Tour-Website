@@ -5,6 +5,9 @@ import type { ColumnsType } from "antd/es/table";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { tourAPI, tourDepartureAPI, getUser } from "../../../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, StoreType } from "../../../stores";
+import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
 import icon_person from "../../../assets/icons/icon_person.png"
 import icon_currency from "../../../assets/icons/icon_currency.png"
 import icon_schedule from "../../../assets/icons/icon_schedule.png"
@@ -39,8 +42,9 @@ interface Tour {
 
 const TourScheduleManager = () => {
     const { modal, notification } = App.useApp();
+    const dispatch = useDispatch<AppDispatch>();
+    const { tours: reduxTours, status } = useSelector((state: StoreType) => state.tourReducer);
 
-    const [tours, setTours] = useState<Tour[]>([]);
     const [schedules, setSchedules] = useState<TourSchedule[]>([]);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<any>(null);
@@ -56,16 +60,16 @@ const TourScheduleManager = () => {
         fetchData();
     }, []);
 
+    const tours = Array.isArray(reduxTours) ? reduxTours : [];
+
     const fetchData = async () => {
         setLoading(true);
         try {
             const currentUser = await getUser();
             setUser(currentUser);
 
-            const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
-            const toursRes = await tourAPI.getAll(userId);
-            const toursList = Array.isArray(toursRes.data) ? toursRes.data : [];
-            setTours(toursList);
+            dispatch(fetchTourData());
+            const toursList = Array.isArray(reduxTours) ? reduxTours : [];
 
             const allSchedules: TourSchedule[] = [];
             for (const tour of toursList) {
