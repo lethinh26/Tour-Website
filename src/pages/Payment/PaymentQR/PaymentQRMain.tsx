@@ -3,6 +3,7 @@ import { Alert, Card, Typography, Divider, Radio, Modal, Spin, message } from "a
 import { LeftOutlined, InfoCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router";
 import { paymentAPI } from "../../../services/api";
+import type { Payment } from "../../../types/types";
 
 const { Title, Text } = Typography;
 
@@ -16,7 +17,7 @@ const QRPaymentPage: React.FC = () => {
     const [modal, contextHolder] = Modal.useModal();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [payment, setPayment] = useState<any>(null);
+    const [payment, setPayment] = useState<Payment | null>(null);
     const [loading, setLoading] = useState(true);
     const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">("BANK_TRANSFER");
     const [checking, setChecking] = useState(false);
@@ -151,6 +152,7 @@ const QRPaymentPage: React.FC = () => {
                 onOk: async () => {
                     try {
                         // setProcessing(true);
+                        if (!payment) return;
                         await paymentAPI.update(payment.id, {
                             method: "CASH",
                             status: "SUCCESS",

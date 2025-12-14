@@ -2,17 +2,18 @@ import { useState } from "react";
 import { Collapse, Space, Modal, message } from "antd";
 import { useNavigate } from "react-router";
 import { paymentAPI, promotionAPI, getUser } from "../../../../services/api";
+import type { Payment, Promotion } from "../../../../types/types";
 
 const { Panel } = Collapse;
 
 const formatVND = (n: number) => new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " VND";
 
-const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromotion?: any }) => {
+const Summary = ({ payment, selectedPromotion }: { payment?: Payment; selectedPromotion?: Promotion | null }) => {
     const [modal, contextHolder] = Modal.useModal();
 
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const orderItems = payment?.order?.items || [];
+    const orderItems = (payment as any)?.order?.items || [];
     const originalAmount = payment?.amount || 0;
 
     const discount = selectedPromotion ? (originalAmount * selectedPromotion.discount) / 100 : 0;
@@ -32,6 +33,7 @@ const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromot
                         const user = await getUser();
                         if (user) {
                             try {
+                                // console.log("Hi")
                                 await promotionAPI.use(selectedPromotion.code, user.id);
                             } catch (error) {
                                 console.error("Use promotion error:", error);
@@ -39,7 +41,7 @@ const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromot
                         }
                     }
 
-                    if (discount > 0) {
+                    if (discount > 0 && payment) {
                         await paymentAPI.update(payment.id, {
                             amount: finalAmount,
                         });
@@ -48,11 +50,13 @@ const Summary = ({ payment, selectedPromotion }: { payment?: any; selectedPromot
                     message.success("Đang chuyển đến trang thanh toán...");
 
                     setTimeout(() => {
-                        navigate(`/payment-qr/${payment.id}`);
+                        if (payment) {
+                            navigate(`/payment-qr/${payment.id}`);
+                        }
                     }, 1000);
                 } catch (error: any) {
                     console.error("Payment error:", error);
-                    message.error(error?.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại");
+                    message.error(error?.response?.data?.message || "Lỗi... ko thể tiếp tục thanh toán");
                 } finally {
                     setLoading(false);
                 }

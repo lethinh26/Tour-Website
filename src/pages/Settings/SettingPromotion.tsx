@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Pagination } from "antd";
 import {  useNavigate } from "react-router";
-import axios from "axios";
 import type { Promotion } from "../../types/types";
+import { promotionAPI } from "../../services/api";
 
 export default function SettingPromotion() {
     const pageSize = 6
@@ -14,7 +14,7 @@ export default function SettingPromotion() {
         const date = new Date(stringData)
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
     }
-    const checkExpiry = (startDate: string, endDate: string) => {
+    const checkExpiry = (startDate: string, endDate?: string | null) => {
         if (!endDate) {
             return true
         }
@@ -26,18 +26,17 @@ export default function SettingPromotion() {
 
     const getPromotionByToke = async () => {
         const token = localStorage.getItem('token')
-        return await axios.get(`${import.meta.env.VITE_API_URL}/promotions/token/${token}`)
+        if (!token) return { promotion: [] };
+        const response = await promotionAPI.getByToken(token)
+        return response.data
     }
 
     useEffect(() => {
-        getPromotionByToke().then((data) => {
-            
-            setPromotionByToken(() => data.data.promotion)
+        getPromotionByToke().then((data) => {            
+            setPromotionByToken(() => data?.promotion || [])
         })
     }, [])
-    
-    console.log("promotion", promotionByToken);
-    
+        
     return (
         <div className='h-screen'>
             <div className="bg-white shadow-sm py-3 px-[150px] flex justify-between text-2xl">
@@ -59,7 +58,16 @@ export default function SettingPromotion() {
             </div>
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-[150px]">
-                {Array.isArray(promotionByToken) && promotionByToken
+                {Array.isArray(promotionByToken) && promotionByToken.length === 0 ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20">
+                        <div className="text-6xl mb-4">📭</div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-2">Kho trống</h3>
+                        <p className="text-gray-500 mb-4">Bạn chưa có khuyến mãi nào trong kho</p>
+                        <Button color="primary" variant="solid" onClick={() => navigate('/promotion')}>
+                            Nhận khuyến mãi ngay
+                        </Button>
+                    </div>
+                ) : Array.isArray(promotionByToken) && promotionByToken
                 .slice((currentPage - 1) * pageSize, currentPage * pageSize)
                     .filter(item => checkExpiry(item.startAt, item.endAt))
                     .map((promo, index) => {
@@ -84,10 +92,10 @@ export default function SettingPromotion() {
                                         {formatDateToString(promo.startAt)}
                                         {" - "}
                                         {formatDateToString(promo.endAt)}
-                                    </span> : <span className="font-medium">Forever</span>}
+                                    </span> : <span className="font-medium">Bắt đầu từ {formatDateToString(promo.startAt)}</span>}
                                 </div>
                                 {/* <div className="text-sm text-gray-600 mb-3">{promo.location}</div> */}
-                                <div className="text-xs text-gray-500 mb-3">{promo.description}</div>
+                                <div className="text-xs text-gray-500 mb-3" dangerouslySetInnerHTML={{ __html: promo.description }}></div>
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 flex-1">
                                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">

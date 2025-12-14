@@ -3,24 +3,28 @@ import FilterPrice from "./components/FilterPrice";
 import SortComponent from "./components/SortComponent";
 import ListCard from "./components/ListCard";
 import SearchLocation from "./components/SearchLocation";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchData } from "../../../stores/slides/tour.slide";
 import { useCallback, useEffect, useState } from "react";
-import type { AppDispatch, StoreType } from "../../../stores";
 import type { TravelCardProps } from "./components/TravelCard";
 import FullPageLoader from "../../../common/Loading";
-import { getUser } from "../../../services/api";
+import { getUser, tourAPI, tourImageAPI, tourDepartureAPI } from "../../../services/api";
 
 export const TourMain = () => {
-    const dispatch = useDispatch<AppDispatch>();
     const [isLogin, setIsLogin] = useState(false);
-    useEffect(() => {
-        dispatch(fetchData());
-    }, [dispatch]);
+    const [dataTour, setDataTour] = useState<TravelCardProps[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [pagination, setPagination] = useState({ page: 1, pageSize: 6, total: 0, totalPages: 0 });
+    
+    const [range, setRange] = useState([0, 4000000]);
+    const [inputData, setInputData] = useState("");
+    const [idCategory, setIdCategory] = useState(0);
+    const [wayToSort, setWayToSort] = useState(0);
+    const [location, setLocation] = useState('');
     
     const fetchUser = useCallback(async () => {
         try {
             const res = await getUser();
+            // console.log("af",res);
+            
             if (res) setIsLogin(true)
         } catch (err) {
             setIsLogin(false);
@@ -29,44 +33,84 @@ export const TourMain = () => {
 
     useEffect(() => {
         fetchUser();
-    }, [fetchUser])
-    
-    const { tours, images, departures, status } = useSelector((state: StoreType) => state.tourReducer);
+    }, [fetchUser]);
 
-    
-
-    const dataTour: TravelCardProps[] = Array.isArray(tours) ? tours.map(item => {
-        return {
-            id: item.id,
-            image: images.find(img => img.tourId === item.id)?.url || '',
-            title: item.name,
-            address: item.address,
-            rating: 5.0,
-            reviews: 5,
-            price: departures.find(dep => dep.tourId === item.id)?.price || item.basePrice,
-            oldPrice: item.basePrice,
-            categoryId: item.categoryId,
-            location: item.address,
-        }
-    }) : []
-    const [range, setRange] = useState([0, 4000000]);
-    const [inputData, setInputData] = useState("");
-    const [idCategory, setIdCategory] = useState(0)
-    const [wayToSort, setWayToSort] = useState(0)
-    const [location, setLocation] = useState('')    
-
-    const sortFunctions: { [key: string]: (a: TravelCardProps, b: TravelCardProps) => number } = {
-        1: (a, b) => Number(a.price) - Number(b.price), // Giá thấp đến cao
-        2: (a, b) => Number(b.price) - Number(a.price), // Giá cao đến thấp
-        3: (a, b) => b.rating - a.rating,               // Đánh giá cao đến thấp
-        4: (a, b) => a.rating - b.rating,               // Đánh giá thấp đến cao
+    const sortMapping: { [key: number]: { sortBy: string, sortOrder: 'asc' | 'desc' } } = {
+        1: { sortBy: 'basePrice', sortOrder: 'asc' },
+        2: { sortBy: 'basePrice', sortOrder: 'desc' },
+        3: { sortBy: 'rating', sortOrder: 'desc' },
+        4: { sortBy: 'rating', sortOrder: 'asc' },
     };
-    if (status == 'loading'){
-        return <>
-            <FullPageLoader/>
-        </>
+
+    const fetchTours = useCallback(async (page: number = 1) => {
+        setLoading(true);
+        try {
+            const params: any = {
+                page,
+                pageSize: 6,
+            };
+
+            if (idCategory !== 0) params.categoryId = idCategory;
+            if (inputData) params.search = inputData;
+            if (location) params.location = location;
+            if (range[0] > 0) params.minPrice = range[0];
+            if (range[1] < 4000000) params.maxPrice = range[1];
+            
+            if (wayToSort !== 0 && sortMapping[wayToSort] && wayToSort <= 2) {
+                params.sortBy = sortMapping[wayToSort].sortBy;
+                params.sortOrder = sortMapping[wayToSort].sortOrder;
+            }
+
+            const response = await tourAPI.getPaginated(params);
+            
+            if (!response || !response.data) {
+                console.error('Invalid response:', response);
+                setDataTour([]);
+                setPagination({ page: 1, pageSize: 6, total: 0, totalPages: 0 });
+                return;
+            }
+
+            // const tourIds = response.data.map((tour: any) => tour.id);
+            const [imagesData, departuresData] = await Promise.all([
+                tourImageAPI.getAll(),
+                tourDepartureAPI.getAll()
+            ]);
+let mappedTours: TravelCardProps[] = (response.data || []).map((item: any) => ({
+                id: item.id,
+                image: imagesData.data.find((img: any) => img.tourId === item.id)?.url || '',
+                title: item.name,
+                address: item.address,
+                rating: item.averageRating || 0,
+                reviews: item.totalReviews || 0,
+                price: departuresData.data.find((dep: any) => dep.tourId === item.id)?.price || item.basePrice,
+                oldPrice: item.basePrice,
+                categoryId: item.categoryId,
+                location: item.address,
+            }));
+
+            if (wayToSort === 3) {
+                mappedTours.sort((a, b) => b.rating - a.rating);
+            } else if (wayToSort === 4) {
+                mappedTours.sort((a, b) => a.rating - b.rating);
+            }
+
+            setDataTour(mappedTours);
+            setPagination(response.pagination || { page: 1, pageSize: 6, total: 0, totalPages: 0 });
+        } catch (error) {
+            console.error('Error fetching tours:', error);
+            setDataTour([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [idCategory, inputData, location, range, wayToSort]);
+
+    useEffect(() => {
+        fetchTours(1);
+    }, [fetchTours]);
+
+    if (loading && dataTour.length === 0) {
+        return <FullPageLoader />;
     }
-    else
 
     return (
         <div className="mx-auto w-full max-w-[1200px] px-2 md:px-6 mt-25">
@@ -78,19 +122,14 @@ export const TourMain = () => {
                     </div>
                     <div className="flex-1 flex flex-col gap-5 sticky top-4">
                         <SearchLocation setInputData={setInputData} setLocation={setLocation}/>
-                        <SortComponent setWayToSort={setWayToSort} tourLength={tours.length}/>
-                        <ListCard dataTour={dataTour
-                        .sort(wayToSort !== 0 ? sortFunctions[wayToSort] : () => 0)
-                        .filter(item => location === '' ? true : item.address.toLowerCase().includes(location.toLowerCase()))
-                        .filter(item => item.title.toLowerCase().includes(inputData.toLowerCase()))
-                        .filter(item => idCategory == 0 ? true : item.categoryId === idCategory)
-                        .filter(item => {
-                            if (range[1] === 4000000){
-                                return Number(item.price) >= range[0]
-                            }else{
-                                return Number(item.price) >= range[0] && Number(item.price) <= range[1]
-                            } 
-                        })} isLogin={isLogin} />
+                        <SortComponent setWayToSort={setWayToSort} tourLength={pagination.total}/>
+                        <ListCard 
+                            dataTour={dataTour} 
+                            isLogin={isLogin}
+                            pagination={pagination}
+                            loading={loading}
+                            onPageChange={(page) => fetchTours(page)}
+                        />
                     </div>
                 </div>
             </div>

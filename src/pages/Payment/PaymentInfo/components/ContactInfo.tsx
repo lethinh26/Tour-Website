@@ -1,6 +1,5 @@
 
-import { Card, Form, Input, Button, Space } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { Card, Form, Input, Space } from "antd";
 
 interface ContactInfoProps {
     user?: any;
@@ -10,9 +9,6 @@ const ContactInfo = ({ user }: ContactInfoProps) => {
     const titleJSX = (
         <div className="flex justify-between">
             <h3 className="text-lg font-bold">{user?.name || 'Khách hàng'}</h3>
-            <Button type="link" className="text-blue-500 font-bold!" icon={<EditOutlined />}>
-                Chỉnh sửa
-            </Button>
         </div>
     );
 

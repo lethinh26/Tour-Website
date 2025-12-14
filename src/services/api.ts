@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://160.191.236.178:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const getToken = () => localStorage.getItem('token');
 
@@ -81,12 +81,27 @@ export const tourAPI = {
             return { data: tours.filter((tour: any) => tour.createdBy === userId) };
         }
         
-        return { data: tours };
+        return tours;
+    },
+
+    getPaginated: async (params: {
+        page?: number;
+        pageSize?: number;
+        categoryId?: number;
+        minPrice?: number;
+        maxPrice?: number;
+        search?: string;
+        location?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }) => {
+        const res = await axios.get(`${API_BASE_URL}/tours`, { params });
+        return { data: res.data.data, pagination: res.data.pagination };
     },
     
     getById: async (id: number) => {
         const res = await axios.get(`${API_BASE_URL}/tours/${id}`);
-        return res.data;
+        return { data: res.data };
     },
     
     create: async (data: {
@@ -189,7 +204,14 @@ export const tourDepartureAPI = {
     
     delete: async (id: number) => {
         const res = await axios.delete(`${API_BASE_URL}/tourDepartures/${id}`);
-        return res.data;
+        console.log(res);
+        
+        return { data: res.data };
+    },
+
+    deleteByTourId: async (tourId: number) => {
+        const res = await axios.delete(`${API_BASE_URL}/tourDepartures/tour/${tourId}`);
+        return { data: res.data };
     }
 };
 
@@ -206,7 +228,12 @@ export const promotionAPI = {
 
     getByToken: async (token: string) => {
         const res = await axios.get(`${API_BASE_URL}/promotions/token/${token}`);
-        return res.data;
+        return { data: res.data };
+    },
+
+    addToUser: async (token: string, promotionId: number) => {
+        const res = await axios.post(`${API_BASE_URL}/promotions/token`, { token, promotionId });
+        return { data: res.data, status: res.status };
     },
 
     checkUsable: async (code: string, userId: number) => {
@@ -341,7 +368,6 @@ export const dashboardAPI = {
 };
 
 export const bookingAPI = {
-    // Tour Manager: Đếm khách hàng của tour do mình tạo
     countCustomers: async () => {
         const token = getToken();
         const res = await axios.get(`${API_BASE_URL}/bookings/countCustomers`, {
@@ -350,13 +376,11 @@ export const bookingAPI = {
         return res.data;
     },
 
-    // Admin only: Đếm tất cả khách hàng hệ thống
     countAllCustomers: async () => {
         const res = await axios.get(`${API_BASE_URL}/bookings/countAllCustomers`);
         return res.data;
     },
 
-    // Tour Manager: Đếm booking thành công của tour do mình tạo
     countBookingSuccess: async () => {
         const token = getToken();
         const res = await axios.get(`${API_BASE_URL}/bookings/countBookingSuccess`, {
@@ -365,13 +389,11 @@ export const bookingAPI = {
         return res.data;
     },
 
-    // Admin only: Đếm tất cả booking thành công
     countAllBookingsSuccess: async () => {
         const res = await axios.get(`${API_BASE_URL}/bookings/countAllBookingsSuccess`);
         return res.data;
     },
 
-    // Tour Manager: Doanh thu theo tháng của tour do mình tạo
     monthlyRevenue: async (month: number, year?: number) => {
         const token = getToken();
         const params: any = { month };
@@ -384,7 +406,6 @@ export const bookingAPI = {
         return res.data;
     },
 
-    // Admin only: Doanh thu theo tháng toàn hệ thống
     monthlyRevenueAll: async (month: number, year?: number) => {
         const params: any = { month };
         if (year) params.year = year;
@@ -395,7 +416,6 @@ export const bookingAPI = {
         return res.data;
     },
 
-    // Admin only: Top tour phổ biến nhất toàn hệ thống
     topTourAll: async (limit: number = 10) => {
         const res = await axios.get(`${API_BASE_URL}/bookings/topTourAll`, {
             params: { limit }
@@ -403,7 +423,6 @@ export const bookingAPI = {
         return res.data;
     },
 
-    // Tour Manager: Top tour phổ biến của tour do mình tạo
     topTour: async (limit: number = 10) => {
         const token = getToken();
         const res = await axios.get(`${API_BASE_URL}/bookings/topTour`, {
@@ -413,10 +432,18 @@ export const bookingAPI = {
         return res.data;
     },
 
-    // Đếm tổng số tour
-    countTours: async () => {
-        const res = await axios.get(`${API_BASE_URL}/tours`);
-        return { count: res.data.length };
+    countTours: async (token: string) => {
+        const res = await axios.get(`${API_BASE_URL}/tours/count`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    },
+
+    countToursAll: async () => {
+        const res = await axios.get(`${API_BASE_URL}/tours/count/all`);
+        console.log(res);
+        
+        return res.data;
     }
 };
 
@@ -434,6 +461,11 @@ export const orderAPI = {
     getById: async (id: number) => {
         const res = await axios.get(`${API_BASE_URL}/payments/order/${id}`);
         return res.data;
+    },
+
+    getByDepartureId: async (departureId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/orders/departure/${departureId}`);
+        return { data: res.data };
     }
 };
 
@@ -477,6 +509,85 @@ export const paymentAPI = {
     
     getAll: async () => {
         const res = await axios.get(`${API_BASE_URL}/payments`);
+        return res.data;
+    },
+
+    getAllOrders: async () => {
+        const res = await axios.get(`${API_BASE_URL}/payments/orders/all`);
+        return res.data;
+    },
+
+    getOrderReview: async (orderId: number, userId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/tours/reviews/order/${orderId}/user/${userId}`);
+        return res.data;
+    }
+};
+
+export const reviewAPI = {
+    getAll: async () => {
+        const res = await axios.get(`${API_BASE_URL}/tours/reviews`);
+        console.log("bro idk",res);
+        
+        return { data: res.data };
+    },
+
+    getByTourId: async (tourId: number) => {
+        const res = await axios.get(`${API_BASE_URL}/tours/reviews/tour/${tourId}`);
+        return { data: res.data };
+    },
+
+    create: async (data: {
+        tourId: number;
+        userId: number;
+        orderId: number;
+        rating: number;
+        comment?: string;
+    }) => {
+        const res = await axios.post(`${API_BASE_URL}/tours/reviews`, data);
+        return res.data;
+    },
+
+    delete: async (id: number) => {
+        const res = await axios.delete(`${API_BASE_URL}/tours/reviews/${id}`);
+        return res.data;
+    }
+};
+
+export const favoriteTourAPI = {
+    getByToken: async (token: string) => {
+        const res = await axios.get(`${API_BASE_URL}/favoriteTours/${token}`);
+        return { data: res.data };
+    },
+
+    add: async (token: string, tourId: number) => {
+        const res = await axios.post(`${API_BASE_URL}/favoriteTours`, { token, tourId });
+        return { data: res.data };
+    },
+
+    remove: async (token: string, tourId: number) => {
+        const res = await axios.delete(`${API_BASE_URL}/favoriteTours`, { data: { token, tourId } });
+        return { data: res.data };
+    }
+};
+
+export const authAPI = {
+    getUser: async (token: string) => {
+        const res = await axios.post(`${API_BASE_URL}/auth/getUser`, { token });
+        return { data: res.data };
+    },
+
+    updateInfo: async (data: { token: string; name: string; phoneNumber: string }) => {
+        const res = await axios.patch(`${API_BASE_URL}/auth/updateInfo`, data);
+        return res.data;
+    },
+
+    changePassword: async (data: { token: string; oldPassword: string; newPassword: string }) => {
+        const res = await axios.patch(`${API_BASE_URL}/auth/changepass`, data);
+        return res.data;
+    },
+
+    deleteAccount: async (token: string) => {
+        const res = await axios.delete(`${API_BASE_URL}/auth/deleteAccount`, { data: { token } });
         return res.data;
     }
 };

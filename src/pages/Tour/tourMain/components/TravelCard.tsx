@@ -4,7 +4,7 @@ import logo_triploka from "../../../../assets/logos/logo_tripoka.png";
 import icon_location from "../../../../assets/icons/icon_location.png";
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { favoriteTourAPI } from "../../../../services/api";
 
 export interface TravelCardProps {
     id: number;
@@ -15,13 +15,13 @@ export interface TravelCardProps {
     reviews: number;
     price: number;
     oldPrice?: number;
-    categoryId: number;
+    categoryId?: number | null;
     location: string;
 }
 
 
 function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLogin: boolean}) {
-    const { id, image, title, address: location, price, oldPrice } = propTravel;
+    const { id, image, title, address: location, price, oldPrice, rating, reviews } = propTravel;
     const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
     const formatVND = (value: number | string | undefined) => {
         const num = typeof value === 'string' ? parseInt(value) : value;
@@ -31,65 +31,44 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
     const [token] = useState(() => localStorage.getItem('token'));
     const [tagActive, setTagActive] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [reviewData, setReviewData] = useState({ averageRating: 0, totalReviews: 0 });
 
     useEffect(() => {
-        const fetchReviews = async () => {
-            try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/tours/reviews/tour/${id}`);
-                setReviewData({
-                    averageRating: res.data?.averageRating || 0,
-                    totalReviews: res.data?.totalReviews || 0
-                });
-            } catch (error) {
-                setReviewData({ averageRating: 0, totalReviews: 0 });
-            }
-        };
-        fetchReviews();
-    }, [id]);
-
-    useState(() => {
         const fetchFavoriteTours = async () => {
             if (!token) return;
             try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`);
+                const res = await favoriteTourAPI.getByToken(token);
                 const favorited = res.data?.tourFavorited || [];
                 const isFavorited = favorited.some((tour: any) => tour.id === id);
                 setTagActive(isFavorited);
             } catch (error) {
+                console.error('Error fetching favorites:', error);
                 setTagActive(false);
             }
         };
         fetchFavoriteTours();
-    });
+    }, [token, id]);
 
     const handleSaveFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                token,
-                tourId: id
-            });
+            await favoriteTourAPI.add(token, id);
             setTagActive(true);
         } catch (error) {
-            console.log(error);
+            console.error('Error adding favorite:', error);
         } finally {
             setLoading(false);
         }
     };
 
     const handleUnFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                data: {
-                    token,
-                    tourId: id
-                }
-            });
+            await favoriteTourAPI.remove(token, id);
             setTagActive(false);
         } catch (error) {
-            console.log(error);
+            console.error('Error removing favorite:', error);
         } finally {
             setLoading(false);
         }
@@ -130,8 +109,8 @@ function TravelCard({ propTravel, isLogin }: { propTravel: TravelCardProps, isLo
             </div>
             <div className="flex items-center text-sm mb-2">
                 <img src={logo_triploka} alt="Triploka" className="w-4 h-4 mr-1" />
-                <span className="text-blue-600 font-semibold mr-1">{reviewData.averageRating.toFixed(1)}</span>
-                <span className="text-gray-500">({reviewData.totalReviews} đánh giá)</span>
+                <span className="text-blue-600 font-semibold mr-1">{rating.toFixed(1)}</span>
+                <span className="text-gray-500">({reviews} đánh giá)</span>
             </div>
             <div className="border-t pt-3 mt-2">
                 <p className="text-sm text-gray-500 mb-1!">Bắt đầu từ</p>

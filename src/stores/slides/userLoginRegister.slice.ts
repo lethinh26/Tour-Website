@@ -13,16 +13,30 @@ const initialState : initialStateType = {
     token: ''
 }
 
-export const userLogin = createAsyncThunk('user/login', async (userInfo: {email: string, password: string}) => {
-    const {email , password} = userInfo    
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {email, password} )
-    return res.data
+export const userLogin = createAsyncThunk('user/login', async (userInfo: {email: string, password: string}, { rejectWithValue }) => {
+    try {
+        const {email , password} = userInfo    
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {email, password} )
+        return res.data
+    } catch (error: any) {
+        if (error.response?.data) {
+            return rejectWithValue(error.response.data)
+        }
+        return rejectWithValue({ message: 'Có lỗi xảy ra' })
+    }
 })
 
-export const userRegister = createAsyncThunk('user/reg', async (userInfo: {name: string, email: string, password: string, phoneNumber: string}) => {
-    const {name, email, password, phoneNumber} = userInfo
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reg`, {name, email, password, phoneNumber})
-    return res.data
+export const userRegister = createAsyncThunk('user/reg', async (userInfo: {name: string, email: string, password: string, phoneNumber: string}, { rejectWithValue }) => {
+    try {
+        const {name, email, password, phoneNumber} = userInfo
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reg`, {name, email, password, phoneNumber})
+        return res.data
+    } catch (error: any) {
+        if (error.response?.data) {
+            return rejectWithValue(error.response.data)
+        }
+        return rejectWithValue({ message: 'Có lỗi xảy ra' })
+    }
 })
 
 

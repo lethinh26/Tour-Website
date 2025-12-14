@@ -1,11 +1,23 @@
 import { Button, Radio } from "antd";
 import { FilterOutlined, ReloadOutlined } from "@ant-design/icons";
-import { useSelector } from "react-redux";
-import type { StoreType } from "../../../../stores";
+import { useEffect, useState } from "react";
+import { categoryAPI } from "../../../../services/api";
 
 export default function FilterTour({setIdCategory} : {setIdCategory: (id : number) => void}) {
-    
-    const { categories } = useSelector((state: StoreType) => state.tourReducer);
+    const [categories, setCategories] = useState<Array<{id: number, name: string}>>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await categoryAPI.getAll();
+                setCategories(res.data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
+
     const options = categories.map(cat => cat.name);
 
     return (

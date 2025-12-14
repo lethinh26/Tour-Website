@@ -1,11 +1,12 @@
 import { TagOutlined, TagFilled } from "@ant-design/icons";
-import { Button, Tooltip } from "antd";
+import { Button, Tooltip, notification } from "antd";
 import { useNavigate, useParams } from "react-router";
 import type { Tour } from "../../../../types/types";
 import { useState } from "react";
-import axios from "axios";
+import { favoriteTourAPI } from "../../../../services/api";
 
 export default function InfoHeader({tour} : {tour: Tour | null}) {
+    const [api, contextHolder] = notification.useNotification();
     const navigate = useNavigate();
     const id = useParams().id
     const [token] = useState(() => localStorage.getItem('token'));
@@ -16,7 +17,7 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
         const fetchFavoriteTours = async () => {
             if (!token) return;
             try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/favoriteTours/${token}`);
+                const res = await favoriteTourAPI.getByToken(token);
                 const favorited = res.data?.tourFavorited || [];
                 const isFavorited = favorited.some((tour: any) => tour.id === Number(id));
                 setTagActive(isFavorited);
@@ -28,12 +29,10 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
     });
 
     const handleSaveFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                token,
-                tourId: Number(id)
-            });
+            await favoriteTourAPI.add(token, Number(id));
             setTagActive(true);
         } catch (error) {
             console.log(error);
@@ -43,14 +42,10 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
     };
 
     const handleUnFavorite = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/favoriteTours`, {
-                data: {
-                    token,
-                    tourId: Number(id)
-                }
-            });
+            await favoriteTourAPI.remove(token, Number(id));
             setTagActive(false);
         } catch (error) {
             console.log(error);
@@ -63,7 +58,22 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
         const num = typeof value === 'string'? parseInt(value) : value;
         return typeof num === "number" && !isNaN(num) ? num.toLocaleString('vi-VN') : ""
     }
+    
+    const handleFindTicket = () => {
+        if (!token) {
+            api.warning({
+                message: 'Yêu cầu đăng nhập',
+                description: 'Bạn cần đăng nhập để đặt vé tour',
+                placement: 'topRight',
+            });
+            return;
+        }
+        navigate(`/ticket/${id}`);
+    };
+    
     return (
+        <>
+        {contextHolder}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 mb-6">
             <div className="flex-1 min-w-0">
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-center">
@@ -94,11 +104,13 @@ export default function InfoHeader({tour} : {tour: Tour | null}) {
             <div className="rounded-2xl shadow px-8 py-6 flex flex-col items-center min-w-[220px] mt-4 md:mt-0">
                 <span className="text-gray-500 font-semibold mb-1">Bắt đầu từ</span>
                 <span className="text-orange-600 font-bold text-2xl mb-4">{formatVND(tour?.basePrice)} VND</span>
-                <Button type="primary" size="large" className="rounded-full! py-5! px-10!" onClick={() => navigate(`/ticket/${id}`)}>
+                <Button type="primary" size="large" className="rounded-full! py-5! px-10!" onClick={handleFindTicket}>
                     Tìm vé
                 </Button>
             </div>
         </div>
+        </>
+    
     );
 }
 

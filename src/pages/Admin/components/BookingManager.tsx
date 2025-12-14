@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { Table, Select, Card, App, Tag, Descriptions, Spin } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { tourAPI, tourDepartureAPI } from "../../../services/api";
-import axios from "axios";
+import { tourAPI, tourDepartureAPI, orderAPI } from "../../../services/api";
 
 interface Tour {
     id: number;
@@ -107,9 +106,8 @@ const BookingManager = () => {
         
         try {
             setLoadingBookings(true);
-            const response = await axios.get(`http://160.191.236.178:3000/api/orders/departure/${departureId}`);
+            const response = await orderAPI.getByDepartureId(departureId);
             
-            // Transform data to match Booking interface
             const ordersData = Array.isArray(response.data) ? response.data : [];
             const transformedBookings: Booking[] = ordersData.map((order: any) => ({
                 id: order.id,

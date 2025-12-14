@@ -7,14 +7,15 @@ import PromotionCode from './components/PromotionCode';
 import Summary from './components/Summary';
 import TourInfo from './components/TourInfo';
 import { paymentAPI } from '../../../services/api';
+import type { Payment, Promotion } from '../../../types/types';
 
 const { Content } = Layout;
 
 export const PaymentMain = () => {
   const { id } = useParams<{ id: string }>();
-  const [payment, setPayment] = useState<any>(null);
+  const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPromotion, setSelectedPromotion] = useState<any>(null);
+  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
 
   useEffect(() => {
     const fetchPayment = async () => {
@@ -24,7 +25,7 @@ export const PaymentMain = () => {
         const data = await paymentAPI.getById(id);
         setPayment(data);
       } catch (error) {
-        console.error('Fetch payment error:', error);
+        console.error('payment error:', error);
       } finally {
         setLoading(false);
       }
@@ -56,20 +57,18 @@ export const PaymentMain = () => {
         <div className="col-span-2">
           <Space direction="vertical" size={[40, 40]} style={{ display: 'flex' }}>
             <Space direction="vertical" size="small"> 
-              <h3 className='text-2xl font-bold'>Đặt chỗ của tôi</h3>
-              <p className='font-semibold text-[#687176]'>Điền thông tin và xem lại đặt chỗ</p>
+              <h3 className='text-2xl font-bold'>Thông tin thanh toán</h3>
+              <p className='font-semibold text-[#687176]'>Kiểm tra lại thông tin trước khi thanh toán</p>
             </Space>
-            <ContactInfo user={payment?.user} />
-            <LocationInfo tour={payment?.order?.items?.[0]?.departure?.tour} />
-            <PromotionCode 
-              payment={payment}
-              selectedPromotion={selectedPromotion}
+            <ContactInfo user={(payment as any)?.user} />
+            <LocationInfo tour={(payment as any)?.order?.items?.[0]?.departure?.tour} />
+            <PromotionCode
               onPromotionChange={setSelectedPromotion}
             />
             <Summary payment={payment} selectedPromotion={selectedPromotion} />
           </Space>
         </div>
-        <div className='top-63 w-full right-35 sticky h-fit'>
+        <div className='top-69 w-full right-35 sticky h-fit'>
           <TourInfo payment={payment} />
         </div>
       </Content>

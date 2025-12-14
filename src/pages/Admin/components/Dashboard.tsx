@@ -52,6 +52,8 @@ const Dashboard = () => {
   const fetchUser = async () => {
     try {
       const userData = await getUser();
+      console.log(userData);
+      
       setUser(userData);
     } catch (error) {
       notification.error({
@@ -79,7 +81,11 @@ const Dashboard = () => {
         : await bookingAPI.countBookingSuccess();
       setBookingCount(bookingRes.count);
 
-      const tourRes = await bookingAPI.countTours();
+      const tourRes = isAdmin
+        ? await bookingAPI.countToursAll()
+        : await bookingAPI.countTours(localStorage.getItem('token') as string);
+      console.log(tourRes);
+      
       setTourCount(tourRes.count);
 
       const topToursRes = isAdmin

@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Select, InputNumber, App, Empty } from "antd";
+import { Table, Button, Modal, Form, Select, InputNumber, App, Empty, TimePicker } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { tourAPI, tourDepartureAPI, getUser } from "../../../services/api";
+import { tourDepartureAPI, getUser, tourAPI } from "../../../services/api";
+import type { Tour, User } from "../../../types/types";
 import icon_person from "../../../assets/icons/icon_person.png"
 import icon_currency from "../../../assets/icons/icon_currency.png"
 import icon_schedule from "../../../assets/icons/icon_schedule.png"
+import { Dayjs } from "dayjs";
 
 interface Departure {
     id: number;
@@ -30,24 +32,18 @@ interface TourScheduleGroup {
     departures: Departure[];
 }
 
-interface Tour {
-    id: number;
-    name: string;
-    createdBy?: number;
-}
-
 const TourScheduleManager = () => {
     const { modal, notification } = App.useApp();
-
     const [tours, setTours] = useState<Tour[]>([]);
     const [schedules, setSchedules] = useState<TourSchedule[]>([]);
     const [loading, setLoading] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<{ tourId: number; tourTitle: string } | null>(null);
     const [form] = Form.useForm();
     const [departures, setDepartures] = useState<Departure[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+    const [selectedTime, setSelectedTime] = useState<Dayjs | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     useEffect(() => {
@@ -62,11 +58,10 @@ const TourScheduleManager = () => {
 
             const userId = currentUser?.role === 'TOUR_MANAGER' ? currentUser.id : undefined;
             const toursRes = await tourAPI.getAll(userId);
-            const toursList = Array.isArray(toursRes.data) ? toursRes.data : [];
-            setTours(toursList);
+            setTours(toursRes.data);
 
             const allSchedules: TourSchedule[] = [];
-            for (const tour of toursList) {
+            for (const tour of toursRes.data) {
                 const departuresRes = await tourDepartureAPI.getByTourId(tour.id);
                 const departuresList = Array.isArray(departuresRes.data) ? departuresRes.data : [];
                 if (departuresList.length > 0) {
@@ -89,7 +84,6 @@ const TourScheduleManager = () => {
                 description: error.response?.data?.message || 'Không thể tải danh sách lịch khởi hành',
                 placement: 'topRight',
             });
-            setTours([]);
             setSchedules([]);
         } finally {
             setLoading(false);
@@ -111,6 +105,7 @@ const TourScheduleManager = () => {
         form.resetFields();
         setDepartures([]);
         setSelectedDate(undefined);
+        setSelectedTime(null);
         setShowDatePicker(false);
         setIsModalOpen(true);
     };
@@ -132,6 +127,7 @@ const TourScheduleManager = () => {
         });
         setDepartures(record.departures);
         setSelectedDate(undefined);
+        setSelectedTime(null);
         setShowDatePicker(false);
         setIsModalOpen(true);
     };
@@ -150,15 +146,13 @@ const TourScheduleManager = () => {
         modal.confirm({
             title: "Xác nhận xóa",
             icon: <ExclamationCircleOutlined />,
-            content: `Bạn có chắc chắn muốn xóa tất cả ${record.departureCount} lịch khởi hành của tour "${record.tourTitle}"?`,
+            content: `Bạn có chắc chắn muốn xóa hết ${record.departureCount} lịch khởi hành của tour "${record.tourTitle}"?`,
             okText: "Xóa",
             okType: "danger",
             cancelText: "Hủy",
             async onOk() {
                 try {
-                    await Promise.all(
-                        record.departures.map(dep => tourDepartureAPI.delete(dep.id))
-                    );
+                    await tourDepartureAPI.deleteByTourId(record.tourId);
                     notification.success({
                         message: "Xóa thành công",
                         description: `Đã xóa tất cả lịch khởi hành của tour "${record.tourTitle}".`,
@@ -186,6 +180,15 @@ const TourScheduleManager = () => {
             return;
         }
 
+        if (!selectedTime) {
+            notification.error({
+                message: "Lỗi",
+                description: "Vui lòng chọn giờ khởi hành!",
+                placement: "topRight",
+            });
+            return;
+        }
+
         const values = form.getFieldsValue(["price", "capacity"]);
 
         if (!values.price || !values.capacity) {
@@ -197,16 +200,23 @@ const TourScheduleManager = () => {
             return;
         }
 
+        const departureDateTime = new Date(selectedDate);
+        departureDateTime.setHours(selectedTime.hour());
+        departureDateTime.setMinutes(selectedTime.minute());
+        departureDateTime.setSeconds(0);
+        departureDateTime.setMilliseconds(0);
+
         const tempId = Date.now();
         const newDeparture: Departure = {
             id: tempId,
-            date: selectedDate,
+            date: departureDateTime,
             price: values.price,
             capacity: values.capacity,
         };
 
         setDepartures([...departures, newDeparture]);
         setSelectedDate(undefined);
+        setSelectedTime(null);
         form.setFieldsValue({ price: undefined, capacity: undefined });
         setShowDatePicker(false);
 
@@ -329,6 +339,7 @@ const TourScheduleManager = () => {
             setDepartures([]);
             setEditingSchedule(null);
             setSelectedDate(undefined);
+            setSelectedTime(null);
             setShowDatePicker(false);
             fetchData();
         } catch (error: any) {
@@ -346,6 +357,7 @@ const TourScheduleManager = () => {
         setDepartures([]);
         setEditingSchedule(null);
         setSelectedDate(undefined);
+        setSelectedTime(null);
         setShowDatePicker(false);
     };
 
@@ -455,6 +467,17 @@ const TourScheduleManager = () => {
                                         />
                                     </div>
                                     <div className="space-y-4">
+                                        <div>
+                                            <label className="block mb-2 font-medium">Chọn giờ khởi hành:</label>
+                                            <TimePicker
+                                                value={selectedTime}
+                                                onChange={setSelectedTime}
+                                                format="HH:mm"
+                                                placeholder="Chọn giờ"
+                                                className="w-full"
+                                                showNow={false}
+                                            />
+                                        </div>
                                         <Form.Item name="price" label="Giá (VNĐ)" className="mb-2">
                                             <InputNumber
                                                 placeholder="Nhập giá"
@@ -487,6 +510,12 @@ const TourScheduleManager = () => {
                                                     month: "long",
                                                     day: "numeric",
                                                 })}
+                                                <span className="text-blue-600">
+                                                    {dep.date.toLocaleTimeString("vi-VN", {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })}
+                                                </span>
                                             </div>
                                             <div className="flex gap-4 text-sm text-gray-600 mt-1">
                                                 <div className="flex gap-3"> <img src={icon_currency} alt="" width={24}/> Giá: {dep.price.toLocaleString()} VNĐ</div>

@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../../stores";
 import { userLogin, userRegister } from "../../../stores/slides/userLoginRegister.slice";
 import Account from "./Account";
-import axios from "axios";
+import { authAPI } from "../../../services/api";
 import { useNavigate, useLocation } from "react-router";
 
 const Header = () => {
@@ -23,26 +23,11 @@ const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const getUser = useCallback(async () => {
-        try {
-            const tokenUser = localStorage.getItem("token");
-            if (!tokenUser) {
-                setUser(null);
-                return;
-            }
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/getUser`, { token: tokenUser });
-            setUser(res.data);
-        } catch (error) {
-            console.error("Failed to get user:", error);
-            localStorage.removeItem("token");
-            setUser(null);
-        }
-    }, []);
-
     const handleLogin = useCallback(
         async (values: { email: string; password: string }) => {
             try {
                 const result = await dispatch(userLogin(values));
+                
                 if (result?.payload?.token) {
                     api.success({
                         message: 'Đăng nhập thành công',
@@ -51,7 +36,9 @@ const Header = () => {
                     });
                     setShowLogin(false);
                     formLogin.resetFields();
-                    getUser();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 } else {
                     api.error({
                         message: 'Đăng nhập thất bại',
@@ -60,30 +47,68 @@ const Header = () => {
                     });
                 }
             } catch (error) {
-                console.error('Login error:', error);
                 api.error({
                     message: 'Đăng nhập thất bại',
-                    description: 'Có lỗi xảy ra, vui lòng thử lại!',
+                    description: `Có lỗi xảy ra, vui lòng thử lại! ${error}`,
                     placement: 'topRight',
                 });
             }
         },
-        [dispatch, formLogin, getUser]
+        [dispatch, formLogin, api]
     );
 
     const handleRegister = useCallback(
         async (values: { name: string; email: string; password: string; phoneNumber: string }) => {
-            await dispatch(userRegister(values));
-            setShowRegister(false);
-            formRegister.resetFields();
-            getUser();
+            try {
+                const result = await dispatch(userRegister(values));
+                
+                if (result?.payload?.token) {
+                    api.success({
+                        message: 'Đăng ký thành công',
+                        description: 'Chào mừng bạn đến với Triploka!',
+                        placement: 'topRight',
+                    });
+                    setShowRegister(false);
+                    formRegister.resetFields();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    api.error({
+                        message: 'Đăng ký thất bại',
+                        description: result?.payload?.message || 'Email đã được sử dụng!',
+                        placement: 'topRight',
+                    });
+                }
+            } catch (error) {
+                api.error({
+                    message: 'Đăng ký thất bại',
+                    description: `Có lỗi xảy ra, vui lòng thử lại! ${error}`,
+                    placement: 'topRight',
+                });
+            }
         },
-        [dispatch, formRegister, getUser]
+        [dispatch, formRegister, api]
     );
 
     useEffect(() => {
-        getUser();
-    }, [getUser]);
+        const checkUser = async () => {
+            const tokenUser = localStorage.getItem("token");
+            
+            if (tokenUser) {
+                try {
+                    const response = await authAPI.getUser(tokenUser);
+                    setUser(response.data);
+                } catch (error) {
+                    localStorage.removeItem("token");
+                    setUser(null);
+                }
+            } else {
+                setUser(null);
+            }
+        };
+        checkUser();
+    }, []);
 
     const navItems = (
         <>
@@ -112,23 +137,24 @@ const Header = () => {
             >
                 Tour
             </a>
-            {!user ? (
-                <>
-                    <button
-                        className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50 cursor-pointer"
-                        onClick={() => setShowLogin(true)}
-                    >
-                        Đăng Nhập
-                    </button>
-                    <button
-                        className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
-                        onClick={() => setShowRegister(true)}
-                    >
-                        Đăng Ký
-                    </button>
-                </>
-            ) : (
-                <>
+            {(() => {
+                return !user ? (
+                    <>
+                        <button
+                            className="px-3 py-2 border border-blue-500 text-sm font-medium rounded-lg text-blue-500 hover:bg-blue-50 cursor-pointer"
+                            onClick={() => setShowLogin(true)}
+                        >
+                            Đăng Nhập
+                        </button>
+                        <button
+                            className="px-3 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 cursor-pointer"
+                            onClick={() => setShowRegister(true)}
+                        >
+                            Đăng Ký
+                        </button>
+                    </>
+                ) : (
+                    <>
                     <a 
                         className={`flex items-center text-sm font-medium cursor-pointer transition-colors ${
                             location.pathname === "/promotion" 
@@ -142,7 +168,9 @@ const Header = () => {
                     </a>
                     <Account />
                 </>
-            )}
+
+                );
+            })()}
         </>
     );
     return (

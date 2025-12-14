@@ -3,7 +3,7 @@ import { Button, DatePicker, Divider, Form, Input, Select, Steps, Table, App, Mo
 import { useForm } from "antd/es/form/Form";
 import type { ColumnType } from "antd/es/table";
 import { useState, useEffect, useRef } from "react";
-import type { Promo } from "../../../types/types";
+import type { Promo, Promotion } from "../../../types/types";
 import { Editor } from "@tinymce/tinymce-react";
 import dayjs from "dayjs";
 import { promotionAPI } from "../../../services/api";
@@ -23,12 +23,12 @@ interface PromotionColumn {
 
 const PromotionManager = () => {
     const { modal, notification } = App.useApp();
-    const [promotions, setPromotions] = useState<PromotionColumn[]>([]);
+    const [promotions, setPromotions] = useState<Promotion[]>([]);
+    const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [editingPromotion, setEditingPromotion] = useState<PromotionColumn | null>(null);
     const [form] = useForm();
-    const [loading, setLoading] = useState(false);
     const descriptionEditorRef = useRef<any>(null);
 
     useEffect(() => {
@@ -36,24 +36,13 @@ const PromotionManager = () => {
     }, []);
 
     const fetchPromotions = async () => {
+        setLoading(true);
         try {
-            setLoading(true);
-            const response = await promotionAPI.getAll();
-            const formattedData = response.data.map((promo: any) => ({
-                id: promo.id,
-                code: promo.code,
-                amount: promo.discount,
-                discount: promo.amount,
-                startDate: promo.startAt,
-                endDate: promo.endAt || "",
-                type: promo.type,
-                title: promo.name,
-                description: promo.description
-            }));
-            setPromotions(formattedData);
+            const res = await promotionAPI.getAll();
+            setPromotions(res.data);
         } catch (error) {
             notification.error({
-                message: 'Lỗi',
+                message: 'Lỗi tải dữ liệu',
                 description: 'Không thể tải danh sách khuyến mãi',
                 placement: 'topRight',
             });
@@ -221,6 +210,19 @@ const PromotionManager = () => {
             ),
         },
     ];
+
+    const formattedPromotions: PromotionColumn[] = Array.isArray(promotions) ? promotions.map((promo: Promotion) => ({
+        id: promo.id,
+        code: promo.code,
+        amount: promo.discount || 0,
+        discount: promo.amount,
+        startDate: promo.startAt,
+        endDate: promo.endAt || "",
+        type: promo.type,
+        title: promo.name,
+        description: promo.description
+    })) : [];
+
     return (
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
@@ -232,7 +234,7 @@ const PromotionManager = () => {
             <Spin spinning={loading}>
                 <Table
                     columns={column}
-                    dataSource={promotions}
+                    dataSource={formattedPromotions}
                     rowKey="id"
                     pagination={{
                         defaultPageSize: 10,

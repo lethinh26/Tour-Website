@@ -9,7 +9,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  password: string;
+  phoneNumber: string;
+  passwordHash?: string;
   role: Role;
   createdAt: string;
 }
@@ -26,17 +27,20 @@ export interface Tour {
   name: string;
   description: string;
   information: string;
-  address: string,
+  address: string;
   basePrice: Money;
   discount?: Money | null;
   createdAt: string;
-  categoryId: number;
-  locationId: number
+  createdBy: number;
+  categoryId?: number | null;
+  locationId?: number | null;
+  averageRating?: number;
+  totalReviews?: number;
 }
 
 export interface Location {
-  id: number,
-  name: string
+  id: number;
+  name: string;
 }
 
 export interface TourImage {
@@ -76,12 +80,12 @@ export interface OrderItem {
 }
 
 export interface Payment {
-  id: number;
+  id: string;
   amount: Money;
   status: PaymentStatus;
   method: PaymentMethod;
+  description?: string;
   createdAt: string;
-
   orderId: number;
   userId: number;
 }
@@ -91,13 +95,13 @@ export interface Review {
   rating: number;
   comment?: string | null;
   createdAt: string;
-
   tourId: number;
   userId: number;
+  orderId: number;
 }
 
 export interface PromotionUsage {
-  id : number;
+  id: number;
   userId: number;
   promotionId: number;
 }
@@ -107,9 +111,9 @@ export interface Promotion {
   discount: number;
   amount: number;
   code: string;
-  type: 'new' | 'all';
+  type: Promo;
   name: string;
   description: string;
   startAt: string;
-  endAt: string;
+  endAt?: string | null;
 }
