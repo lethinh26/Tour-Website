@@ -15,7 +15,7 @@ export interface TravelCardProps {
     reviews: number;
     price: number;
     oldPrice?: number;
-    categoryId: number;
+    categoryId?: number | null;
     location: string;
 }
 

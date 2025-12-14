@@ -3,7 +3,7 @@ import { Button, DatePicker, Divider, Form, Input, Select, Steps, Table, App, Mo
 import { useForm } from "antd/es/form/Form";
 import type { ColumnType } from "antd/es/table";
 import { useState, useEffect, useRef } from "react";
-import type { Promo } from "../../../types/types";
+import type { Promo, Promotion } from "../../../types/types";
 import { Editor } from "@tinymce/tinymce-react";
 import dayjs from "dayjs";
 import { promotionAPI } from "../../../services/api";
@@ -202,7 +202,7 @@ const PromotionManager = () => {
         },
     ];
 
-    const formattedPromotions: PromotionColumn[] = Array.isArray(promotions) ? promotions.map((promo: any) => ({
+    const formattedPromotions: PromotionColumn[] = Array.isArray(promotions) ? promotions.map((promo: Promotion) => ({
         id: promo.id,
         code: promo.code,
         amount: promo.discount || 0,

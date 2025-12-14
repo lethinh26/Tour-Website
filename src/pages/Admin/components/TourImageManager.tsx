@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, 
 import type { ColumnsType } from "antd/es/table";
 import type { UploadFile, UploadProps } from "antd/es/upload";
 import { tourAPI, tourImageAPI, getUser } from "../../../services/api";
+import type { User } from "../../../types/types";
 
 interface TourImage {
   id: number;
@@ -32,7 +33,7 @@ const TourImageManager = () => {
   const [tours, setTours] = useState<Tour[]>([]);
   const [tourImages, setTourImages] = useState<TourImage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<{ tourId: number; tourTitle: string } | null>(null);
   const [form] = Form.useForm();

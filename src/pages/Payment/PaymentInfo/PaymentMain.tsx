@@ -7,14 +7,15 @@ import PromotionCode from './components/PromotionCode';
 import Summary from './components/Summary';
 import TourInfo from './components/TourInfo';
 import { paymentAPI } from '../../../services/api';
+import type { Payment, Promotion } from '../../../types/types';
 
 const { Content } = Layout;
 
 export const PaymentMain = () => {
   const { id } = useParams<{ id: string }>();
-  const [payment, setPayment] = useState<any>(null);
+  const [payment, setPayment] = useState<Payment | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPromotion, setSelectedPromotion] = useState<any>(null);
+  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
 
   useEffect(() => {
     const fetchPayment = async () => {
@@ -59,10 +60,9 @@ export const PaymentMain = () => {
               <h3 className='text-2xl font-bold'>Đặt chỗ của tôi</h3>
               <p className='font-semibold text-[#687176]'>Điền thông tin và xem lại đặt chỗ</p>
             </Space>
-            <ContactInfo user={payment?.user} />
-            <LocationInfo tour={payment?.order?.items?.[0]?.departure?.tour} />
-            <PromotionCode 
-              payment={payment}
+            <ContactInfo user={(payment as any)?.user} />
+            <LocationInfo tour={(payment as any)?.order?.items?.[0]?.departure?.tour} />
+            <PromotionCode
               onPromotionChange={setSelectedPromotion}
             />
             <Summary payment={payment} selectedPromotion={selectedPromotion} />

@@ -14,7 +14,7 @@ export default function SettingPromotion() {
         const date = new Date(stringData)
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
     }
-    const checkExpiry = (startDate: string, endDate: string) => {
+    const checkExpiry = (startDate: string, endDate?: string | null) => {
         if (!endDate) {
             return true
         }

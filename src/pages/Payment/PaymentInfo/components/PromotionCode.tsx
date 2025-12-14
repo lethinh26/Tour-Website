@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Card, Select, Button, notification } from 'antd';
 import { promotionAPI, getUser } from '../../../../services/api';
+import type { Promotion } from '../../../../types/types';
 
 const { Option } = Select;
 
 interface PromotionCodeProps {
-  payment?: any;
-  onPromotionChange?: (promotion: any) => void;
+  onPromotionChange?: (promotion: Promotion | null) => void;
 }
 
 const PromotionCode = ({ onPromotionChange }: PromotionCodeProps) => {
   const [api, contextHolder] = notification.useNotification();
-  const [promotions, setPromotions] = useState<any[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
-  const [localSelectedPromo, setLocalSelectedPromo] = useState<any>(null);
+  const [localSelectedPromo, setLocalSelectedPromo] = useState<Promotion | null>(null);
 
   useEffect(() => {
     const fetchPromotions = async () => {
@@ -91,7 +91,7 @@ const PromotionCode = ({ onPromotionChange }: PromotionCodeProps) => {
           value={localSelectedPromo?.id}
           onChange={(value) => {
             const promo = Array.isArray(promotions) ? promotions.find(p => p.id === value) : undefined;
-            setLocalSelectedPromo(promo);
+            setLocalSelectedPromo(promo || null);
           }}
           allowClear
           onClear={() => {

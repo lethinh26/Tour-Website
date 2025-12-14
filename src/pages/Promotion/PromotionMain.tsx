@@ -19,8 +19,8 @@ export default function PromotionMain() {
         return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
     }
 
-    const checkExpiry = (startDate : string, endDate: string) => {
-        if(!endDate){
+    const checkExpiry = (startDate: string, endDate?: string | null) => {
+        if (!endDate) {
             return true
         }
         const date1 = new Date(startDate)

@@ -8,6 +8,7 @@ import { tourDepartureAPI, getUser } from "../../../services/api";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, StoreType } from "../../../stores";
 import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
+import type { Tour, User } from "../../../types/types";
 import icon_person from "../../../assets/icons/icon_person.png"
 import icon_currency from "../../../assets/icons/icon_currency.png"
 import icon_schedule from "../../../assets/icons/icon_schedule.png"
@@ -34,12 +35,6 @@ interface TourScheduleGroup {
     departures: Departure[];
 }
 
-interface Tour {
-    id: number;
-    name: string;
-    createdBy?: number;
-}
-
 const TourScheduleManager = () => {
     const { modal, notification } = App.useApp();
     const dispatch = useDispatch<AppDispatch>();
@@ -47,7 +42,7 @@ const TourScheduleManager = () => {
 
     const [schedules, setSchedules] = useState<TourSchedule[]>([]);
     const [loading, setLoading] = useState(false);
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<{ tourId: number; tourTitle: string } | null>(null);
     const [form] = Form.useForm();
@@ -60,7 +55,7 @@ const TourScheduleManager = () => {
         fetchData();
     }, []);
 
-    const tours = Array.isArray(reduxTours) ? reduxTours : [];
+    const tours: Tour[] = Array.isArray(reduxTours) ? reduxTours : [];
 
     const fetchData = async () => {
         setLoading(true);
@@ -213,7 +208,6 @@ const TourScheduleManager = () => {
             return;
         }
 
-        // Combine date and time
         const departureDateTime = new Date(selectedDate);
         departureDateTime.setHours(selectedTime.hour());
         departureDateTime.setMinutes(selectedTime.minute());

@@ -7,6 +7,7 @@ import { tourAPI, getUser } from "../../../services/api";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, StoreType } from "../../../stores";
 import { fetchData as fetchTourData } from "../../../stores/slides/tour.slide";
+import type { User } from "../../../types/types";
 
 interface Tour {
   id: number;
@@ -26,7 +27,7 @@ const TourList = () => {
   const { modal, notification } = App.useApp();
   const dispatch = useDispatch<AppDispatch>();
   const { tours: reduxTours, categories: reduxCategories, locations: reduxLocations, status } = useSelector((state: StoreType) => state.tourReducer);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
